@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E2933">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Наставник">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Карманный наставник</title>
+<style>
+:root{
+  --bg:#E8ECEF; --surf:#FFFFFF; --surf2:#F2F5F7; --ink:#16212A; --mute:#5A6A77; --line:#CBD4DB;
+  --mark:#F2C230; --markInk:#1B1B1B; --ok:#2B9457; --warn:#C9781A; --bad:#C53B31; --info:#2C68A8;
+  --okBg:#DCF1E4; --warnBg:#FBEBD3; --badBg:#F9DEDB; --infoBg:#DCE8F5;
+  --r:14px; --tap:48px;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#121A20; --surf:#1C262F; --surf2:#25323D; --ink:#E7EDF1; --mute:#93A2AE; --line:#33424E;
+    --okBg:#173627; --warnBg:#3A2A12; --badBg:#3D1C19; --infoBg:#18304A;
+    --ok:#4CC27E; --warn:#F0A040; --bad:#F06A5F; --info:#6FA8E6;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top,0px);
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--info);outline-offset:2px}
+
+/* Верхняя полоса — разметка пола */
+.band{height:6px;background:repeating-linear-gradient(135deg,var(--mark) 0 14px,#2A333A 14px 28px)}
+header.top{position:sticky;top:0;z-index:5;background:var(--surf);border-bottom:1px solid var(--line)}
+.topin{display:flex;align-items:center;gap:10px;padding:0 16px;height:56px}
+.topin h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topin .who{font-size:13px;color:var(--mute);text-align:right;line-height:1.25}
+.back{border:0;background:var(--surf2);border-radius:12px;min-width:var(--tap);height:40px;font-size:20px}
+
+main{max-width:640px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom,0px))}
+
+nav.bot{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surf);border-top:1px solid var(--line);
+  display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.bot button{flex:1;border:0;background:none;padding:8px 4px 10px;font-size:12px;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+nav.bot button .ic{font-size:22px;line-height:1}
+nav.bot button.on{color:var(--ink);font-weight:600}
+nav.bot button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;background:var(--mark);border-radius:0 0 3px 3px}
+.badge{position:absolute;top:4px;left:calc(50% + 6px);background:var(--bad);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 6px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--surf);font-weight:600;text-align:center}
+.btn.main{background:var(--mark);color:var(--markInk);border-color:transparent}
+.btn.dark{background:var(--ink);color:var(--surf);border-color:transparent}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:var(--bad);background:transparent}
+.btn.wide{width:100%}
+.btn.sm{min-height:38px;padding:0 12px;font-size:14px;border-radius:10px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1}
+
+.note{background:var(--surf);border:1px solid var(--line);border-left:5px solid var(--mark);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;font-size:15px}
+.note b{display:block;margin-bottom:4px}
+.note .row{margin-top:10px}
+.muted{color:var(--mute)}
+.small{font-size:13px}
+h2{font-size:17px;margin:22px 2px 10px}
+h2:first-child{margin-top:4px}
+
+/* Карточка подопечного */
+.card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card.tap{cursor:pointer}
+.chead{display:flex;align-items:flex-start;gap:10px}
+.chead .nm{font-weight:700;font-size:17px;line-height:1.25}
+.chead .sub{font-size:13px;color:var(--mute);margin-top:2px}
+.chead .num{margin-left:auto;text-align:right;flex-shrink:0}
+.chead .num b{font-size:26px;line-height:1;display:block;font-variant-numeric:tabular-nums}
+.chead .num span{font-size:11px;color:var(--mute)}
+
+/* Лесенка смен */
+.ladder{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:12px 0 6px}
+.ladder i{height:14px;border-radius:3px;background:var(--surf2);border:1px solid var(--line);position:relative}
+.ladder i.f{background:var(--ink);border-color:var(--ink)}
+.ladder i.m{border:2px solid var(--mark)}
+.ladder i.m.f{background:var(--ink)}
+.ladder i.m.done::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--mark)}
+.ladcap{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:13px;padding:4px 10px;border-radius:20px;background:var(--surf2);border:1px solid var(--line);line-height:1.3}
+.chip.bad{background:var(--badBg);border-color:transparent;color:var(--bad);font-weight:600}
+.chip.warn{background:var(--warnBg);border-color:transparent;color:var(--warn);font-weight:600}
+.chip.ok{background:var(--okBg);border-color:transparent;color:var(--ok);font-weight:600}
+.chip.info{background:var(--infoBg);border-color:transparent;color:var(--info);font-weight:600}
+.cact{display:flex;gap:8px;margin-top:12px}
+.cact .btn{flex:1}
+
+.bar{height:8px;border-radius:5px;background:var(--surf2);overflow:hidden;border:1px solid var(--line)}
+.bar>span{display:block;height:100%;background:var(--ok)}
+.barrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mute);margin-top:8px}
+.barrow .bar{flex:1}
+
+/* Вкладки внутри карточки */
+.tabs{display:flex;gap:4px;background:var(--surf2);border-radius:12px;padding:4px;margin:4px 0 14px;position:sticky;top:57px;z-index:4}
+.tabs button{flex:1;border:0;background:none;border-radius:9px;min-height:40px;font-size:14px;font-weight:600;color:var(--mute)}
+.tabs button.on{background:var(--surf);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+/* Навыки */
+.skill{padding:12px 0;border-top:1px solid var(--line)}
+.skill:first-of-type{border-top:0}
+.skill .sn{font-size:15px;margin-bottom:8px}
+.skill .sd{font-size:12px;color:var(--mute);margin-top:6px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.seg button{border:1px solid var(--line);background:var(--surf2);border-radius:9px;min-height:40px;font-size:12.5px;padding:2px;line-height:1.15}
+.seg button.on.l0{background:var(--surf);border-color:var(--ink);font-weight:700}
+.seg button.on.l1{background:var(--infoBg);border-color:var(--info);color:var(--info);font-weight:700}
+.seg button.on.l2{background:var(--warnBg);border-color:var(--warn);color:var(--warn);font-weight:700}
+.seg button.on.l3{background:var(--okBg);border-color:var(--ok);color:var(--ok);font-weight:700}
+.ghead{display:flex;justify-content:space-between;align-items:baseline}
+.ghead b{font-size:16px}
+
+/* История смен */
+.hist{display:flex;gap:12px}
+.hist .dt{flex-shrink:0;width:54px;text-align:center;border-radius:10px;background:var(--surf2);padding:6px 0}
+.hist .dt b{display:block;font-size:20px;line-height:1.1}
+.hist .dt span{font-size:11px;color:var(--mute)}
+.hist .bd{flex:1;min-width:0}
+.hist .bd p{margin:6px 0 0;font-size:15px;white-space:pre-wrap;word-wrap:break-word}
+
+/* Формы */
+label.f,div.f{display:block;margin-bottom:16px}
+label.f>span{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
+input[type=text],input[type=date],input[type=number],select,textarea{
+  width:100%;min-height:var(--tap);border-radius:12px;border:1px solid var(--line);background:var(--surf2);padding:10px 12px;font-size:16px}
+textarea{min-height:88px;resize:vertical}
+.pick{display:grid;gap:6px}
+.pick.c2{grid-template-columns:1fr 1fr}
+.pick.c5{grid-template-columns:repeat(5,1fr)}
+.pick button{border:1px solid var(--line);background:var(--surf2);border-radius:12px;min-height:var(--tap);font-weight:600;padding:4px}
+.pick button.on{background:var(--ink);color:var(--surf);border-color:var(--ink)}
+.pick.c5 button{font-size:20px}
+.pick.c5 button small{display:block;font-size:10.5px;font-weight:500}
+.tagset{display:flex;flex-wrap:wrap;gap:6px}
+.tagset button{border:1px solid var(--line);background:var(--surf2);border-radius:20px;padding:8px 12px;font-size:14px}
+.tagset button.on{background:var(--ink);color:var(--surf);border-color:var(--ink)}
+.check{display:flex;align-items:center;gap:12px;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surf2);margin-bottom:8px}
+.check input{width:22px;height:22px;flex-shrink:0}
+.check.alert{border-color:var(--bad)}
+
+/* Нижний лист */
+#sheet{position:fixed;inset:0;z-index:20;display:none}
+#sheet.open{display:block}
+#sheet .shade{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+#sheet .pane{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow:auto;background:var(--surf);border-radius:18px 18px 0 0;
+  padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));max-width:640px;margin:0 auto;animation:up .18s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#sheet .pane{animation:none}}
+.grip{width:42px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
+.pane h3{font-size:18px;margin:0 0 4px}
+.pane .lead{font-size:14px;color:var(--mute);margin:0 0 16px}
+.pane .actions{display:flex;gap:10px;margin-top:18px;position:sticky;bottom:-18px;background:var(--surf);padding:10px 0 4px}
+.pane .actions .btn{flex:1}
+
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surf);
+  padding:10px 16px;border-radius:12px;font-size:14px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+
+.empty{text-align:center;padding:28px 12px}
+.empty .big{font-size:44px}
+.empty p{color:var(--mute);margin:8px 0 18px}
+.list-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.list-item:first-child{border-top:0}
+.list-item span{flex:1}
+.x{border:0;background:var(--surf2);border-radius:10px;width:40px;height:40px;font-size:16px;color:var(--mute)}
+details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weight:600}
+.sign{text-align:center;font-size:12px;color:var(--mute);margin:26px 0 6px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
+.kv dt{color:var(--mute)}
+.kv dd{margin:0}
+.big-send{padding:22px 16px;text-align:center}
+.big-send .n{font-size:44px;font-weight:800;line-height:1}
+</style>
+</head>
+<body>
+<div class="band" aria-hidden="true"></div>
+<div id="app"></div>
+<div id="sheet" role="dialog" aria-modal="true"><div class="shade" data-act="closeSheet"></div><div class="pane" id="pane"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileIn" hidden>
+
+<script>
+'use strict';
+/* =====================================================================
+   Карманный наставник — РЦ Екатеринбург Юг
+   Все данные хранятся только в памяти браузера на телефоне наставника.
+   Передача руководителю смены — файлом через «Поделиться».
+   ===================================================================== */
+const APP_VERSION = '1.0';
+const KEY = 'nastavnik_v1';
+const SIGN = 'Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
+
+const GROUPS = [['common','Общее'],['pick','Комплектация'],['ship','Отгрузка'],['vesh','ВЭШ'],['recv','Приёмка']];
+const GNAME = Object.fromEntries(GROUPS);
+const WORK_GROUPS = GROUPS.filter(g => g[0] !== 'common');
+const DEFAULT_CHECKLIST = {
+  common: ['Вводный инструктаж и охрана труда','Работа с ТСД: вход, задания, ошибки','Адресация ячеек и схема склада','Порядок на рабочем месте и СИЗ'],
+  pick:   ['Отбор по заданию на ТСД','Пересчёт и сверка артикула','Формирование и стретчевание паллеты','Маркировка собранного груза','Действия при недостаче и пересорте'],
+  ship:   ['Контроль отгрузки по документам','Загрузка машины по схеме','Пломбировка и оформление документов','Возвратная тара и поддоны'],
+  vesh:   ['Допуск и удостоверение на ВЭШ','Осмотр техники перед сменой','Перемещение паллет по складу','Работа с верхними ярусами','Зарядка и замена АКБ'],
+  recv:   ['Проверка документов поставщика','Пересчёт и контроль качества','Оформление расхождений','Размещение и ввод в WMS']
+};
+const LEVELS = ['Не начато','Показал','Под контролем','Допущен'];
+const LEVELS_SHORT = ['Не начато','Показал','Под\u00A0контролем','Допущен'];
+const MEET = [3,7,14];
+const TAGS = ['Хорошо освоил ТСД','Быстро учится','Старается','Путает ячейки','Медленный темп','Ошибки в отборе','Нарушает ОТ','Опоздал','Жалуется на нагрузку'];
+const SCORE = ['', 'Плохо', 'Слабо', 'Норм', 'Хорошо', 'Отлично'];
+const SCORE_IC = ['', '😟', '😕', '😐', '🙂', '😃'];
+const LEAVE_REASONS = ['Нагрузка','График','Зарплата','Коллектив','Не прошёл адаптацию','Личные причины','Другое'];
+
+/* ---------- утилиты ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function isoLocal(d){ const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0,10); }
+const today = () => isoLocal(new Date());
+function shiftDefaultDate(){ const d = new Date(); if (d.getHours() < 8) d.setDate(d.getDate() - 1); return isoLocal(d); }
+function fmt(iso){ if(!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}.${m}.${y}`; }
+function fmtTs(ts){ if(!ts) return '—'; const d = new Date(ts); return `${fmt(isoLocal(d))} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+const MON = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+function plural(n, a, b, c){ n = Math.abs(n) % 100; const n1 = n % 10; if (n > 10 && n < 20) return c; if (n1 > 1 && n1 < 5) return b; if (n1 === 1) return a; return c; }
+function shortFio(f){ const p = String(f||'').trim().split(/\s+/); if (p.length < 2) return p[0] || ''; return p[0] + ' ' + p.slice(1).map(x => x[0] + '.').join(''); }
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+function fileStamp(){ const d = new Date(); return isoLocal(d) + '_' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0'); }
+
+/* ---------- хранилище ---------- */
+function makeChecklist(){
+  const c = {};
+  for (const [g] of GROUPS) c[g] = DEFAULT_CHECKLIST[g].map((name, i) => ({ id: `${g}_${i+1}`, name }));
+  return c;
+}
+function blankState(){
+  return { v: 1, settings: { fio:'', tab:'', shift:'', leader:'', division:'РЦ Екатеринбург Юг', checklist: makeChecklist(), installHidden:false },
+           mentees: [], lastSentAt: 0, sentLog: [] };
+}
+let S;
+function load(){
+  try { const raw = localStorage.getItem(KEY); S = raw ? JSON.parse(raw) : blankState(); }
+  catch(e){ S = blankState(); }
+  const b = blankState();
+  S.settings = Object.assign(b.settings, S.settings || {});
+  for (const [g] of GROUPS) if (!Array.isArray(S.settings.checklist[g])) S.settings.checklist[g] = b.settings.checklist[g];
+  S.mentees = Array.isArray(S.mentees) ? S.mentees : [];
+  S.mentees.forEach(normMentee);
+  S.sentLog = Array.isArray(S.sentLog) ? S.sentLog : [];
+  S.lastSentAt = +S.lastSentAt || 0;
+}
+function normMentee(m){
+  m.id = m.id || uid(); m.fio = m.fio || ''; m.tab = m.tab || ''; m.hireDate = m.hireDate || '';
+  m.mainGroup = m.mainGroup || 'pick'; m.groups = Array.isArray(m.groups) && m.groups.length ? m.groups : [m.mainGroup];
+  if (!m.groups.includes(m.mainGroup)) m.groups.unshift(m.mainGroup);
+  m.shiftsBefore = +m.shiftsBefore || 0; m.status = m.status || 'active';
+  m.skills = m.skills || {}; m.notes = Array.isArray(m.notes) ? m.notes : []; m.meetings = m.meetings || {};
+  m.createdAt = m.createdAt || Date.now(); m.updatedAt = m.updatedAt || Date.now();
+  return m;
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(S)); return true; }
+  catch(e){ toast('Не удалось сохранить: память браузера недоступна'); return false; }
+}
+function touch(m){ m.updatedAt = Date.now(); save(); }
+const findM = id => S.mentees.find(m => m.id === id);
+
+/* ---------- расчёты ---------- */
+const presentNotes = m => m.notes.filter(n => n.present);
+const worked = m => (+m.shiftsBefore || 0) + presentNotes(m).length;
+function stageOf(n){ if (n <= 3) return 'Знакомство'; if (n <= 7) return 'Обучение'; if (n <= 14) return 'Закрепление'; return 'Самостоятельная работа'; }
+const groupsOf = m => ['common', ...m.groups.filter(g => g !== 'common')];
+function skillItems(m, g){ return (S.settings.checklist[g] || []); }
+function progress(m, onlyGroup){
+  const gs = onlyGroup ? [onlyGroup] : groupsOf(m);
+  let sum = 0, cnt = 0;
+  for (const g of gs) for (const it of skillItems(m, g)) { sum += (m.skills[it.id]?.lvl || 0); cnt++; }
+  return cnt ? Math.round(sum / (cnt * 3) * 100) : 0;
+}
+function countLevels(m){
+  const c = [0,0,0,0];
+  for (const g of groupsOf(m)) for (const it of skillItems(m, g)) c[m.skills[it.id]?.lvl || 0]++;
+  return c;
+}
+const meetDone = (m, k) => !!(m.meetings[k] && m.meetings[k].done);
+function nextMeeting(m){ for (const k of MEET) if (!meetDone(m, k)) return k; return null; }
+const meetingDue = m => { const k = nextMeeting(m); return k !== null && worked(m) >= k ? k : null; };
+const openHelp = m => m.notes.filter(n => n.help && !n.helpResolved);
+const sortedNotes = m => [...m.notes].sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
+const lastNote = m => sortedNotes(m)[0];
+const unsent = () => S.mentees.filter(m => m.updatedAt > S.lastSentAt);
+
+/* ---------- состояние экрана ---------- */
+const ui = { view: 'list', id: null, tab: 'shifts' };
+let sheet = null;   // контекст открытого листа
+
+function go(view, id){ ui.view = view; if (id !== undefined) ui.id = id; if (view === 'mentee' && id !== undefined) ui.tab = 'shifts'; render(); window.scrollTo(0,0); }
+
+/* ---------- отрисовка ---------- */
+function render(){
+  let head = '', body = '';
+  const who = S.settings.fio ? `${esc(shortFio(S.settings.fio))}${S.settings.shift ? '<br>смена ' + esc(S.settings.shift) : ''}` : '';
+  if (ui.view === 'mentee' && findM(ui.id)){
+    const m = findM(ui.id);
+    head = `<button class="back" data-act="go" data-v="list" aria-label="Назад">‹</button><h1>${esc(shortFio(m.fio))}</h1>`;
+    body = viewMentee(m);
+  } else if (ui.view === 'send'){
+    head = `<h1>Отправка руководителю</h1><div class="who">${who}</div>`; body = viewSend();
+  } else if (ui.view === 'settings'){
+    head = `<h1>Настройки</h1><div class="who">${who}</div>`; body = viewSettings();
+  } else {
+    ui.view = 'list';
+    head = `<h1>Мои новички</h1><div class="who">${who}</div>`; body = viewList();
+  }
+  const n = unsent().length;
+  $('#app').innerHTML = `
+    <header class="top"><div class="topin">${head}</div></header>
+    <main>${body}</main>
+    <nav class="bot">
+      <button data-act="go" data-v="list" class="${ui.view==='list'||ui.view==='mentee'?'on':''}"><span class="ic">👥</span>Новички</button>
+      <button data-act="go" data-v="send" class="${ui.view==='send'?'on':''}"><span class="ic">📤</span>Отправка${n ? `<span class="badge">${n}</span>` : ''}</button>
+      <button data-act="go" data-v="settings" class="${ui.view==='settings'?'on':''}"><span class="ic">⚙️</span>Настройки</button>
+    </nav>`;
+}
+
+function ladderHtml(m){
+  const w = worked(m);
+  let cells = '';
+  for (let i = 1; i <= 14; i++){
+    const isM = MEET.includes(i);
+    cells += `<i class="${i <= w ? 'f' : ''} ${isM ? 'm' : ''} ${isM && meetDone(m, i) ? 'done' : ''}" title="Смена ${i}${isM ? ', беседа' : ''}"></i>`;
+  }
+  return `<div class="ladder" aria-label="Отработано смен: ${w}">${cells}</div>
+    <div class="ladcap"><span>${esc(stageOf(w))}</span><span>${w > 14 ? `+${w-14} после 14-й` : 'беседы на 3, 7 и 14 смене'}</span></div>`;
+}
+
+function flagsHtml(m){
+  const f = [];
+  const help = openHelp(m).length;
+  if (help) f.push(`<span class="chip bad">Нужна помощь руководителя</span>`);
+  const due = meetingDue(m);
+  if (due) f.push(`<span class="chip warn">Пора провести беседу ${due}-й смены</span>`);
+  const ln = lastNote(m);
+  if (ln && !ln.present) f.push(`<span class="chip warn">Не вышел ${fmt(ln.date)}</span>`);
+  if (m.status === 'active' && (!ln || ln.date < shiftDefaultDate())) f.push(`<span class="chip">Нет отметки за ${fmt(shiftDefaultDate()).slice(0,5)}</span>`);
+  if (m.updatedAt > S.lastSentAt) f.push(`<span class="chip info">Не отправлено</span>`);
+  return f.length ? `<div class="chips">${f.join('')}</div>` : '';
+}
+
+function menteeCard(m){
+  const w = worked(m), p = progress(m);
+  return `<div class="card tap" data-act="open" data-id="${m.id}">
+    <div class="chead">
+      <div><div class="nm">${esc(m.fio || 'Без имени')}</div>
+        <div class="sub">${m.tab ? 'Таб. ' + esc(m.tab) + ', ' : ''}${esc(GNAME[m.mainGroup] || '')}</div></div>
+      <div class="num"><b>${w}</b><span>${plural(w,'смена','смены','смен')}</span></div>
+    </div>
+    ${ladderHtml(m)}
+    <div class="barrow"><span>Навыки</span><div class="bar"><span style="width:${p}%"></span></div><span>${p}%</span></div>
+    ${flagsHtml(m)}
+    <div class="cact"><button class="btn main" data-act="noteNew" data-id="${m.id}">Отметить смену</button></div>
+  </div>`;
+}
+
+function viewList(){
+  let h = '';
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (!standalone && !S.settings.installHidden){
+    const ios = /iP(hone|ad|od)/.test(navigator.userAgent);
+    h += `<div class="note"><b>Добавьте на главный экран</b>
+      ${ios ? 'В Safari нажмите «Поделиться» ⬆️, затем «На экран „Домой“».' : 'В меню браузера ⋮ выберите «Добавить на главный экран».'}
+      Так приложение будет открываться одним касанием и работать без интернета, а iPhone не сотрёт ваши записи.
+      <div class="row"><button class="btn sm ghost" data-act="hideInstall">Уже добавил</button></div></div>`;
+  }
+  if (!S.settings.fio){
+    h += `<div class="note"><b>Начните с ваших данных</b>Укажите ФИО и смену — они попадут в отчёт руководителю.
+      <div class="row"><button class="btn sm" data-act="go" data-v="settings">Заполнить</button></div></div>`;
+  }
+  const act = S.mentees.filter(m => m.status === 'active');
+  const rank = m => (openHelp(m).length ? 0 : meetingDue(m) ? 1 : 2);
+  act.sort((a, b) => rank(a) - rank(b) || a.fio.localeCompare(b.fio, 'ru'));
+  if (!act.length){
+    h += `<div class="empty"><div class="big">🦺</div><p>Пока нет новичков. Добавьте того, кого вам закрепили, или загрузите задание от руководителя смены.</p>
+      <div class="row"><button class="btn main" data-act="menteeNew">Добавить новичка</button></div>
+      <div class="row" style="margin-top:10px"><button class="btn" data-act="import">Загрузить файл</button></div></div>`;
+  } else {
+    h += act.map(menteeCard).join('');
+    h += `<div class="row"><button class="btn" data-act="menteeNew">＋ Добавить новичка</button></div>`;
+  }
+  const arch = S.mentees.filter(m => m.status !== 'active');
+  if (arch.length){
+    h += `<details class="arch"><summary>Завершили и уволились (${arch.length})</summary>
+      ${arch.map(m => `<div class="card tap" data-act="open" data-id="${m.id}"><div class="chead"><div><div class="nm">${esc(m.fio)}</div>
+      <div class="sub">${m.status === 'done' ? 'Завершил адаптацию' : 'Уволился'} ${fmt(m.statusDate)}${m.statusReason ? ', ' + esc(m.statusReason) : ''}</div></div>
+      <div class="num"><b>${worked(m)}</b><span>смен</span></div></div></div>`).join('')}</details>`;
+  }
+  h += `<div class="sign">${esc(SIGN)}</div>`;
+  return h;
+}
+
+function viewMentee(m){
+  const tabs = [['shifts','Смены'],['skills','Навыки'],['meet','Беседы'],['data','Данные']];
+  let h = `<div class="card">
+    <div class="chead"><div><div class="nm">${esc(m.fio)}</div>
+      <div class="sub">${m.tab ? 'Таб. ' + esc(m.tab) + ', ' : ''}принят ${fmt(m.hireDate)}</div>
+      <div class="sub">${esc(GNAME[m.mainGroup])}${m.groups.length > 1 ? ' + ' + m.groups.filter(g => g !== m.mainGroup).map(g => GNAME[g]).join(', ') : ''}</div></div>
+      <div class="num"><b>${worked(m)}</b><span>${plural(worked(m),'смена','смены','смен')}</span></div></div>
+    ${ladderHtml(m)}
+    ${m.status !== 'active' ? `<div class="chips"><span class="chip ${m.status==='done'?'ok':'bad'}">${m.status==='done'?'Завершил адаптацию':'Уволился'} ${fmt(m.statusDate)}</span></div>` : flagsHtml(m)}
+  </div>
+  <div class="tabs" role="tablist">${tabs.map(([k, t]) => `<button role="tab" data-act="tab" data-v="${k}" class="${ui.tab===k?'on':''}">${t}</button>`).join('')}</div>`;
+
+  if (ui.tab === 'skills') h += tabSkills(m);
+  else if (ui.tab === 'meet') h += tabMeet(m);
+  else if (ui.tab === 'data') h += tabData(m);
+  else h += tabShifts(m);
+  return h;
+}
+
+function tabShifts(m){
+  let h = m.status === 'active' ? `<div class="row" style="margin-bottom:14px"><button class="btn main" data-act="noteNew" data-id="${m.id}">Отметить смену</button></div>` : '';
+  const ns = sortedNotes(m);
+  if (!ns.length) return h + `<div class="empty"><p>Отметок пока нет. После каждой смены нажмите «Отметить смену» — это занимает полминуты.</p></div>`;
+  if (m.shiftsBefore) h += `<p class="muted small">До начала записей отработал смен: ${m.shiftsBefore}</p>`;
+  for (const n of ns){
+    const [y, mo, d] = n.date.split('-');
+    h += `<div class="card tap" data-act="noteEdit" data-id="${m.id}" data-n="${n.id}"><div class="hist">
+      <div class="dt"><b>${+d}</b><span>${MON[+mo-1]}</span></div>
+      <div class="bd">
+        <div>${n.present ? `<b>${SCORE_IC[n.score] || ''} ${SCORE[n.score] || 'Без оценки'}</b>` : '<b>Не вышел на смену</b>'}</div>
+        ${n.tags && n.tags.length ? `<div class="chips">${n.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
+        ${n.comment ? `<p>${esc(n.comment)}</p>` : ''}
+        ${n.help ? `<div class="chips"><span class="chip ${n.helpResolved ? 'ok' : 'bad'}">${n.helpResolved ? 'Помощь: вопрос решён' : 'Нужна помощь руководителя'}</span></div>
+          ${n.helpText ? `<p class="small muted">${esc(n.helpText)}</p>` : ''}
+          ${!n.helpResolved ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="helpResolve" data-id="${m.id}" data-n="${n.id}">Вопрос решён</button></div>` : ''}` : ''}
+      </div></div></div>`;
+  }
+  return h;
+}
+
+function tabSkills(m){
+  let h = `<p class="muted small" style="margin-top:0">Отмечайте, как идёт обучение: показали операцию, новичок делает её под вашим контролем, или он допущен работать сам.</p>`;
+  for (const g of groupsOf(m)){
+    const items = skillItems(m, g);
+    if (!items.length) continue;
+    h += `<div class="card"><div class="ghead"><b>${esc(GNAME[g])}</b><span class="muted small">${progress(m, g)}%</span></div>`;
+    for (const it of items){
+      const s = m.skills[it.id] || { lvl: 0 };
+      const lvl = s.lvl || 0;
+      const when = lvl && s.dates && s.dates[lvl] ? `${LEVELS[lvl]}: ${fmt(s.dates[lvl])}` : '';
+      h += `<div class="skill"><div class="sn">${esc(it.name)}</div>
+        <div class="seg">${LEVELS_SHORT.map((t, i) => `<button class="l${i} ${lvl===i?'on':''}" data-act="lvl" data-id="${m.id}" data-s="${it.id}" data-l="${i}" ${m.status!=='active'?'disabled':''}>${t}</button>`).join('')}</div>
+        ${when ? `<div class="sd">${when}</div>` : ''}</div>`;
+    }
+    h += `</div>`;
+  }
+  return h;
+}
+
+function tabMeet(m){
+  const w = worked(m);
+  let h = `<p class="muted small" style="margin-top:0">Короткие беседы один на один: как дела, что получается, что мешает. Итоги увидит руководитель смены.</p>`;
+  for (const k of MEET){
+    const mt = m.meetings[k];
+    let st;
+    if (mt && mt.done) st = `<span class="chip ok">Проведена ${fmt(mt.date)}</span>`;
+    else if (w >= k) st = `<span class="chip warn">Пора провести</span>`;
+    else st = `<span class="chip">Через ${k - w} ${plural(k - w,'смену','смены','смен')}</span>`;
+    h += `<div class="card"><div class="ghead"><b>Беседа на ${k}-й смене</b></div><div class="chips">${st}</div>
+      ${mt && mt.comment ? `<p style="white-space:pre-wrap;margin:10px 0 0">${esc(mt.comment)}</p>` : ''}
+      ${m.status === 'active' || (mt && mt.done) ? `<div class="row" style="margin-top:12px"><button class="btn sm ${mt && mt.done ? '' : 'main'}" data-act="meet" data-id="${m.id}" data-k="${k}">${mt && mt.done ? 'Изменить итоги' : 'Записать итоги'}</button></div>` : ''}
+    </div>`;
+  }
+  return h;
+}
+
+function groupPickers(sel, main){
+  return `<label class="f"><span>Основная группа операций</span><select name="mainGroup">${WORK_GROUPS.map(([g, n]) => `<option value="${g}" ${main===g?'selected':''}>${n}</option>`).join('')}</select></label>
+  <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Ещё обучается (необязательно)</span>
+  ${WORK_GROUPS.map(([g, n]) => `<label class="check"><input type="checkbox" name="g_${g}" ${sel.includes(g) && g !== main ? 'checked' : ''}><span>${n}</span></label>`).join('')}</div>`;
+}
+
+function menteeForm(m){
+  m = m || { fio:'', tab:'', hireDate:'', mainGroup:'pick', groups:['pick'], shiftsBefore:0 };
+  return `<label class="f"><span>ФИО</span><input type="text" name="fio" value="${esc(m.fio)}" autocomplete="off" autocapitalize="words"></label>
+    <label class="f"><span>Табельный номер</span><input type="text" name="tab" value="${esc(m.tab)}" inputmode="numeric" autocomplete="off"></label>
+    <label class="f"><span>Дата приёма</span><input type="date" name="hireDate" value="${esc(m.hireDate)}" max="${today()}"></label>
+    ${groupPickers(m.groups, m.mainGroup)}
+    <label class="f"><span>Смен уже отработано до начала записей</span><input type="number" name="shiftsBefore" value="${m.shiftsBefore || 0}" min="0" max="200" inputmode="numeric"></label>`;
+}
+
+function tabData(m){
+  let h = `<div class="card"><form id="mform" onsubmit="return false">${menteeForm(m)}
+    <button class="btn main wide" data-act="menteeSave" data-id="${m.id}">Сохранить изменения</button></form></div>`;
+  if (m.status === 'active'){
+    h += `<div class="row"><button class="btn" data-act="status" data-id="${m.id}" data-v="done">✅ Завершил адаптацию</button>
+      <button class="btn" data-act="status" data-id="${m.id}" data-v="left">🚪 Уволился</button></div>`;
+  } else {
+    h += `<div class="card"><dl class="kv"><dt>Статус</dt><dd>${m.status === 'done' ? 'Завершил адаптацию' : 'Уволился'}</dd>
+      <dt>Дата</dt><dd>${fmt(m.statusDate)}</dd>${m.statusReason ? `<dt>Причина</dt><dd>${esc(m.statusReason)}</dd>` : ''}
+      ${m.statusComment ? `<dt>Комментарий</dt><dd>${esc(m.statusComment)}</dd>` : ''}</dl></div>
+      <div class="row"><button class="btn" data-act="reactivate" data-id="${m.id}">Вернуть в работу</button></div>`;
+  }
+  h += `<div class="row" style="margin-top:22px"><button class="btn danger" data-act="menteeDelete" data-id="${m.id}">Удалить из приложения</button></div>
+    <p class="muted small">Удаление стирает записи только на этом телефоне. То, что уже отправлено руководителю, у него сохранится.</p>`;
+  return h;
+}
+
+function viewSend(){
+  const u = unsent();
+  let h = `<div class="card big-send">
+    <div class="n">${u.length}</div>
+    <div class="muted">${u.length ? plural(u.length,'новичок с изменениями','новичка с изменениями','новичков с изменениями') : 'Все изменения уже отправлены'}</div>
+    ${u.length ? `<div class="chips" style="justify-content:center">${u.map(m => `<span class="chip">${esc(shortFio(m.fio))}</span>`).join('')}</div>` : ''}
+    <div style="margin-top:18px"><button class="btn main wide" data-act="sendReport" ${u.length ? '' : 'disabled style="opacity:.5"'}>📤 Отправить отчёт за смену</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn" data-act="sendText">Отправить текстом</button></div>
+  </div>
+  <div class="note"><b>Как это работает</b>Откроется меню «Поделиться» — выберите мессенджер или почту и чат руководителя смены${S.settings.leader ? ' (' + esc(S.settings.leader) + ')' : ''}. Уйдёт небольшой файл, который руководитель загрузит в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.</div>
+  <div class="card"><dl class="kv"><dt>Последняя отправка</dt><dd>${fmtTs(S.lastSentAt)}</dd></dl>
+    ${S.sentLog.length ? `<details style="margin-top:8px"><summary class="muted small">История отправок</summary>
+      ${S.sentLog.slice().reverse().map(l => `<div class="list-item small"><span>${fmtTs(l.ts)}</span><span class="muted" style="flex:0">${l.count}&nbsp;чел.</span></div>`).join('')}</details>` : ''}
+  </div>
+  <div class="row"><button class="btn ghost" data-act="sendAll">Отправить по всем новичкам целиком</button></div>`;
+  return h;
+}
+
+function viewSettings(){
+  const st = S.settings;
+  let h = `<h2>Мои данные</h2><div class="card">
+    <label class="f"><span>ФИО наставника</span><input type="text" data-set="fio" value="${esc(st.fio)}" autocapitalize="words" autocomplete="name"></label>
+    <label class="f"><span>Табельный номер</span><input type="text" data-set="tab" value="${esc(st.tab)}" inputmode="numeric"></label>
+    <label class="f"><span>Смена</span><select data-set="shift"><option value="">—</option>${['1','2','3','4'].map(s => `<option ${st.shift===s?'selected':''}>${s}</option>`).join('')}</select></label>
+    <label class="f"><span>Руководитель смены</span><input type="text" data-set="leader" value="${esc(st.leader)}" autocapitalize="words"></label>
+    <label class="f" style="margin-bottom:0"><span>Подразделение</span><input type="text" data-set="division" value="${esc(st.division)}"></label>
+  </div>
+
+  <h2>Чек-лист обучения</h2>
+  <p class="muted small" style="margin:-4px 2px 10px">Пункты одинаковы для всех ваших новичков. Удаление пункта не стирает уже сделанные отметки.</p>`;
+  for (const [g, n] of GROUPS){
+    h += `<details class="card"><summary style="cursor:pointer;font-weight:700">${esc(n)} <span class="muted small">(${st.checklist[g].length})</span></summary>
+      <div style="margin-top:8px">${st.checklist[g].map(it => `<div class="list-item"><span>${esc(it.name)}</span><button class="x" data-act="ckDel" data-g="${g}" data-s="${it.id}" aria-label="Удалить пункт">✕</button></div>`).join('')}</div>
+      <div class="row" style="margin-top:8px"><input type="text" id="ck_${g}" placeholder="Новый пункт" style="flex:3"><button class="btn sm" data-act="ckAdd" data-g="${g}" style="flex:1">Добавить</button></div>
+    </details>`;
+  }
+  h += `<div class="row"><button class="btn ghost sm" data-act="ckReset">Вернуть стандартный чек-лист</button></div>
+
+  <h2>Резервная копия</h2>
+  <div class="card"><p class="small muted" style="margin-top:0">Записи хранятся только на этом телефоне. Полная копия пригодится при смене телефона.</p>
+    <div class="row"><button class="btn" data-act="backup">💾 Сохранить копию</button><button class="btn" data-act="import">📂 Загрузить файл</button></div>
+    <p class="small muted" style="margin-bottom:0">«Загрузить файл» принимает полную копию, ваш отчёт или задание от руководителя смены.</p></div>
+
+  <h2>О приложении</h2>
+  <div class="card small"><dl class="kv"><dt>Версия</dt><dd>${APP_VERSION}</dd><dt>Новичков</dt><dd>${S.mentees.length}</dd>
+    <dt>Где данные</dt><dd>Только в памяти этого телефона. На сайт ничего не отправляется.</dd>
+    <dt>Этапы</dt><dd>Знакомство 1–3 смена, обучение 4–7, закрепление 8–14, дальше самостоятельная работа.</dd></dl></div>
+  <div class="row"><button class="btn danger" data-act="wipe">Удалить все данные на телефоне</button></div>
+  <div class="sign">${esc(SIGN)}</div>`;
+  return h;
+}
+
+/* ---------- нижний лист ---------- */
+function openSheet(html, ctx){ sheet = ctx || {}; $('#pane').innerHTML = `<div class="grip"></div>${html}`; $('#sheet').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeSheet(){ sheet = null; $('#sheet').classList.remove('open'); document.body.style.overflow = ''; }
+
+function noteSheet(m, n){
+  const isNew = !n;
+  n = n ? JSON.parse(JSON.stringify(n)) : { id: uid(), date: shiftDefaultDate(), present: true, score: 0, tags: [], comment: '', help: false, helpText: '', helpResolved: false };
+  const tagList = [...new Set([...TAGS, ...(n.tags || [])])];
+  openSheet(`<h3>${isNew ? 'Отметка за смену' : 'Изменить отметку'}</h3><p class="lead">${esc(m.fio)}</p>
+    <label class="f"><span>Дата смены (для ночной — дата начала)</span><input type="date" id="nDate" value="${n.date}" max="${today()}"></label>
+    <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Вышел на смену?</span>
+      <div class="pick c2" id="nPresent"><button data-act="nPresent" data-v="1" class="${n.present?'on':''}">Вышел</button><button data-act="nPresent" data-v="0" class="${!n.present?'on':''}">Не вышел</button></div></div>
+    <div id="nWork" ${n.present ? '' : 'hidden'}>
+      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Как прошла смена</span>
+        <div class="pick c5">${[1,2,3,4,5].map(i => `<button data-act="nScore" data-v="${i}" class="${n.score===i?'on':''}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div></div>
+      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Что заметили</span>
+        <div class="tagset">${tagList.map(t => `<button data-act="nTag" data-v="${esc(t)}" class="${n.tags.includes(t)?'on':''}">${esc(t)}</button>`).join('')}</div></div>
+    </div>
+    <label class="f"><span>Комментарий</span><textarea id="nComment" placeholder="${n.present ? 'Что получилось, что нет, что делать завтра' : 'Причина, если известна'}">${esc(n.comment)}</textarea></label>
+    <label class="check ${n.help ? 'alert' : ''}" id="nHelpBox"><input type="checkbox" id="nHelp" ${n.help?'checked':''}><span><b>Нужна помощь руководителя</b><br><span class="small muted">Риск ухода, конфликт, нарушение — руководитель увидит это первым</span></span></label>
+    <div id="nHelpWrap" ${n.help ? '' : 'hidden'}><label class="f"><span>Что случилось</span><textarea id="nHelpText">${esc(n.helpText)}</textarea></label></div>
+    <div class="actions">${isNew ? '' : `<button class="btn danger" data-act="noteDel">Удалить</button>`}<button class="btn main" data-act="noteSave">Сохранить</button></div>`,
+    { kind: 'note', mid: m.id, note: n, isNew });
+  $('#nHelp').addEventListener('change', e => { $('#nHelpWrap').hidden = !e.target.checked; $('#nHelpBox').classList.toggle('alert', e.target.checked); });
+}
+
+function readForm(form){
+  const f = form;
+  const v = name => (f.querySelector(`[name="${name}"]`) || {}).value;
+  const main = v('mainGroup');
+  const groups = [main, ...WORK_GROUPS.map(g => g[0]).filter(g => g !== main && f.querySelector(`[name="g_${g}"]`)?.checked)];
+  return { fio: (v('fio') || '').trim().replace(/\s+/g, ' '), tab: (v('tab') || '').trim(), hireDate: v('hireDate') || '', mainGroup: main, groups, shiftsBefore: Math.max(0, Math.min(200, parseInt(v('shiftsBefore'), 10) || 0)) };
+}
+function validMentee(d, selfId){
+  if (!d.fio) return 'Укажите ФИО';
+  if (d.hireDate && d.hireDate > today()) return 'Дата приёма не может быть в будущем';
+  if (d.tab && S.mentees.some(x => x.id !== selfId && x.tab === d.tab)) return 'Новичок с таким табельным номером уже есть';
+  return '';
+}
+
+/* ---------- обмен файлами ---------- */
+function reportPayload(list, full){
+  return {
+    format: 'pasport-mentor-report', version: 1, app: 'Карманный наставник ' + APP_VERSION,
+    createdAt: new Date().toISOString(), full: !!full, since: full ? null : (S.lastSentAt ? new Date(S.lastSentAt).toISOString() : null),
+    division: S.settings.division, leader: S.settings.leader,
+    mentor: { fio: S.settings.fio, tab: S.settings.tab, shift: S.settings.shift },
+    checklist: S.settings.checklist,
+    mentees: list.map(m => Object.assign(JSON.parse(JSON.stringify(m)), {
+      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length }
+    }))
+  };
+}
+function download(name, text, type){
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+async function shareFile(name, obj, title){
+  const text = JSON.stringify(obj);
+  let file = null;
+  try { file = new File([text], name, { type: 'application/json' }); } catch(e) {}
+  if (file && navigator.canShare && navigator.canShare({ files: [file] })){
+    try { await navigator.share({ files: [file], title }); return 'shared'; }
+    catch(e){ if (e && e.name === 'AbortError') return 'cancel'; }
+  }
+  download(name, text, 'application/json');
+  return 'downloaded';
+}
+function safeName(s){ return String(s || 'наставник').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_').slice(0, 40); }
+
+async function sendReport(full){
+  if (!S.settings.fio){ toast('Сначала укажите своё ФИО в настройках'); go('settings'); return; }
+  const list = full ? S.mentees : unsent();
+  if (!list.length){ toast('Нет изменений для отправки'); return; }
+  const startedAt = Date.now();
+  const name = `наставник_${safeName(shortFio(S.settings.fio))}_${fileStamp()}.json`;
+  const res = await shareFile(name, reportPayload(list, full), 'Отчёт наставника');
+  if (res === 'cancel') return;
+  if (res === 'downloaded' && !confirm('Файл сохранён в «Загрузки». Отправьте его руководителю смены.\n\nОтметить изменения как отправленные?')) return;
+  S.lastSentAt = startedAt; S.sentLog.push({ ts: startedAt, count: list.length, full: !!full });
+  S.sentLog = S.sentLog.slice(-30); save(); render(); toast('Отчёт отправлен');
+}
+
+function textSummary(){
+  const st = S.settings;
+  const lines = [`Отчёт наставника: ${st.fio || '—'}${st.shift ? ', смена ' + st.shift : ''}, ${fmt(shiftDefaultDate())}`];
+  for (const m of S.mentees.filter(x => x.status === 'active')){
+    const w = worked(m), ln = lastNote(m), c = countLevels(m);
+    let s = `\n• ${shortFio(m.fio)} — ${w} ${plural(w,'смена','смены','смен')} (${stageOf(w).toLowerCase()}), навыки ${progress(m)}%: допущен ${c[3]}, под контролем ${c[2]}`;
+    if (ln){
+      s += `\n  ${fmt(ln.date)}: ${ln.present ? (SCORE[ln.score] ? SCORE[ln.score].toLowerCase() : 'без оценки') : 'не вышел'}`;
+      if (ln.tags && ln.tags.length) s += '; ' + ln.tags.join(', ').toLowerCase();
+      if (ln.comment) s += '. ' + ln.comment;
+    }
+    for (const h of openHelp(m)) s += `\n  ⚠️ Нужна помощь (${fmt(h.date)})${h.helpText ? ': ' + h.helpText : ''}`;
+    const d = meetingDue(m); if (d) s += `\n  ⏰ Пора провести беседу ${d}-й смены`;
+    lines.push(s);
+  }
+  if (lines.length === 1) lines.push('\nАктивных новичков нет.');
+  return lines.join('\n');
+}
+async function sendText(){
+  const t = textSummary();
+  if (navigator.share){ try { await navigator.share({ text: t }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(t); toast('Текст скопирован — вставьте его в чат'); }
+  catch(e){ const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Текст скопирован'); }
+}
+
+function mergeMentees(list){
+  let added = 0, updated = 0;
+  for (const raw of list){
+    const inc = normMentee(Object.assign({}, raw)); delete inc.calc;
+    const ex = S.mentees.find(x => x.id === inc.id) || (inc.tab && S.mentees.find(x => x.tab === inc.tab));
+    if (!ex){ S.mentees.push(inc); added++; }
+    else if (inc.updatedAt > ex.updatedAt){ Object.assign(ex, inc, { id: ex.id }); updated++; }
+  }
+  return { added, updated };
+}
+function importAssignment(d){
+  let added = 0, skipped = 0;
+  for (const r of (d.mentees || [])){
+    const fio = String(r.fio || '').trim(); if (!fio){ skipped++; continue; }
+    const tab = String(r.tab || '').trim();
+    if (tab && S.mentees.some(x => x.tab === tab)){ skipped++; continue; }
+    const main = GNAME[r.mainGroup] && r.mainGroup !== 'common' ? r.mainGroup : 'pick';
+    S.mentees.push(normMentee({ id: uid(), fio, tab, hireDate: r.hireDate || '', mainGroup: main, groups: [main], shiftsBefore: +r.shiftsWorked || +r.shiftsBefore || 0 }));
+    added++;
+  }
+  if (d.mentor && !S.settings.leader && d.leader) S.settings.leader = d.leader;
+  return { added, skipped };
+}
+function handleFile(text){
+  let d;
+  try { d = JSON.parse(text); } catch(e){ d = null; }
+  if (!d || typeof d !== 'object'){ alert('Это не файл наставника. Нужен файл .json из «Карманного наставника» или задание от руководителя смены.'); return; }
+  if (d.format === 'pasport-mentor-backup'){
+    if (!confirm(`Заменить все данные на телефоне копией от ${fmtTs(Date.parse(d.createdAt))}?\nНовичков в копии: ${(d.state?.mentees || []).length}`)) return;
+    localStorage.setItem(KEY, JSON.stringify(d.state)); load(); save(); go('list'); toast('Копия восстановлена'); return;
+  }
+  if (d.format === 'pasport-mentor-report'){
+    const r = mergeMentees(d.mentees || []); save(); go('list');
+    toast(`Добавлено: ${r.added}, обновлено: ${r.updated}`); return;
+  }
+  if (d.format === 'pasport-mentor-assignment'){
+    const r = importAssignment(d); save(); go('list');
+    toast(`Новичков добавлено: ${r.added}${r.skipped ? ', пропущено (уже есть): ' + r.skipped : ''}`); return;
+  }
+  alert('Файл не распознан. Подходят: полная копия, отчёт наставника или задание от руководителя смены.');
+}
+
+/* ---------- действия ---------- */
+const ACT = {
+  go: d => go(d.v),
+  open: d => go('mentee', d.id),
+  tab: d => { ui.tab = d.v; render(); },
+  hideInstall: () => { S.settings.installHidden = true; save(); render(); },
+  closeSheet,
+
+  menteeNew: () => openSheet(`<h3>Новый новичок</h3><p class="lead">Кого вам закрепили</p><form id="nform" onsubmit="return false">${menteeForm()}</form>
+    <div class="actions"><button class="btn" data-act="closeSheet">Отмена</button><button class="btn main" data-act="menteeCreate">Добавить</button></div>`, { kind: 'new' }),
+  menteeCreate: () => {
+    const d = readForm($('#nform')); const err = validMentee(d);
+    if (err){ toast(err); return; }
+    const m = normMentee(Object.assign({ id: uid() }, d)); S.mentees.push(m); touch(m); closeSheet(); go('mentee', m.id); toast('Новичок добавлен');
+  },
+  menteeSave: d => {
+    const m = findM(d.id); const v = readForm($('#mform')); const err = validMentee(v, m.id);
+    if (err){ toast(err); return; }
+    Object.assign(m, v); touch(m); render(); toast('Сохранено');
+  },
+  menteeDelete: d => {
+    const m = findM(d.id);
+    if (!confirm(`Удалить ${m.fio} и все записи о нём с этого телефона?`)) return;
+    S.mentees = S.mentees.filter(x => x.id !== m.id); save(); go('list'); toast('Удалено');
+  },
+  status: d => {
+    const m = findM(d.id), left = d.v === 'left';
+    openSheet(`<h3>${left ? 'Уволился' : 'Завершил адаптацию'}</h3><p class="lead">${esc(m.fio)}</p>
+      <label class="f"><span>Дата</span><input type="date" id="sDate" value="${today()}" max="${today()}"></label>
+      ${left ? `<label class="f"><span>Основная причина</span><select id="sReason">${LEAVE_REASONS.map(r => `<option>${r}</option>`).join('')}</select></label>` : ''}
+      <label class="f"><span>Комментарий</span><textarea id="sComment"></textarea></label>
+      <div class="actions"><button class="btn" data-act="closeSheet">Отмена</button><button class="btn main" data-act="statusSave">Сохранить</button></div>`, { kind: 'status', mid: m.id, v: d.v });
+  },
+  statusSave: () => {
+    const m = findM(sheet.mid); const dt = $('#sDate').value;
+    if (!dt || dt > today()){ toast('Укажите дату не позже сегодняшней'); return; }
+    m.status = sheet.v; m.statusDate = dt; m.statusReason = $('#sReason') ? $('#sReason').value : ''; m.statusComment = $('#sComment').value.trim();
+    touch(m); closeSheet(); render(); toast('Сохранено');
+  },
+  reactivate: d => { const m = findM(d.id); m.status = 'active'; m.statusDate = ''; m.statusReason = ''; m.statusComment = ''; touch(m); render(); },
+
+  noteNew: (d, b, e) => { e.stopPropagation(); const m = findM(d.id); noteSheet(m); },
+  noteEdit: d => { const m = findM(d.id); noteSheet(m, m.notes.find(n => n.id === d.n)); },
+  nPresent: (d, b) => { sheet.note.present = d.v === '1'; $('#nPresent').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('#nWork').hidden = !sheet.note.present; },
+  nScore: (d, b) => { const v = +d.v; sheet.note.score = sheet.note.score === v ? 0 : v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === sheet.note.score)); },
+  nTag: (d, b) => { const t = sheet.note.tags, i = t.indexOf(d.v); if (i >= 0) t.splice(i, 1); else t.push(d.v); b.classList.toggle('on', i < 0); },
+  noteSave: () => {
+    const m = findM(sheet.mid), n = sheet.note;
+    n.date = $('#nDate').value;
+    if (!n.date){ toast('Укажите дату смены'); return; }
+    if (n.date > today()){ toast('Дата смены не может быть в будущем'); return; }
+    if (m.hireDate && n.date < m.hireDate){ toast('Дата раньше даты приёма'); return; }
+    n.comment = $('#nComment').value.trim(); n.help = $('#nHelp').checked; n.helpText = n.help ? $('#nHelpText').value.trim() : '';
+    if (!n.help) n.helpResolved = false;
+    if (!n.present){ n.score = 0; n.tags = []; }
+    n.ts = Date.now();
+    const same = m.notes.find(x => x.date === n.date && x.id !== n.id);
+    if (same){
+      if (!confirm(`За ${fmt(n.date)} уже есть отметка. Заменить её?`)) return;
+      m.notes = m.notes.filter(x => x.id !== same.id);
+    }
+    const i = m.notes.findIndex(x => x.id === n.id);
+    if (i >= 0) m.notes[i] = n; else m.notes.push(n);
+    touch(m); closeSheet(); render();
+    const due = meetingDue(m);
+    toast(due ? `Сохранено. Пора провести беседу ${due}-й смены` : 'Сохранено');
+  },
+  noteDel: () => {
+    if (!confirm('Удалить эту отметку?')) return;
+    const m = findM(sheet.mid); m.notes = m.notes.filter(x => x.id !== sheet.note.id); touch(m); closeSheet(); render();
+  },
+  helpResolve: (d, b, e) => { e.stopPropagation(); const m = findM(d.id); const n = m.notes.find(x => x.id === d.n); n.helpResolved = true; n.helpResolvedDate = today(); touch(m); render(); },
+
+  lvl: d => {
+    const m = findM(d.id), l = +d.l;
+    const s = m.skills[d.s] || (m.skills[d.s] = { lvl: 0, dates: {} });
+    s.dates = s.dates || {};
+    if (s.lvl === l) return;
+    s.lvl = l; if (l) s.dates[l] = today();
+    for (const k of Object.keys(s.dates)) if (+k > l) delete s.dates[k];
+    touch(m); render();
+  },
+  meet: d => {
+    const m = findM(d.id), k = d.k, mt = m.meetings[k] || {};
+    openSheet(`<h3>Беседа на ${k}-й смене</h3><p class="lead">${esc(m.fio)}</p>
+      <label class="f"><span>Дата беседы</span><input type="date" id="mDate" value="${mt.date || today()}" max="${today()}"></label>
+      <label class="f"><span>Итоги: как дела, что получается, что мешает, о чём договорились</span><textarea id="mComment" style="min-height:140px">${esc(mt.comment || '')}</textarea></label>
+      <div class="actions">${mt.done ? `<button class="btn danger" data-act="meetUndo">Отменить</button>` : ''}<button class="btn main" data-act="meetSave">Сохранить</button></div>`, { kind: 'meet', mid: m.id, k });
+  },
+  meetSave: () => {
+    const m = findM(sheet.mid), dt = $('#mDate').value;
+    if (!dt || dt > today()){ toast('Укажите дату не позже сегодняшней'); return; }
+    m.meetings[sheet.k] = { done: true, date: dt, comment: $('#mComment').value.trim() }; touch(m); closeSheet(); render(); toast('Беседа записана');
+  },
+  meetUndo: () => { if (!confirm('Отметить беседу как не проведённую?')) return; const m = findM(sheet.mid); delete m.meetings[sheet.k]; touch(m); closeSheet(); render(); },
+
+  sendReport: () => sendReport(false),
+  sendAll: () => sendReport(true),
+  sendText,
+
+  ckDel: d => {
+    const it = S.settings.checklist[d.g].find(x => x.id === d.s);
+    if (!confirm(`Убрать пункт «${it.name}» из чек-листа?`)) return;
+    S.settings.checklist[d.g] = S.settings.checklist[d.g].filter(x => x.id !== d.s); S.mentees.forEach(m => m.updatedAt = Date.now()); save(); render();
+  },
+  ckAdd: d => {
+    const inp = $('#ck_' + d.g), v = inp.value.trim(); if (!v) return;
+    S.settings.checklist[d.g].push({ id: `${d.g}_c${uid()}`, name: v }); S.mentees.forEach(m => m.updatedAt = Date.now()); save(); render();
+    const det = document.querySelectorAll('#app details.card')[GROUPS.findIndex(g => g[0] === d.g)]; if (det) det.open = true;
+  },
+  ckReset: () => { if (!confirm('Вернуть стандартные пункты? Ваши добавленные пункты пропадут из списка.')) return; S.settings.checklist = makeChecklist(); save(); render(); toast('Чек-лист восстановлен'); },
+
+  backup: async () => {
+    const res = await shareFile(`наставник_копия_${safeName(shortFio(S.settings.fio))}_${fileStamp()}.json`,
+      { format: 'pasport-mentor-backup', version: 1, createdAt: new Date().toISOString(), state: S }, 'Копия: Карманный наставник');
+    if (res !== 'cancel') toast(res === 'shared' ? 'Копия отправлена' : 'Копия сохранена в «Загрузки»');
+  },
+  import: () => { const f = $('#fileIn'); f.value = ''; f.click(); },
+  wipe: () => {
+    if (!confirm('Удалить всех новичков и все записи с этого телефона?')) return;
+    if (!confirm('Точно? Восстановить можно будет только из сохранённой копии или отчётов.')) return;
+    S = blankState(); save(); go('list'); toast('Данные удалены');
+  }
+};
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const fn = ACT[b.dataset.act]; if (!fn) return;
+  if (b.tagName === 'BUTTON') e.preventDefault();
+  fn(b.dataset, b, e);
+});
+document.addEventListener('change', e => {
+  const k = e.target.dataset && e.target.dataset.set; if (!k) return;
+  S.settings[k] = e.target.value.trim(); save();
+  if (k === 'fio' || k === 'shift') render();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet) closeSheet(); });
+$('#fileIn').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => handleFile(String(r.result)); r.onerror = () => alert('Не удалось прочитать файл'); r.readAsText(f, 'utf-8');
+});
+window.addEventListener('storage', e => { if (e.key === KEY){ load(); render(); } });
+
+/* ---------- запуск ---------- */
+load();
+render();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
