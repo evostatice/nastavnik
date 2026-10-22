@@ -152,6 +152,41 @@ textarea{min-height:88px;resize:vertical}
 .tagset{display:flex;flex-wrap:wrap;gap:6px}
 .tagset button{border:1px solid var(--line);background:var(--surf2);border-radius:20px;padding:8px 12px;font-size:14px}
 .tagset button.on{background:var(--ink);color:var(--surf);border-color:var(--ink)}
+.tagset button.tg{border-width:1.5px;text-align:left;line-height:1.25}
+.tg.pos{border-color:var(--ok);color:var(--ok)}
+.tg.neg{border-color:var(--bad);color:var(--bad)}
+.tg.neu{border-color:var(--warn);color:var(--warn)}
+.tagset button.tg.on.pos{background:var(--ok);border-color:var(--ok);color:var(--surf)}
+.tagset button.tg.on.neg{background:var(--bad);border-color:var(--bad);color:var(--surf)}
+.tagset button.tg.on.neu{background:var(--warn);border-color:var(--warn);color:var(--surf)}
+.tg[aria-disabled="true"]{opacity:.4}
+.tg small{display:block;font-size:11px;opacity:.85;font-weight:400}
+.tgh{font-size:14px;font-weight:700;margin:14px 0 6px}
+.tgh span{font-weight:400}
+.tgfoot{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.linkbtn{border:0;background:none;color:var(--info);font-weight:600;padding:8px 0;min-height:40px}
+.qrow{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.qrow button{flex-shrink:0;border:1px solid var(--line);background:var(--surf);border-radius:20px;padding:8px 12px;font-size:14px;min-height:40px;white-space:nowrap}
+.qrow button.rec{border-color:var(--bad);color:var(--bad);font-weight:700}
+.cnt{text-align:right;font-size:12px;color:var(--mute);margin-top:4px}
+textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidden;line-height:1.4}
+.helpbar{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surf2);color:var(--mute);text-align:left;margin:6px 0 10px}
+.helpbar .hic{font-size:26px;line-height:1;flex-shrink:0}
+.helpbar b{display:block;color:var(--mute);font-size:16px}
+.helpbar small{display:block;font-size:13px}
+.helpbar.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.helpbar.on b{color:#fff}
+.helpbar.pulse{animation:hpulse .5s ease-out 1}
+@keyframes hpulse{0%{transform:scale(1)}40%{transform:scale(1.03)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.helpbar.pulse{animation:none}}
+.helpbar.sm{min-height:48px;padding:8px 12px;margin:8px 0 0}
+.helpbar.sm b{font-size:15px}
+.reasons{margin-bottom:8px}
+.reasons button{font-size:14px}
+.reasons button.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.chip.tp{color:var(--ok);border-color:var(--ok)}
+.chip.tn{color:var(--bad);border-color:var(--bad)}
+.chip.tz{color:var(--warn);border-color:var(--warn)}
 .check{display:flex;align-items:center;gap:12px;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surf2);margin-bottom:8px}
 .check input{width:22px;height:22px;flex-shrink:0}
 .check.alert{border-color:var(--bad)}
@@ -230,7 +265,7 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 const KEY = 'nastavnik_v1';
 const SIGN = 'Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
 
@@ -260,7 +295,63 @@ const MEET_HINTS = {
   14: { focus: 'Итоги адаптации и планы. Узнайте, готов ли работать сам и что держит на складе.',
         q: ['Готов ли работать самостоятельно по основным операциям?','Что в обучении было лишним, а чего не хватило?','Интересно ли освоить другие операции или ВЭШ?','Остаёшься? Что могло бы заставить уйти?','Позвал бы знакомых работать к нам?'] }
 };
-const TAGS = ['Хорошо освоил ТСД','Быстро учится','Старается','Путает ячейки','Медленный темп','Ошибки в отборе','Нарушает ОТ','Опоздал','Жалуется на нагрузку'];
+/* Метки «Что заметили». s: 1 — хорошо, -1 — проблема, 0 — нейтрально. core — видны сразу, остальные — по кнопке «Ещё…» */
+const TAG_GROUPS = [
+  ['base',  'Обучение', 0],
+  ['safe',  '🛡️ Безопасность и СИЗ', 0],
+  ['qual',  '📦 Качество операций', 4],   // после 3 отмеченных смен
+  ['team',  '👥 Команда и общение', 0],
+  ['grow',  '📈 Рост и готовность', 3],   // с 3-й смены
+  ['disc',  '⏱️ Дисциплина', 0],
+  ['state', '🏥 Состояние', 0]
+];
+const TAG_GROUP_MIN = Object.fromEntries(TAG_GROUPS.map(g => [g[0], g[2]]));
+const TAG_DEFS = [
+  { t:'Хорошо освоил ТСД', g:'base', s:1, core:1 },
+  { t:'Быстро учится', g:'base', s:1, core:1 },
+  { t:'Старается', g:'base', s:1, core:1 },
+  { t:'Готов к самостоятельной работе', g:'grow', s:1, core:1 },
+  { t:'Путает ячейки', g:'base', s:-1, core:1 },
+  { t:'Пересорт', g:'qual', s:-1, core:1, hint:'путает товар, а не адрес' },
+  { t:'Медленный темп', g:'base', s:-1, core:1 },
+  { t:'Ошибки в отборе', g:'base', s:-1, core:1 },
+  { t:'Не носит СИЗ', g:'safe', s:-1, core:1, hint:'каска, жилет, перчатки' },
+  { t:'Нарушает ОТ', g:'safe', s:-1, core:1 },
+  { t:'Опоздал', g:'disc', s:-1, core:1 },
+  { t:'Жалуется на нагрузку', g:'state', s:-1, core:1 },
+  { t:'Нарушает ТБ', g:'safe', s:-1, hint:'лазает по стеллажам, не фиксирует паллеты' },
+  { t:'Нарушает правила у техники', g:'safe', s:-1, hint:'зона погрузчиков' },
+  { t:'Не сканирует позиции', g:'qual', s:-1, hint:'пропускает скан при отборе' },
+  { t:'Ошибки в упаковке', g:'qual', s:-1, hint:'тара, плёнка, маркировка' },
+  { t:'Нарушает FIFO', g:'qual', s:-1 },
+  { t:'Нарушает порядок отгрузки', g:'qual', s:-1, hint:'не по маршруту или зоне' },
+  { t:'Не слушает наставника', g:'team', s:-1 },
+  { t:'Конфликтует с коллегами', g:'team', s:-1 },
+  { t:'Хорошо работает в команде', g:'team', s:1 },
+  { t:'Инициативен, сам спрашивает', g:'team', s:1 },
+  { t:'Нужна доп. практика', g:'grow', s:0 },
+  { t:'Уверенно работает', g:'grow', s:1, hint:'лучше, чем в прошлую смену' },
+  { t:'Ушёл раньше', g:'disc', s:-1, hint:'не отработал смену' },
+  { t:'Затягивает перерывы', g:'disc', s:-1 },
+  { t:'Жалуется на усталость или здоровье', g:'state', s:-1 },
+  { t:'Плохо переносит нагрузку', g:'state', s:-1 },
+  { t:'Отсутствовал без предупреждения', g:'disc', s:-1, absent:1 }
+];
+const TAG_MAP = Object.fromEntries(TAG_DEFS.map(d => [d.t, d]));
+const tagSign = t => (TAG_MAP[t] ? TAG_MAP[t].s : 0);
+const tagChipCls = t => { const s = tagSign(t); return s > 0 ? 'tp' : s < 0 ? 'tn' : 'tz'; };
+const MAX_TAGS = 4;
+const LOAD_TAGS = ['Жалуется на нагрузку','Плохо переносит нагрузку','Жалуется на усталость или здоровье'];
+const PHRASES = [
+  ['✅ Всё по плану', 'Смена прошла штатно, замечаний нет.'],
+  ['⚡ Ускорился', 'Темп вырос, ошибок меньше.'],
+  ['⚠️ Нужна практика', 'Ещё путается в ячейках, на следующей смене уделю этому больше внимания.'],
+  ['📋 Завтра: …', 'Завтра: повторная проверка + самостоятельный отбор.']
+];
+const COMMENT_MAX = 200;
+const HELP_REASONS = [['leave','🔴 Риск ухода'],['safety','🛡️ Нарушение ТБ'],['conflict','🤝 Конфликт'],['other','💬 Другое']];
+const HELP_LABEL = { leave:'Риск ухода', safety:'Нарушение ТБ', conflict:'Конфликт', other:'Другое' };
+const helpTitle = n => n.helpReason ? 'Нужна помощь: ' + HELP_LABEL[n.helpReason].toLowerCase() : 'Нужна помощь руководителя';
 const SCORE = ['', 'Плохо', 'Слабо', 'Норм', 'Хорошо', 'Отлично'];
 const SCORE_IC = ['', '😟', '😕', '😐', '🙂', '😃'];
 const LEAVE_REASONS = ['Нагрузка','График','Зарплата','Коллектив','Не прошёл адаптацию','Личные причины','Другое'];
@@ -369,7 +460,10 @@ function riskReasons(m){
   else if (ns.slice(0, 5).filter(n => !n.present).length >= 2) r.push('частые невыходы');
   const scored = ns.filter(n => n.present && n.score);
   if (scored.length >= 2 && scored[0].score <= 2 && scored[1].score <= 2) r.push('две слабые смены подряд');
-  if (ns.slice(0, 3).some(n => (n.tags || []).includes('Жалуется на нагрузку'))) r.push('жалуется на нагрузку');
+  if (ns.slice(0, 3).some(n => (n.tags || []).some(t => LOAD_TAGS.includes(t)))) r.push('жалобы на нагрузку или самочувствие');
+  if (ns.slice(0, 3).some(n => (n.tags || []).includes('Конфликтует с коллегами'))) r.push('конфликт с коллегами');
+  if (ns.slice(0, 5).some(n => (n.tags || []).includes('Отсутствовал без предупреждения'))) r.push('не вышел без предупреждения');
+  if (openHelp(m).some(n => n.helpReason === 'leave')) r.push('наставник видит риск ухода');
   const s = lastSurvey(m);
   if (s){
     if (s.a.stay && s.a.stay <= 2) r.push('не уверен, что останется');
@@ -446,7 +540,7 @@ function ladderHtml(m){
 function flagsHtml(m){
   const f = [];
   const help = openHelp(m).length;
-  if (help) f.push(`<span class="chip bad">Нужна помощь руководителя</span>`);
+  if (help) f.push(`<span class="chip bad">🚨 ${esc(helpTitle(openHelp(m)[0]))}</span>`);
   const due = meetingDue(m);
   if (due) f.push(`<span class="chip warn">Пора провести беседу ${due}-й смены</span>`);
   const ln = lastNote(m);
@@ -545,10 +639,10 @@ function tabShifts(m){
       <div class="dt"><b>${+d}</b><span>${MON[+mo-1]}</span></div>
       <div class="bd">
         <div>${n.present ? `<b>${SCORE_IC[n.score] || ''} ${SCORE[n.score] || 'Без оценки'}</b>` : '<b>Не вышел на смену</b>'}</div>
-        ${n.tags && n.tags.length ? `<div class="chips">${n.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
+        ${n.tags && n.tags.length ? `<div class="chips">${n.tags.map(t => `<span class="chip ${tagChipCls(t)}">${tagSign(t) > 0 ? '✓ ' : tagSign(t) < 0 ? '⚠ ' : ''}${esc(t)}</span>`).join('')}</div>` : ''}
         ${n.comment ? `<p>${esc(n.comment)}</p>` : ''}
         ${n.nextSkill || n.nextText ? `<p class="small muted">📌 ${esc([findSkill(n.nextSkill)?.name, n.nextText].filter(Boolean).join('. '))}</p>` : ''}
-        ${n.help ? `<div class="chips"><span class="chip ${n.helpResolved ? 'ok' : 'bad'}">${n.helpResolved ? 'Помощь: вопрос решён' : 'Нужна помощь руководителя'}</span></div>
+        ${n.help ? `<div class="chips"><span class="chip ${n.helpResolved ? 'ok' : 'bad'}">${n.helpResolved ? 'Помощь: вопрос решён' : '🚨 ' + helpTitle(n)}</span></div>
           ${n.helpText ? `<p class="small muted">${esc(n.helpText)}</p>` : ''}
           ${!n.helpResolved ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="helpResolve" data-id="${m.id}" data-n="${n.id}">Вопрос решён</button></div>` : ''}` : ''}
       </div></div></div>`;
@@ -788,7 +882,7 @@ function viewSettings(){
 
 /* ---------- нижний лист ---------- */
 function openSheet(html, ctx){ sheet = ctx || {}; $('#pane').innerHTML = `<div class="grip"></div>${html}`; $('#sheet').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeSheet(){ sheet = null; $('#sheet').classList.remove('open'); document.body.style.overflow = ''; }
+function closeSheet(){ if (sheet && sheet.rec){ try { sheet.rec.stop(); } catch(e) {} } sheet = null; $('#sheet').classList.remove('open'); document.body.style.overflow = ''; }
 
 function noteSheet(m, n){
   const isNew = !n;
@@ -799,25 +893,118 @@ function noteSheet(m, n){
     const its = skillItems(m, g).filter(it => (m.skills[it.id]?.lvl || 0) < 3 || it.id === n.nextSkill);
     return its.length ? `<optgroup label="${esc(GNAME[g])}">${its.map(it => `<option value="${it.id}" ${n.nextSkill===it.id?'selected':''}>${esc(it.name)} (${LEVELS[m.skills[it.id]?.lvl || 0].toLowerCase()})</option>`).join('')}</optgroup>` : '';
   }).join('');
-  const tagList = [...new Set([...TAGS, ...(n.tags || [])])];
   openSheet(`<h3>${isNew ? 'Отметка за смену' : 'Изменить отметку'}</h3><p class="lead">${esc(m.fio)}</p>
     <label class="f"><span>Дата смены (для ночной — дата начала)</span><input type="date" id="nDate" value="${n.date}" max="${today()}"></label>
     <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Вышел на смену?</span>
       <div class="pick c2" id="nPresent"><button data-act="nPresent" data-v="1" class="${n.present?'on':''}">Вышел</button><button data-act="nPresent" data-v="0" class="${!n.present?'on':''}">Не вышел</button></div></div>
     <div id="nWork" ${n.present ? '' : 'hidden'}>
-      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Как прошла смена</span>
+      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px" id="nShiftCap"></span>
         <div class="pick c5">${[1,2,3,4,5].map(i => `<button data-act="nScore" data-v="${i}" class="${n.score===i?'on':''}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div></div>
-      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Что заметили</span>
-        <div class="tagset">${tagList.map(t => `<button data-act="nTag" data-v="${esc(t)}" class="${n.tags.includes(t)?'on':''}">${esc(t)}</button>`).join('')}</div></div>
     </div>
-    <label class="f"><span>Комментарий</span><textarea id="nComment" placeholder="${n.present ? 'Что получилось, что нет, что делать завтра' : 'Причина, если известна'}">${esc(n.comment)}</textarea></label>
+    <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Что заметили <span id="nTagCap"></span></span><div id="nTags"></div></div>
+    <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Комментарий</span>
+      <textarea id="nComment" class="grow" rows="1" maxlength="${COMMENT_MAX}" placeholder="${n.present ? 'Коротко: что получилось, что нет' : 'Причина, если известна'}">${esc(n.comment)}</textarea>
+      <div class="qrow" id="nPhrases"></div>
+      <div class="cnt"><span id="nCnt">0</span>/${COMMENT_MAX}</div></div>
     <label class="f"><span>📌 Что отрабатываем на следующей смене</span><select id="nNext"><option value="">Не выбрано</option>${nextOpts}</select></label>
     <label class="f"><input type="text" id="nNextText" value="${esc(n.nextText || '')}" placeholder="или своими словами"></label>
-    <label class="check ${n.help ? 'alert' : ''}" id="nHelpBox"><input type="checkbox" id="nHelp" ${n.help?'checked':''}><span><b>Нужна помощь руководителя</b><br><span class="small muted">Риск ухода, конфликт, нарушение — руководитель увидит это первым</span></span></label>
-    <div id="nHelpWrap" ${n.help ? '' : 'hidden'}><label class="f"><span>Что случилось</span><textarea id="nHelpText">${esc(n.helpText)}</textarea></label></div>
+    ${helpBlockHtml('n', n.help, n.helpReason, n.helpText)}
     <div class="actions">${isNew ? '' : `<button class="btn danger" data-act="noteDel">Удалить</button>`}<button class="btn main" data-act="noteSave">Сохранить</button></div>`,
-    { kind: 'note', mid: m.id, note: n, isNew });
-  $('#nHelp').addEventListener('change', e => { $('#nHelpWrap').hidden = !e.target.checked; $('#nHelpBox').classList.toggle('alert', e.target.checked); });
+    { kind: 'note', mid: m.id, note: n, isNew, more: false, help: { on: !!n.help, reason: n.helpReason || '' } });
+  if (!n.tags) n.tags = [];
+  const ta = $('#nComment');
+  ta.addEventListener('input', growComment);
+  $('#nDate').addEventListener('change', () => { refreshNoteTags(); });
+  growComment();
+  refreshNoteTags();
+  renderPhrases();
+}
+
+/* Номер смены, к которой относится отметка: смены до записей + отмеченные выходы раньше этой даты + эта */
+function noteShiftNo(m, n, date){
+  return (+m.shiftsBefore || 0) + m.notes.filter(x => x.present && x.id !== n.id && x.date < date).length + 1;
+}
+function tagAllowed(d, no){ return no >= (TAG_GROUP_MIN[d.g] || 0); }
+function tagChip(d, n, more){
+  const on = n.tags.includes(d.t), full = !on && n.tags.length >= MAX_TAGS;
+  const cls = d.s > 0 ? 'pos' : d.s < 0 ? 'neg' : 'neu';
+  return `<button data-act="nTag" data-v="${esc(d.t)}" class="tg ${cls} ${on ? 'on' : ''}" ${full ? 'aria-disabled="true"' : ''} aria-pressed="${on}">${d.s > 0 ? '✓ ' : d.s < 0 ? '⚠ ' : ''}${esc(d.t)}${more && d.hint ? `<small>${esc(d.hint)}</small>` : ''}</button>`;
+}
+function refreshNoteTags(){
+  if (!sheet || sheet.kind !== 'note') return;
+  const m = findM(sheet.mid), n = sheet.note, date = $('#nDate').value || n.date;
+  const no = noteShiftNo(m, n, date);
+  sheet.shiftNo = no;
+  const cap = $('#nShiftCap'); if (cap) cap.textContent = `Как прошла ${no}-я смена`;
+  const box = $('#nTags'); if (!box) return;
+  $('#nTagCap').textContent = `${n.tags.length}/${MAX_TAGS}`;
+  if (!n.present){
+    box.innerHTML = `<div class="tagset">${TAG_DEFS.filter(d => d.absent).map(d => tagChip(d, n, false)).join('')}</div>`;
+    return;
+  }
+  const core = TAG_DEFS.filter(d => d.core && !d.absent && tagAllowed(d, no));
+  const known = new Set(core.map(d => d.t));
+  let h = `<div class="tagset">${core.map(d => tagChip(d, n, false)).join('')}`;
+  if (!sheet.more) h += n.tags.filter(t => !known.has(t)).map(t => tagChip(TAG_MAP[t] || { t, s: 0 }, n, false)).join('');
+  h += `</div>`;
+  if (sheet.more){
+    for (const [g, label, min] of TAG_GROUPS){
+      const defs = TAG_DEFS.filter(d => d.g === g && !d.core && !d.absent);
+      if (!defs.length) continue;
+      if (no < min){ h += `<div class="tgh">${esc(label)} <span class="muted">— с ${min}-й смены</span></div>`; continue; }
+      h += `<div class="tgh">${esc(label)}</div><div class="tagset">${defs.map(d => tagChip(d, n, true)).join('')}</div>`;
+    }
+    const legacy = n.tags.filter(t => !TAG_MAP[t]);
+    if (legacy.length) h += `<div class="tagset" style="margin-top:10px">${legacy.map(t => tagChip({ t, s: 0 }, n, false)).join('')}</div>`;
+  }
+  h += `<div class="tgfoot"><button class="linkbtn" data-act="nMore">${sheet.more ? 'Свернуть' : 'Ещё…'}</button><span class="muted small">не больше ${MAX_TAGS} — главное за смену</span></div>`;
+  box.innerHTML = h;
+}
+function renderPhrases(){
+  const box = $('#nPhrases'); if (!box || !sheet) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  box.innerHTML = (sheet.note.present ? PHRASES.map((p, i) => `<button data-act="nPhrase" data-v="${i}">${p[0]}</button>`).join('') : '') +
+    `<button data-act="nVoice" id="nVoice" class="${sheet.rec ? 'rec' : ''}">${sheet.rec ? '🔴 Слушаю… стоп' : '🗣️ Голос'}</button>`;
+}
+function growComment(){
+  const ta = $('#nComment'); if (!ta) return;
+  ta.style.height = 'auto'; ta.style.height = Math.max(48, ta.scrollHeight + 2) + 'px';
+  const c = $('#nCnt'); if (c) c.textContent = ta.value.length;
+}
+function appendComment(text){
+  const ta = $('#nComment'); if (!ta || !text) return;
+  const cur = ta.value.trim();
+  if (cur.includes(text)) return;
+  const next = (cur ? cur + ' ' : '') + text;
+  if (next.length > COMMENT_MAX){ toast(`Комментарий не длиннее ${COMMENT_MAX} знаков`); return; }
+  ta.value = next; growComment();
+}
+function helpBlockHtml(prefix, on, reason, text){
+  return `<button type="button" class="helpbar ${on ? 'on' : ''} ${prefix === 'n' ? '' : 'sm'}" id="${prefix}HelpBar" data-act="helpBar" data-p="${prefix}" aria-pressed="${!!on}">
+      <span class="hic">${on ? '🚨' : '🔕'}</span><span><b>Нужна помощь руководителя</b>${prefix === 'n' ? `<small>${on ? 'Руководитель увидит это первым' : 'Нажмите, если без руководителя не обойтись'}</small>` : ''}</span></button>
+    <div id="${prefix}HelpWrap" ${on ? '' : 'hidden'}>
+      <div class="pick c2 reasons" id="${prefix}Reasons">${HELP_REASONS.map(([k, l]) => `<button data-act="helpReason" data-p="${prefix}" data-v="${k}" class="${reason === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <input type="text" id="${prefix}HelpText" maxlength="${COMMENT_MAX}" value="${esc(text || '')}" placeholder="${reason === 'other' ? 'Что случилось — коротко' : 'Уточнение (необязательно)'}" ${reason === 'other' || text ? '' : 'hidden'}>
+      ${reason === 'other' || text ? '' : `<button class="linkbtn" data-act="helpMore" data-p="${prefix}" id="${prefix}HelpMore">+ уточнить</button>`}
+    </div>`;
+}
+/* Короткий сигнал, что тревога включена: вибрация (Android) и «дзынь» */
+function helpSignal(){
+  try { if (navigator.vibrate) navigator.vibrate(50); } catch(e) {}
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    const ctx = helpSignal.ctx || (helpSignal.ctx = new AC());
+    if (ctx.state === 'suspended') ctx.resume();
+    const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime;
+    o.type = 'sine'; o.frequency.setValueAtTime(1046, t0);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+    o.connect(g); g.connect(ctx.destination); o.start(t0); o.stop(t0 + 0.36);
+  } catch(e) {}
+}
+function helpState(prefix){
+  if (!sheet) return null;
+  if (prefix === 'n') return sheet.help;
+  const id = prefix.slice(2); return sheet.items && sheet.items[id] ? sheet.items[id].helpSt : null;
 }
 
 function readForm(form){
@@ -892,7 +1079,7 @@ function textSummary(){
     const nt = nextTask(m); if (nt) s += `\n  📌 Дальше: ${[nt.name, nt.text].filter(Boolean).join('. ')}`;
     const rr = riskReasons(m); if (rr.length) s += `\n  🔻 Риск ухода: ${rr.join(', ')}`;
     for (const [g] of WORK_GROUPS) if (m.admissions[g] && m.admissions[g].status === 'requested') s += `\n  ✅ Готов к допуску: ${GNAME[g]} (лист от ${fmt(m.admissions[g].date)})`;
-    for (const h of openHelp(m)) s += `\n  ⚠️ Нужна помощь (${fmt(h.date)})${h.helpText ? ': ' + h.helpText : ''}`;
+    for (const h of openHelp(m)) s += `\n  🚨 ${helpTitle(h)} (${fmt(h.date)})${h.helpText ? ': ' + h.helpText : ''}`;
     const d = meetingDue(m); if (d) s += `\n  ⏰ Пора провести беседу ${d}-й смены`;
     lines.push(s);
   }
@@ -978,7 +1165,7 @@ const ACT = {
 
   batch: () => {
     const act = S.mentees.filter(m => m.status === 'active').sort((a, b) => a.fio.localeCompare(b.fio, 'ru'));
-    const items = {}; act.forEach(m => items[m.id] = { present: true, score: 0 });
+    const items = {}; act.forEach(m => items[m.id] = { present: true, score: 0, helpSt: { on: false, reason: '' } });
     const opts = GROUPS.map(([g, name]) => {
       const its = (S.settings.checklist[g] || []).filter(it => act.some(m => groupsOf(m).includes(g) && (m.skills[it.id]?.lvl || 0) < 3));
       return its.length ? `<optgroup label="${esc(name)}">${its.map(it => `<option value="${it.id}">${esc(it.name)}</option>`).join('')}</optgroup>` : '';
@@ -989,8 +1176,8 @@ const ACT = {
         <div style="font-weight:700;margin-bottom:8px">${esc(m.fio)} <span class="muted small" style="font-weight:400">— ${worked(m)} ${plural(worked(m),'смена','смены','смен')}</span></div>
         <div class="pick c2" style="margin-bottom:8px"><button data-act="bPresent" data-id="${m.id}" data-v="1" class="on">Вышел</button><button data-act="bPresent" data-id="${m.id}" data-v="0">Не вышел</button></div>
         <div class="pick c5" id="bs_${m.id}">${[1,2,3,4,5].map(i => `<button data-act="bScore" data-id="${m.id}" data-v="${i}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div>
-        <input type="text" id="bc_${m.id}" placeholder="Комментарий (необязательно)" style="margin-top:8px">
-        <label class="check" style="margin:8px 0 0"><input type="checkbox" id="bh_${m.id}"><span>Нужна помощь руководителя</span></label>
+        <input type="text" id="bc_${m.id}" maxlength="${COMMENT_MAX}" placeholder="Комментарий (необязательно)" style="margin-top:8px">
+        ${helpBlockHtml('b_' + m.id, false, '', '')}
       </div>`).join('')}
       <h3 style="margin-top:20px;font-size:16px">Общее занятие</h3>
       <p class="small muted" style="margin:2px 0 12px">Если показывали операцию сразу всем — отметьте её здесь, уровень поднимется у всех вышедших. «Допущен» ставится только по одному, в карточке новичка.</p>
@@ -1016,6 +1203,10 @@ const ACT = {
     if (!dt){ toast('Укажите дату смены'); return; }
     if (dt > today()){ toast('Дата смены не может быть в будущем'); return; }
     const ms = sheet.ids.map(findM).filter(Boolean);
+    const noReason = ms.filter(m => sheet.items[m.id].helpSt.on && !sheet.items[m.id].helpSt.reason);
+    if (noReason.length){ toast(`Выберите причину помощи: ${noReason.map(m => shortFio(m.fio)).join(', ')}`); return; }
+    const noText = ms.filter(m => sheet.items[m.id].helpSt.reason === 'other' && sheet.items[m.id].helpSt.on && !$('#b_' + m.id + 'HelpText').value.trim());
+    if (noText.length){ toast(`Напишите, что случилось: ${noText.map(m => shortFio(m.fio)).join(', ')}`); return; }
     const early = ms.filter(m => m.hireDate && dt < m.hireDate);
     if (early.length){ toast(`Дата раньше даты приёма: ${early.map(m => shortFio(m.fio)).join(', ')}`); return; }
     const clash = ms.filter(m => m.notes.some(n => n.date === dt));
@@ -1024,9 +1215,9 @@ const ACT = {
     const sk = skill ? findSkill(skill) : null, nx = next ? findSkill(next) : null;
     let raised = 0;
     for (const m of ms){
-      const it = sheet.items[m.id], help = $('#bh_' + m.id).checked;
+      const it = sheet.items[m.id], help = it.helpSt.on, htxt = $('#b_' + m.id + 'HelpText').value.trim();
       const n = { id: uid(), date: dt, present: it.present, score: it.present ? it.score : 0, tags: [], comment: $('#bc_' + m.id).value.trim(),
-                  help, helpText: '', helpResolved: false, nextSkill: '', nextText: '', ts: Date.now() };
+                  help, helpReason: help ? it.helpSt.reason : '', helpText: help ? htxt : '', helpResolved: false, nextSkill: '', nextText: '', ts: Date.now() };
       if (nx && groupsOf(m).includes(nx.g) && (m.skills[nx.id]?.lvl || 0) < 3) n.nextSkill = nx.id;
       m.notes = m.notes.filter(x => x.date !== dt); m.notes.push(n);
       if (sk && it.present && groupsOf(m).includes(sk.g)){
@@ -1075,16 +1266,68 @@ const ACT = {
 
   noteNew: (d, b, e) => { e.stopPropagation(); const m = findM(d.id); noteSheet(m); },
   noteEdit: d => { const m = findM(d.id); noteSheet(m, m.notes.find(n => n.id === d.n)); },
-  nPresent: (d, b) => { sheet.note.present = d.v === '1'; $('#nPresent').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('#nWork').hidden = !sheet.note.present; },
+  nPresent: (d, b) => {
+    const p = d.v === '1'; if (sheet.note.present === p) return;
+    sheet.note.present = p; sheet.note.tags = [];
+    $('#nPresent').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('#nWork').hidden = !p;
+    $('#nComment').placeholder = p ? 'Коротко: что получилось, что нет' : 'Причина, если известна';
+    refreshNoteTags(); renderPhrases();
+  },
+  nMore: () => { sheet.more = !sheet.more; refreshNoteTags(); },
+  nPhrase: d => appendComment(PHRASES[+d.v][1]),
+  nVoice: () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const ta = $('#nComment');
+    if (sheet.rec){ try { sheet.rec.stop(); } catch(e) {} return; }
+    if (!SR){ ta.focus(); toast('Нажмите 🎤 на клавиатуре телефона — диктовка встроена в неё'); return; }
+    try {
+      const r = new SR(); r.lang = 'ru-RU'; r.interimResults = false; r.maxAlternatives = 1;
+      r.onresult = e => { const txt = Array.from(e.results).map(x => x[0].transcript).join(' ').trim(); if (txt) appendComment(txt.charAt(0).toUpperCase() + txt.slice(1) + (/[.!?]$/.test(txt) ? '' : '.')); };
+      r.onerror = () => { ta.focus(); toast('Голос недоступен — нажмите 🎤 на клавиатуре'); };
+      r.onend = () => { if (sheet) { sheet.rec = null; renderPhrases(); } };
+      sheet.rec = r; r.start(); renderPhrases();
+    } catch(e){ sheet.rec = null; ta.focus(); toast('Голос недоступен — нажмите 🎤 на клавиатуре'); }
+  },
+  helpBar: (d, b) => {
+    const st = helpState(d.p); if (!st) return;
+    st.on = !st.on;
+    b.classList.toggle('on', st.on); b.setAttribute('aria-pressed', st.on);
+    b.querySelector('.hic').textContent = st.on ? '🚨' : '🔕';
+    const sm = b.querySelector('small'); if (sm) sm.textContent = st.on ? 'Руководитель увидит это первым' : 'Нажмите, если без руководителя не обойтись';
+    $('#' + d.p + 'HelpWrap').hidden = !st.on;
+    if (st.on){ b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse'); helpSignal(); }
+  },
+  helpReason: (d, b) => {
+    const st = helpState(d.p); if (!st) return;
+    st.reason = d.v;
+    b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    const inp = $('#' + d.p + 'HelpText'), more = $('#' + d.p + 'HelpMore');
+    inp.placeholder = d.v === 'other' ? 'Что случилось — коротко' : 'Уточнение (необязательно)';
+    if (d.v === 'other'){ inp.hidden = false; if (more) more.hidden = true; inp.focus(); }
+  },
+  helpMore: (d, b) => { $('#' + d.p + 'HelpText').hidden = false; b.hidden = true; $('#' + d.p + 'HelpText').focus(); },
   nScore: (d, b) => { const v = +d.v; sheet.note.score = sheet.note.score === v ? 0 : v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === sheet.note.score)); },
-  nTag: (d, b) => { const t = sheet.note.tags, i = t.indexOf(d.v); if (i >= 0) t.splice(i, 1); else t.push(d.v); b.classList.toggle('on', i < 0); },
+  nTag: d => {
+    const t = sheet.note.tags, i = t.indexOf(d.v);
+    if (i >= 0) t.splice(i, 1);
+    else { if (t.length >= MAX_TAGS){ toast(`Не больше ${MAX_TAGS} меток — оставьте главное`); return; } t.push(d.v); }
+    refreshNoteTags();
+  },
   noteSave: () => {
     const m = findM(sheet.mid), n = sheet.note;
     n.date = $('#nDate').value;
     if (!n.date){ toast('Укажите дату смены'); return; }
     if (n.date > today()){ toast('Дата смены не может быть в будущем'); return; }
     if (m.hireDate && n.date < m.hireDate){ toast('Дата раньше даты приёма'); return; }
-    n.comment = $('#nComment').value.trim(); n.help = $('#nHelp').checked; n.helpText = n.help ? $('#nHelpText').value.trim() : '';
+    const hs = sheet.help, htxt = $('#nHelpText').value.trim();
+    if (hs.on && !hs.reason){ toast('Выберите причину — одним касанием'); return; }
+    if (hs.on && hs.reason === 'other' && !htxt){ toast('Напишите коротко, что случилось'); $('#nHelpText').focus(); return; }
+    if (sheet.rec){ try { sheet.rec.stop(); } catch(e) {} }
+    n.comment = $('#nComment').value.trim().slice(0, COMMENT_MAX);
+    if (hs.on && !n.help) n.helpResolved = false;
+    n.help = hs.on; n.helpReason = hs.on ? hs.reason : ''; n.helpText = hs.on ? htxt : '';
+    const no = noteShiftNo(m, n, n.date);
+    n.tags = (n.tags || []).filter(t => { const d = TAG_MAP[t]; if (!d) return true; if (!n.present) return !!d.absent; return !d.absent && tagAllowed(d, no); });
     if (!n.help) n.helpResolved = false;
     n.nextSkill = $('#nNext').value; n.nextText = $('#nNextText').value.trim();
     if (!n.present){ n.score = 0; n.tags = []; }

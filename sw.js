@@ -1,5 +1,5 @@
 /* Карманный наставник — офлайн-кэш. При выпуске новой версии меняйте VERSION. */
-const VERSION = 'nastavnik-1.4.1';
+const VERSION = 'nastavnik-1.5';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
