@@ -188,6 +188,32 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
 .kv dd{margin:0}
 .big-send{padding:22px 16px;text-align:center}
 .big-send .n{font-size:44px;font-weight:800;line-height:1}
+.task{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--surf2);border:1px dashed var(--line);font-size:14px}
+.task b{font-weight:600}
+.risk{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--badBg);color:var(--bad);font-size:14px}
+.risk b{display:block}
+.adm{margin:6px 0 2px;padding:10px 12px;border-radius:10px;background:var(--surf2)}
+.adm .row{margin-top:8px}
+.hints{background:var(--surf2);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+.hints summary{cursor:pointer;font-weight:600}
+.hints ul{margin:8px 0 2px;padding-left:18px}
+.hints li{margin:4px 0}
+.sq{margin-bottom:14px}
+.sq>div:first-child{font-size:15px;margin-bottom:6px}
+.pick.c5n button{font-size:17px}
+.pick.c5n button small{display:block;font-size:10px;font-weight:500;line-height:1.1}
+.ans{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:5px 0;border-top:1px solid var(--line)}
+.ans:first-child{border-top:0}
+.ans b.low{color:var(--bad)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat b{display:block;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--mute)}
+.stat.wide{grid-column:1/-1}
+.hbar{margin:10px 0}
+.hbar .lbl{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;gap:8px}
+.hbar .bar>span.w{background:var(--warn)}
+.hbar .bar>span.b{background:var(--bad)}
 </style>
 </head>
 <body>
@@ -204,23 +230,36 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.4';
 const KEY = 'nastavnik_v1';
 const SIGN = 'Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
 
-const GROUPS = [['common','Общее'],['pick','Комплектация'],['ship','Отгрузка'],['vesh','ВЭШ'],['recv','Приёмка']];
+const GROUPS = [['common','Общее'],['pick','Комплектация']];   // v1.4: отгрузка, ВЭШ и приёмка убраны из чек-листа
 const GNAME = Object.fromEntries(GROUPS);
 const WORK_GROUPS = GROUPS.filter(g => g[0] !== 'common');
 const DEFAULT_CHECKLIST = {
   common: ['Вводный инструктаж и охрана труда','Работа с ТСД: вход, задания, ошибки','Адресация ячеек и схема склада','Порядок на рабочем месте и СИЗ'],
-  pick:   ['Отбор по заданию на ТСД','Пересчёт и сверка артикула','Формирование и стретчевание паллеты','Маркировка собранного груза','Действия при недостаче и пересорте'],
-  ship:   ['Контроль отгрузки по документам','Загрузка машины по схеме','Пломбировка и оформление документов','Возвратная тара и поддоны'],
-  vesh:   ['Допуск и удостоверение на ВЭШ','Осмотр техники перед сменой','Перемещение паллет по складу','Работа с верхними ярусами','Зарядка и замена АКБ'],
-  recv:   ['Проверка документов поставщика','Пересчёт и контроль качества','Оформление расхождений','Размещение и ввод в WMS']
+  pick:   ['Отбор по заданию на ТСД','Пересчёт и сверка артикула','Формирование и стретчевание паллеты','Маркировка собранного груза','Действия при недостаче и пересорте']
 };
 const LEVELS = ['Не начато','Показал','Под контролем','Допущен'];
 const LEVELS_SHORT = ['Не начато','Показал','Под\u00A0контролем','Допущен'];
 const MEET = [3,7,14];
+const SURVEY = [
+  ['clear','Понятно, что и как делать на смене'],
+  ['help', 'Наставник и коллеги помогают, когда нужно'],
+  ['load', 'Нагрузка посильная'],
+  ['sched','График и условия устраивают'],
+  ['stay', 'Хочу и дальше работать здесь']
+];
+const SURVEY_SCALE = ['', 'Нет', 'Скорее нет', 'Не знаю', 'Скорее да', 'Да'];
+const MEET_HINTS = {
+  3:  { focus: 'Первые впечатления и бытовые мелочи. Главное — чтобы новичок не остался с вопросом, который постеснялся задать.',
+        q: ['Что оказалось не так, как ожидал при найме?','Хватает ли объяснений? Что было непонятно?','Удобно ли добираться, подходит ли время смены?','Выдали ли форму и СИЗ, всё ли по размеру?','Знаешь, к кому обращаться, если что-то случилось?'] },
+  7:  { focus: 'Обучение и коллектив. Похвалите конкретно за то, что уже получается, и договоритесь, над чем работать дальше.',
+        q: ['Что уже получается уверенно?','Что пока даётся тяжело?','Как складываются отношения в смене?','Понятно ли, как считается зарплата и премия?','Есть ли что-то, что хочется изменить в обучении?'] },
+  14: { focus: 'Итоги адаптации и планы. Узнайте, готов ли работать сам и что держит на складе.',
+        q: ['Готов ли работать самостоятельно по основным операциям?','Что в обучении было лишним, а чего не хватило?','Интересно ли освоить другие операции или ВЭШ?','Остаёшься? Что могло бы заставить уйти?','Позвал бы знакомых работать к нам?'] }
+};
 const TAGS = ['Хорошо освоил ТСД','Быстро учится','Старается','Путает ячейки','Медленный темп','Ошибки в отборе','Нарушает ОТ','Опоздал','Жалуется на нагрузку'];
 const SCORE = ['', 'Плохо', 'Слабо', 'Норм', 'Хорошо', 'Отлично'];
 const SCORE_IC = ['', '😟', '😕', '😐', '🙂', '😃'];
@@ -258,6 +297,7 @@ function load(){
   const b = blankState();
   S.settings = Object.assign(b.settings, S.settings || {});
   for (const [g] of GROUPS) if (!Array.isArray(S.settings.checklist[g])) S.settings.checklist[g] = b.settings.checklist[g];
+  for (const g of Object.keys(S.settings.checklist)) if (!GNAME[g]) delete S.settings.checklist[g];
   S.mentees = Array.isArray(S.mentees) ? S.mentees : [];
   S.mentees.forEach(normMentee);
   S.sentLog = Array.isArray(S.sentLog) ? S.sentLog : [];
@@ -265,10 +305,16 @@ function load(){
 }
 function normMentee(m){
   m.id = m.id || uid(); m.fio = m.fio || ''; m.tab = m.tab || ''; m.hireDate = m.hireDate || '';
-  m.mainGroup = m.mainGroup || 'pick'; m.groups = Array.isArray(m.groups) && m.groups.length ? m.groups : [m.mainGroup];
+  const before = JSON.stringify([m.mainGroup, m.groups, m.admissions]);
+  m.mainGroup = WORK_GROUPS.some(g => g[0] === m.mainGroup) ? m.mainGroup : WORK_GROUPS[0][0];
+  m.groups = (Array.isArray(m.groups) ? m.groups : []).filter(g => WORK_GROUPS.some(x => x[0] === g));
+  if (!m.groups.length) m.groups = [m.mainGroup];
+  if (m.admissions) for (const g of Object.keys(m.admissions)) if (!WORK_GROUPS.some(x => x[0] === g)) delete m.admissions[g];
+  if (m.mainGroup && before !== JSON.stringify([m.mainGroup, m.groups, m.admissions]) && m.updatedAt) m.updatedAt = Date.now();   // уйдёт в следующий отчёт
   if (!m.groups.includes(m.mainGroup)) m.groups.unshift(m.mainGroup);
   m.shiftsBefore = +m.shiftsBefore || 0; m.status = m.status || 'active';
   m.skills = m.skills || {}; m.notes = Array.isArray(m.notes) ? m.notes : []; m.meetings = m.meetings || {};
+  m.admissions = m.admissions || {};
   m.createdAt = m.createdAt || Date.now(); m.updatedAt = m.updatedAt || Date.now();
   return m;
 }
@@ -303,6 +349,52 @@ const openHelp = m => m.notes.filter(n => n.help && !n.helpResolved);
 const sortedNotes = m => [...m.notes].sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
 const lastNote = m => sortedNotes(m)[0];
 const unsent = () => S.mentees.filter(m => m.updatedAt > S.lastSentAt);
+const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+function shiftNoAt(m, date){ return (+m.shiftsBefore || 0) + m.notes.filter(n => n.present && n.date <= date).length; }
+function findSkill(id){
+  for (const [g] of GROUPS){ const it = (S.settings.checklist[g] || []).find(x => x.id === id); if (it) return Object.assign({ g }, it); }
+  return null;
+}
+function groupComplete(m, g){ const items = skillItems(m, g); return items.length > 0 && items.every(it => (m.skills[it.id]?.lvl || 0) === 3); }
+function canAdmit(m, g){ return g !== 'common' && groupComplete(m, g) && groupComplete(m, 'common') && !m.admissions[g]; }
+function lastSurvey(m){
+  for (const k of [...MEET].reverse()){ const mt = m.meetings[k]; if (mt && mt.done && mt.answers && Object.values(mt.answers).some(Boolean)) return { k, a: mt.answers }; }
+  return null;
+}
+/* Риск ухода: только прозрачные правила, чтобы наставник видел причину */
+function riskReasons(m){
+  if (m.status !== 'active') return [];
+  const r = [], ns = sortedNotes(m);
+  if (ns.length >= 2 && !ns[0].present && !ns[1].present) r.push('2 невыхода подряд');
+  else if (ns.slice(0, 5).filter(n => !n.present).length >= 2) r.push('частые невыходы');
+  const scored = ns.filter(n => n.present && n.score);
+  if (scored.length >= 2 && scored[0].score <= 2 && scored[1].score <= 2) r.push('две слабые смены подряд');
+  if (ns.slice(0, 3).some(n => (n.tags || []).includes('Жалуется на нагрузку'))) r.push('жалуется на нагрузку');
+  const s = lastSurvey(m);
+  if (s){
+    if (s.a.stay && s.a.stay <= 2) r.push('не уверен, что останется');
+    const v = avg(Object.values(s.a).filter(Boolean));
+    if (v !== null && v <= 2.5) r.push('низкие ответы в беседе');
+  }
+  const k = nextMeeting(m);
+  if (k !== null && worked(m) >= k + 2) r.push(`беседа ${k}-й смены просрочена`);
+  return r;
+}
+function nextTask(m){
+  const ln = lastNote(m);
+  if (!ln || (!ln.nextSkill && !ln.nextText)) return null;
+  const it = ln.nextSkill ? findSkill(ln.nextSkill) : null;
+  if (it && (m.skills[it.id]?.lvl || 0) === 3 && !ln.nextText) return null;
+  return { name: it ? it.name : '', text: ln.nextText || '' };
+}
+function taskHtml(m){
+  const t = nextTask(m); if (!t || m.status !== 'active') return '';
+  return `<div class="task">📌 На следующей смене: <b>${esc([t.name, t.text].filter(Boolean).join('. '))}</b></div>`;
+}
+function riskHtml(m){
+  const r = riskReasons(m); if (!r.length) return '';
+  return `<div class="risk"><b>Риск ухода</b>${esc(r.join(', '))}</div>`;
+}
 
 /* ---------- состояние экрана ---------- */
 const ui = { view: 'list', id: null, tab: 'shifts' };
@@ -320,6 +412,8 @@ function render(){
     body = viewMentee(m);
   } else if (ui.view === 'send'){
     head = `<h1>Отправка руководителю</h1><div class="who">${who}</div>`; body = viewSend();
+  } else if (ui.view === 'stats'){
+    head = `<h1>Мои итоги</h1><div class="who">${who}</div>`; body = viewStats();
   } else if (ui.view === 'settings'){
     head = `<h1>Настройки</h1><div class="who">${who}</div>`; body = viewSettings();
   } else {
@@ -332,6 +426,7 @@ function render(){
     <main>${body}</main>
     <nav class="bot">
       <button data-act="go" data-v="list" class="${ui.view==='list'||ui.view==='mentee'?'on':''}"><span class="ic">👥</span>Новички</button>
+      <button data-act="go" data-v="stats" class="${ui.view==='stats'?'on':''}"><span class="ic">📊</span>Итоги</button>
       <button data-act="go" data-v="send" class="${ui.view==='send'?'on':''}"><span class="ic">📤</span>Отправка${n ? `<span class="badge">${n}</span>` : ''}</button>
       <button data-act="go" data-v="settings" class="${ui.view==='settings'?'on':''}"><span class="ic">⚙️</span>Настройки</button>
     </nav>`;
@@ -357,6 +452,11 @@ function flagsHtml(m){
   const ln = lastNote(m);
   if (ln && !ln.present) f.push(`<span class="chip warn">Не вышел ${fmt(ln.date)}</span>`);
   if (m.status === 'active' && (!ln || ln.date < shiftDefaultDate())) f.push(`<span class="chip">Нет отметки за ${fmt(shiftDefaultDate()).slice(0,5)}</span>`);
+  for (const [g] of WORK_GROUPS){
+    const a = m.admissions[g];
+    if (a && a.status === 'requested') f.push(`<span class="chip info">Допуск: ${esc(GNAME[g])}, ждёт подтверждения</span>`);
+    else if (m.status === 'active' && canAdmit(m, g) && m.groups.includes(g)) f.push(`<span class="chip ok">Можно оформить допуск: ${esc(GNAME[g])}</span>`);
+  }
   if (m.updatedAt > S.lastSentAt) f.push(`<span class="chip info">Не отправлено</span>`);
   return f.length ? `<div class="chips">${f.join('')}</div>` : '';
 }
@@ -371,7 +471,9 @@ function menteeCard(m){
     </div>
     ${ladderHtml(m)}
     <div class="barrow"><span>Навыки</span><div class="bar"><span style="width:${p}%"></span></div><span>${p}%</span></div>
+    ${riskHtml(m)}
     ${flagsHtml(m)}
+    ${taskHtml(m)}
     <div class="cact"><button class="btn main" data-act="noteNew" data-id="${m.id}">Отметить смену</button></div>
   </div>`;
 }
@@ -391,13 +493,14 @@ function viewList(){
       <div class="row"><button class="btn sm" data-act="go" data-v="settings">Заполнить</button></div></div>`;
   }
   const act = S.mentees.filter(m => m.status === 'active');
-  const rank = m => (openHelp(m).length ? 0 : meetingDue(m) ? 1 : 2);
+  const rank = m => (openHelp(m).length ? 0 : riskReasons(m).length ? 1 : meetingDue(m) ? 2 : 3);
   act.sort((a, b) => rank(a) - rank(b) || a.fio.localeCompare(b.fio, 'ru'));
   if (!act.length){
     h += `<div class="empty"><div class="big">🦺</div><p>Пока нет новичков. Добавьте того, кого вам закрепили, или загрузите задание от руководителя смены.</p>
       <div class="row"><button class="btn main" data-act="menteeNew">Добавить новичка</button></div>
       <div class="row" style="margin-top:10px"><button class="btn" data-act="import">Загрузить файл</button></div></div>`;
   } else {
+    if (act.length >= 2) h += `<div class="row" style="margin-bottom:12px"><button class="btn dark" data-act="batch">✔️ Отметить смену всем (${act.length})</button></div>`;
     h += act.map(menteeCard).join('');
     h += `<div class="row"><button class="btn" data-act="menteeNew">＋ Добавить новичка</button></div>`;
   }
@@ -420,7 +523,7 @@ function viewMentee(m){
       <div class="sub">${esc(GNAME[m.mainGroup])}${m.groups.length > 1 ? ' + ' + m.groups.filter(g => g !== m.mainGroup).map(g => GNAME[g]).join(', ') : ''}</div></div>
       <div class="num"><b>${worked(m)}</b><span>${plural(worked(m),'смена','смены','смен')}</span></div></div>
     ${ladderHtml(m)}
-    ${m.status !== 'active' ? `<div class="chips"><span class="chip ${m.status==='done'?'ok':'bad'}">${m.status==='done'?'Завершил адаптацию':'Уволился'} ${fmt(m.statusDate)}</span></div>` : flagsHtml(m)}
+    ${m.status !== 'active' ? `<div class="chips"><span class="chip ${m.status==='done'?'ok':'bad'}">${m.status==='done'?'Завершил адаптацию':'Уволился'} ${fmt(m.statusDate)}</span></div>` : riskHtml(m) + flagsHtml(m) + taskHtml(m)}
   </div>
   <div class="tabs" role="tablist">${tabs.map(([k, t]) => `<button role="tab" data-act="tab" data-v="${k}" class="${ui.tab===k?'on':''}">${t}</button>`).join('')}</div>`;
 
@@ -444,6 +547,7 @@ function tabShifts(m){
         <div>${n.present ? `<b>${SCORE_IC[n.score] || ''} ${SCORE[n.score] || 'Без оценки'}</b>` : '<b>Не вышел на смену</b>'}</div>
         ${n.tags && n.tags.length ? `<div class="chips">${n.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
         ${n.comment ? `<p>${esc(n.comment)}</p>` : ''}
+        ${n.nextSkill || n.nextText ? `<p class="small muted">📌 ${esc([findSkill(n.nextSkill)?.name, n.nextText].filter(Boolean).join('. '))}</p>` : ''}
         ${n.help ? `<div class="chips"><span class="chip ${n.helpResolved ? 'ok' : 'bad'}">${n.helpResolved ? 'Помощь: вопрос решён' : 'Нужна помощь руководителя'}</span></div>
           ${n.helpText ? `<p class="small muted">${esc(n.helpText)}</p>` : ''}
           ${!n.helpResolved ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="helpResolve" data-id="${m.id}" data-n="${n.id}">Вопрос решён</button></div>` : ''}` : ''}
@@ -466,9 +570,40 @@ function tabSkills(m){
         <div class="seg">${LEVELS_SHORT.map((t, i) => `<button class="l${i} ${lvl===i?'on':''}" data-act="lvl" data-id="${m.id}" data-s="${it.id}" data-l="${i}" ${m.status!=='active'?'disabled':''}>${t}</button>`).join('')}</div>
         ${when ? `<div class="sd">${when}</div>` : ''}</div>`;
     }
+    if (g !== 'common') h += admissionBlock(m, g);
     h += `</div>`;
   }
   return h;
+}
+
+function admissionBlock(m, g){
+  const a = m.admissions[g];
+  if (a && a.status === 'confirmed') return `<div class="adm"><span class="chip ok">Допуск подтверждён руководителем ${fmt(a.confirmedDate)}</span></div>`;
+  if (a && a.status === 'requested') return `<div class="adm"><div class="chips" style="margin-top:0"><span class="chip info">Лист допуска оформлен ${fmt(a.date)}, ждёт подтверждения</span></div>
+    <div class="row"><button class="btn sm" data-act="admShare" data-id="${m.id}" data-g="${g}">Отправить лист</button><button class="btn sm" data-act="admConfirm" data-id="${m.id}" data-g="${g}">Руководитель подтвердил</button></div>
+    <div class="row"><button class="btn sm ghost" data-act="admCancel" data-id="${m.id}" data-g="${g}">Отменить лист допуска</button></div></div>`;
+  if (m.status !== 'active') return '';
+  if (canAdmit(m, g)) return `<div class="adm"><div class="row" style="margin-top:0"><button class="btn main" data-act="admit" data-id="${m.id}" data-g="${g}">Оформить лист допуска</button></div></div>`;
+  if (groupComplete(m, g)) return `<div class="adm small muted">Все пункты освоены. Чтобы оформить допуск, закройте также группу «Общее».</div>`;
+  return '';
+}
+function admissionText(m, g){
+  const a = m.admissions[g] || {};
+  const lines = [`ЛИСТ ДОПУСКА К САМОСТОЯТЕЛЬНОЙ РАБОТЕ`, ``,
+    `Сотрудник: ${m.fio}${m.tab ? ', таб. ' + m.tab : ''}`, `Принят: ${fmt(m.hireDate)}`, `Операции: ${GNAME[g]}`,
+    `Отработано смен: ${shiftNoAt(m, a.date || today())}`, ``, `Освоено:`];
+  for (const gg of ['common', g]) for (const it of skillItems(m, gg)){
+    const s = m.skills[it.id] || {}; lines.push(`• ${it.name} — допущен ${fmt(s.dates && s.dates[3])}`);
+  }
+  lines.push('', `Наставник: ${S.settings.fio || '—'}${S.settings.shift ? ', смена ' + S.settings.shift : ''}`, `Дата: ${fmt(a.date || today())}`);
+  if (a.comment) lines.push(`Комментарий: ${a.comment}`);
+  lines.push('', 'Наставник считает сотрудника готовым к самостоятельной работе. Решение о допуске принимает руководитель смены.');
+  return lines.join('\n');
+}
+async function shareText(t, okMsg){
+  if (navigator.share){ try { await navigator.share({ text: t }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(t); toast(okMsg || 'Текст скопирован — вставьте его в чат'); }
+  catch(e){ const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Текст скопирован'); }
 }
 
 function tabMeet(m){
@@ -480,7 +615,9 @@ function tabMeet(m){
     if (mt && mt.done) st = `<span class="chip ok">Проведена ${fmt(mt.date)}</span>`;
     else if (w >= k) st = `<span class="chip warn">Пора провести</span>`;
     else st = `<span class="chip">Через ${k - w} ${plural(k - w,'смену','смены','смен')}</span>`;
+    const ans = mt && mt.answers ? SURVEY.filter(([id]) => mt.answers[id]).map(([id, q]) => `<div class="ans"><span>${esc(q)}</span><b class="${mt.answers[id] <= 2 ? 'low' : ''}">${SURVEY_SCALE[mt.answers[id]]}</b></div>`).join('') : '';
     h += `<div class="card"><div class="ghead"><b>Беседа на ${k}-й смене</b></div><div class="chips">${st}</div>
+      ${ans ? `<div style="margin-top:10px">${ans}</div>` : ''}
       ${mt && mt.comment ? `<p style="white-space:pre-wrap;margin:10px 0 0">${esc(mt.comment)}</p>` : ''}
       ${m.status === 'active' || (mt && mt.done) ? `<div class="row" style="margin-top:12px"><button class="btn sm ${mt && mt.done ? '' : 'main'}" data-act="meet" data-id="${m.id}" data-k="${k}">${mt && mt.done ? 'Изменить итоги' : 'Записать итоги'}</button></div>` : ''}
     </div>`;
@@ -489,6 +626,7 @@ function tabMeet(m){
 }
 
 function groupPickers(sel, main){
+  if (WORK_GROUPS.length === 1) return `<input type="hidden" name="mainGroup" value="${WORK_GROUPS[0][0]}">`;
   return `<label class="f"><span>Основная группа операций</span><select name="mainGroup">${WORK_GROUPS.map(([g, n]) => `<option value="${g}" ${main===g?'selected':''}>${n}</option>`).join('')}</select></label>
   <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Ещё обучается (необязательно)</span>
   ${WORK_GROUPS.map(([g, n]) => `<label class="check"><input type="checkbox" name="g_${g}" ${sel.includes(g) && g !== main ? 'checked' : ''}><span>${n}</span></label>`).join('')}</div>`;
@@ -520,6 +658,80 @@ function tabData(m){
   return h;
 }
 
+function viewStats(){
+  const all = S.mentees;
+  if (!all.length) return `<div class="empty"><div class="big">📊</div><p>Итоги появятся, когда вы добавите новичков и начнёте отмечать смены.</p></div>`;
+  const act = all.filter(m => m.status === 'active'), done = all.filter(m => m.status === 'done'), left = all.filter(m => m.status === 'left');
+  const reached = all.filter(m => worked(m) >= 14 || m.status === 'done').length;
+  const lostEarly = left.filter(m => worked(m) < 14).length;
+  const base = reached + lostEarly;
+  const ret = base ? Math.round(reached / base * 100) : null;
+  let h = `<div class="stats">
+    <div class="stat"><b>${all.length}</b><span>всего новичков</span></div>
+    <div class="stat"><b>${act.length}</b><span>сейчас обучаются</span></div>
+    <div class="stat"><b>${done.length}</b><span>завершили адаптацию</span></div>
+    <div class="stat"><b>${left.length}</b><span>уволились</span></div>
+    <div class="stat wide"><b>${ret === null ? '—' : ret + '%'}</b><span>${base ? `удержание до 14-й смены: ${reached} из ${base}` : 'удержание до 14-й смены — пока никто не дошёл до итога'}${base && base < 5 ? '. Данных пока мало, цифра неточная' : ''}</span></div>
+  </div>`;
+
+  // Допуски
+  const adm = [];
+  for (const m of all) for (const [g] of WORK_GROUPS){ const a = m.admissions[g]; if (a) adm.push({ g, n: shiftNoAt(m, a.date), st: a.status }); }
+  h += `<h2>Допуски</h2><div class="card">`;
+  if (!adm.length) h += `<p class="muted small" style="margin:0">Листов допуска пока нет.</p>`;
+  else {
+    h += `<dl class="kv"><dt>Оформлено листов</dt><dd>${adm.length}</dd><dt>Подтверждено</dt><dd>${adm.filter(a => a.st === 'confirmed').length}</dd></dl>`;
+    for (const [g, name] of WORK_GROUPS){
+      const xs = adm.filter(a => a.g === g); if (!xs.length) continue;
+      h += `<div class="ans"><span>${esc(name)}: в среднем к смене</span><b>${Math.round(avg(xs.map(a => a.n)))}</b></div>`;
+    }
+  }
+  h += `</div>`;
+
+  // Беседы
+  let due = 0, held = 0, onTime = 0, checkable = 0;
+  for (const m of all){
+    const first = m.notes.map(n => n.date).sort()[0];
+    for (const k of MEET){
+      if (worked(m) < k) continue; due++;
+      const mt = m.meetings[k]; if (!mt || !mt.done) continue; held++;
+      // если смены до начала записей не датированы, номер смены на дату беседы неизвестен
+      if (m.shiftsBefore && (!first || mt.date < first)) continue;
+      checkable++; if (shiftNoAt(m, mt.date) <= k + 1) onTime++;
+    }
+  }
+  h += `<h2>Беседы</h2><div class="card"><dl class="kv"><dt>Положено провести</dt><dd>${due}</dd><dt>Проведено</dt><dd>${held}</dd>
+    <dt>Вовремя</dt><dd>${checkable ? `${onTime} из ${checkable}` : '—'}</dd></dl>
+    <p class="small muted" style="margin:8px 0 0">«Вовремя» — не позже следующей смены после положенной. Считается только по беседам, для которых есть отметки смен.</p></div>`;
+
+  // Ответы новичков
+  const qs = SURVEY.map(([id, q]) => { const v = []; for (const m of all) for (const k of MEET){ const a = m.meetings[k]?.answers?.[id]; if (a) v.push(a); } return { q, v }; });
+  if (qs.some(x => x.v.length)){
+    h += `<h2>Что говорят новички</h2><div class="card"><p class="small muted" style="margin:0 0 4px">Средний ответ по всем беседам, из 5.</p>`;
+    for (const { q, v } of qs){
+      if (!v.length) continue; const a = avg(v);
+      h += `<div class="hbar"><div class="lbl"><span>${esc(q)}</span><b>${a.toFixed(1)}</b></div><div class="bar"><span class="${a < 3 ? 'b' : a < 4 ? 'w' : ''}" style="width:${a / 5 * 100}%"></span></div></div>`;
+    }
+    h += `</div>`;
+  }
+
+  // Смены за 30 дней
+  const from = isoLocal(Date.now() - 30 * 864e5);
+  const ns = all.flatMap(m => m.notes.filter(n => n.date >= from));
+  const sc = ns.filter(n => n.present && n.score).map(n => n.score);
+  h += `<h2>Последние 30 дней</h2><div class="card"><dl class="kv"><dt>Отметок о сменах</dt><dd>${ns.length}</dd>
+    <dt>Невыходов</dt><dd>${ns.filter(n => !n.present).length}</dd><dt>Средняя оценка смены</dt><dd>${sc.length ? avg(sc).toFixed(1) + ' из 5' : '—'}</dd></dl></div>`;
+
+  // Увольнения
+  if (left.length){
+    const reasons = {}; left.forEach(m => { const r = m.statusReason || 'Не указана'; reasons[r] = (reasons[r] || 0) + 1; });
+    h += `<h2>Увольнения</h2><div class="card"><dl class="kv"><dt>В среднем на смене</dt><dd>${Math.round(avg(left.map(worked)))}</dd></dl><div style="margin-top:8px">
+      ${Object.entries(reasons).sort((a, b) => b[1] - a[1]).map(([r, c]) => `<div class="ans"><span>${esc(r)}</span><b>${c}</b></div>`).join('')}</div></div>`;
+  }
+  h += `<div class="sign">${esc(SIGN)}</div>`;
+  return h;
+}
+
 function viewSend(){
   const u = unsent();
   let h = `<div class="card big-send">
@@ -527,9 +739,10 @@ function viewSend(){
     <div class="muted">${u.length ? plural(u.length,'новичок с изменениями','новичка с изменениями','новичков с изменениями') : 'Все изменения уже отправлены'}</div>
     ${u.length ? `<div class="chips" style="justify-content:center">${u.map(m => `<span class="chip">${esc(shortFio(m.fio))}</span>`).join('')}</div>` : ''}
     <div style="margin-top:18px"><button class="btn main wide" data-act="sendReport" ${u.length ? '' : 'disabled style="opacity:.5"'}>📤 Отправить отчёт за смену</button></div>
-    <div class="row" style="margin-top:10px"><button class="btn" data-act="sendText">Отправить текстом</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn" data-act="sendText">Сводка текстом</button><button class="btn" data-act="sendCode" ${u.length ? '' : 'disabled style="opacity:.5"'}>Отчёт кодом</button></div>
   </div>
-  <div class="note"><b>Как это работает</b>Откроется меню «Поделиться» — выберите мессенджер или почту и чат руководителя смены${S.settings.leader ? ' (' + esc(S.settings.leader) + ')' : ''}. Уйдёт небольшой файл, который руководитель загрузит в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.</div>
+  <div class="note"><b>Как это работает</b>Откроется меню «Поделиться» — выберите мессенджер или почту и чат руководителя смены${S.settings.leader ? ' (' + esc(S.settings.leader) + ')' : ''}. Уйдёт небольшой файл, который руководитель загрузит в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.<br><br>
+  <b>Если файл не доходит</b> до рабочего компьютера руководителя — нажмите «Отчёт кодом»: тот же отчёт уйдёт текстом, его можно отправить по почте или в чат. «Сводка текстом» — только для чтения, в «Паспорт смены» её не загрузить.</div>
   <div class="card"><dl class="kv"><dt>Последняя отправка</dt><dd>${fmtTs(S.lastSentAt)}</dd></dl>
     ${S.sentLog.length ? `<details style="margin-top:8px"><summary class="muted small">История отправок</summary>
       ${S.sentLog.slice().reverse().map(l => `<div class="list-item small"><span>${fmtTs(l.ts)}</span><span class="muted" style="flex:0">${l.count}&nbsp;чел.</span></div>`).join('')}</details>` : ''}
@@ -566,7 +779,8 @@ function viewSettings(){
   <h2>О приложении</h2>
   <div class="card small"><dl class="kv"><dt>Версия</dt><dd>${APP_VERSION}</dd><dt>Новичков</dt><dd>${S.mentees.length}</dd>
     <dt>Где данные</dt><dd>Только в памяти этого телефона. На сайт ничего не отправляется.</dd>
-    <dt>Этапы</dt><dd>Знакомство 1–3 смена, обучение 4–7, закрепление 8–14, дальше самостоятельная работа.</dd></dl></div>
+    <dt>Этапы</dt><dd>Знакомство 1–3 смена, обучение 4–7, закрепление 8–14, дальше самостоятельная работа.</dd>
+    <dt>Риск ухода</dt><dd>Загорается, если: 2 невыхода подряд или 2 из последних 5 смен; две слабые смены подряд; «жалуется на нагрузку» в последних 3 сменах; в беседе ответ «хочу остаться» — «нет» или «скорее нет», или средний ответ 2,5 и ниже; беседа просрочена на 2 смены.</dd></dl></div>
   <div class="row"><button class="btn danger" data-act="wipe">Удалить все данные на телефоне</button></div>
   <div class="sign">${esc(SIGN)}</div>`;
   return h;
@@ -578,7 +792,13 @@ function closeSheet(){ sheet = null; $('#sheet').classList.remove('open'); docum
 
 function noteSheet(m, n){
   const isNew = !n;
-  n = n ? JSON.parse(JSON.stringify(n)) : { id: uid(), date: shiftDefaultDate(), present: true, score: 0, tags: [], comment: '', help: false, helpText: '', helpResolved: false };
+  const prevTask = lastNote(m);
+  const carry = prevTask && prevTask.nextSkill && (m.skills[prevTask.nextSkill]?.lvl || 0) < 3 ? prevTask.nextSkill : '';
+  n = n ? JSON.parse(JSON.stringify(n)) : { id: uid(), date: shiftDefaultDate(), present: true, score: 0, tags: [], comment: '', help: false, helpText: '', helpResolved: false, nextSkill: carry, nextText: '' };
+  const nextOpts = groupsOf(m).map(g => {
+    const its = skillItems(m, g).filter(it => (m.skills[it.id]?.lvl || 0) < 3 || it.id === n.nextSkill);
+    return its.length ? `<optgroup label="${esc(GNAME[g])}">${its.map(it => `<option value="${it.id}" ${n.nextSkill===it.id?'selected':''}>${esc(it.name)} (${LEVELS[m.skills[it.id]?.lvl || 0].toLowerCase()})</option>`).join('')}</optgroup>` : '';
+  }).join('');
   const tagList = [...new Set([...TAGS, ...(n.tags || [])])];
   openSheet(`<h3>${isNew ? 'Отметка за смену' : 'Изменить отметку'}</h3><p class="lead">${esc(m.fio)}</p>
     <label class="f"><span>Дата смены (для ночной — дата начала)</span><input type="date" id="nDate" value="${n.date}" max="${today()}"></label>
@@ -591,6 +811,8 @@ function noteSheet(m, n){
         <div class="tagset">${tagList.map(t => `<button data-act="nTag" data-v="${esc(t)}" class="${n.tags.includes(t)?'on':''}">${esc(t)}</button>`).join('')}</div></div>
     </div>
     <label class="f"><span>Комментарий</span><textarea id="nComment" placeholder="${n.present ? 'Что получилось, что нет, что делать завтра' : 'Причина, если известна'}">${esc(n.comment)}</textarea></label>
+    <label class="f"><span>📌 Что отрабатываем на следующей смене</span><select id="nNext"><option value="">Не выбрано</option>${nextOpts}</select></label>
+    <label class="f"><input type="text" id="nNextText" value="${esc(n.nextText || '')}" placeholder="или своими словами"></label>
     <label class="check ${n.help ? 'alert' : ''}" id="nHelpBox"><input type="checkbox" id="nHelp" ${n.help?'checked':''}><span><b>Нужна помощь руководителя</b><br><span class="small muted">Риск ухода, конфликт, нарушение — руководитель увидит это первым</span></span></label>
     <div id="nHelpWrap" ${n.help ? '' : 'hidden'}><label class="f"><span>Что случилось</span><textarea id="nHelpText">${esc(n.helpText)}</textarea></label></div>
     <div class="actions">${isNew ? '' : `<button class="btn danger" data-act="noteDel">Удалить</button>`}<button class="btn main" data-act="noteSave">Сохранить</button></div>`,
@@ -621,7 +843,7 @@ function reportPayload(list, full){
     mentor: { fio: S.settings.fio, tab: S.settings.tab, shift: S.settings.shift },
     checklist: S.settings.checklist,
     mentees: list.map(m => Object.assign(JSON.parse(JSON.stringify(m)), {
-      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length }
+      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m) }
     }))
   };
 }
@@ -667,6 +889,9 @@ function textSummary(){
       if (ln.tags && ln.tags.length) s += '; ' + ln.tags.join(', ').toLowerCase();
       if (ln.comment) s += '. ' + ln.comment;
     }
+    const nt = nextTask(m); if (nt) s += `\n  📌 Дальше: ${[nt.name, nt.text].filter(Boolean).join('. ')}`;
+    const rr = riskReasons(m); if (rr.length) s += `\n  🔻 Риск ухода: ${rr.join(', ')}`;
+    for (const [g] of WORK_GROUPS) if (m.admissions[g] && m.admissions[g].status === 'requested') s += `\n  ✅ Готов к допуску: ${GNAME[g]} (лист от ${fmt(m.admissions[g].date)})`;
     for (const h of openHelp(m)) s += `\n  ⚠️ Нужна помощь (${fmt(h.date)})${h.helpText ? ': ' + h.helpText : ''}`;
     const d = meetingDue(m); if (d) s += `\n  ⏰ Пора провести беседу ${d}-й смены`;
     lines.push(s);
@@ -674,11 +899,31 @@ function textSummary(){
   if (lines.length === 1) lines.push('\nАктивных новичков нет.');
   return lines.join('\n');
 }
-async function sendText(){
-  const t = textSummary();
-  if (navigator.share){ try { await navigator.share({ text: t }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
-  try { await navigator.clipboard.writeText(t); toast('Текст скопирован — вставьте его в чат'); }
-  catch(e){ const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Текст скопирован'); }
+function sendText(){ return shareText(textSummary()); }
+
+/* Отчёт кодом: тот же отчёт, сжатый и записанный текстом — для почты или если файлы не доходят до рабочего ПК */
+async function reportCode(list){
+  let bytes = new TextEncoder().encode(JSON.stringify(reportPayload(list, false))), prefix = 'НАСТАВНИК1:';
+  if (typeof CompressionStream !== 'undefined'){
+    try { const r = new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))); bytes = new Uint8Array(await r.arrayBuffer()); prefix = 'НАСТАВНИК1Z:'; } catch(e) {}
+  }
+  let bin = ''; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+  return prefix + btoa(bin);
+}
+async function sendCode(){
+  if (!S.settings.fio){ toast('Сначала укажите своё ФИО в настройках'); go('settings'); return; }
+  const list = unsent();
+  if (!list.length){ toast('Нет изменений для отправки'); return; }
+  const startedAt = Date.now(), code = await reportCode(list);
+  openSheet(`<h3>Отчёт кодом</h3><p class="lead">${list.length} ${plural(list.length,'новичок','новичка','новичков')}, ${code.length} знаков</p>
+    ${code.length > 4000 ? `<div class="note" style="border-left-color:var(--warn)">Код длинный: Telegram и WhatsApp разобьют его на несколько сообщений, и он не загрузится. Отправьте его по почте или кнопкой «Отправить отчёт за смену» (файлом).</div>` : ''}
+    <textarea readonly style="min-height:120px;font-family:monospace;font-size:12px" onclick="this.select()">${esc(code)}</textarea>
+    <p class="small muted">Руководитель смены вставит этот текст в «Паспорте смены»: Данные → Отчёты наставников → «Загрузить из текста».</p>
+    <div class="actions"><button class="btn" data-act="codeCopy">Скопировать</button><button class="btn main" data-act="codeShare">Поделиться</button></div>`,
+    { kind: 'code', code, startedAt, count: list.length });
+}
+function markSent(startedAt, count){
+  S.lastSentAt = startedAt; S.sentLog.push({ ts: startedAt, count }); S.sentLog = S.sentLog.slice(-30); save();
 }
 
 function mergeMentees(list){
@@ -731,6 +976,70 @@ const ACT = {
   hideInstall: () => { S.settings.installHidden = true; save(); render(); },
   closeSheet,
 
+  batch: () => {
+    const act = S.mentees.filter(m => m.status === 'active').sort((a, b) => a.fio.localeCompare(b.fio, 'ru'));
+    const items = {}; act.forEach(m => items[m.id] = { present: true, score: 0 });
+    const opts = GROUPS.map(([g, name]) => {
+      const its = (S.settings.checklist[g] || []).filter(it => act.some(m => groupsOf(m).includes(g) && (m.skills[it.id]?.lvl || 0) < 3));
+      return its.length ? `<optgroup label="${esc(name)}">${its.map(it => `<option value="${it.id}">${esc(it.name)}</option>`).join('')}</optgroup>` : '';
+    }).join('');
+    openSheet(`<h3>Отметка за смену всем</h3><p class="lead">Сначала дата, потом по каждому новичку — пара касаний</p>
+      <label class="f"><span>Дата смены (для ночной — дата начала)</span><input type="date" id="bDate" value="${shiftDefaultDate()}" max="${today()}"></label>
+      ${act.map(m => `<div class="card" style="padding:12px">
+        <div style="font-weight:700;margin-bottom:8px">${esc(m.fio)} <span class="muted small" style="font-weight:400">— ${worked(m)} ${plural(worked(m),'смена','смены','смен')}</span></div>
+        <div class="pick c2" style="margin-bottom:8px"><button data-act="bPresent" data-id="${m.id}" data-v="1" class="on">Вышел</button><button data-act="bPresent" data-id="${m.id}" data-v="0">Не вышел</button></div>
+        <div class="pick c5" id="bs_${m.id}">${[1,2,3,4,5].map(i => `<button data-act="bScore" data-id="${m.id}" data-v="${i}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div>
+        <input type="text" id="bc_${m.id}" placeholder="Комментарий (необязательно)" style="margin-top:8px">
+        <label class="check" style="margin:8px 0 0"><input type="checkbox" id="bh_${m.id}"><span>Нужна помощь руководителя</span></label>
+      </div>`).join('')}
+      <h3 style="margin-top:20px;font-size:16px">Общее занятие</h3>
+      <p class="small muted" style="margin:2px 0 12px">Если показывали операцию сразу всем — отметьте её здесь, уровень поднимется у всех вышедших. «Допущен» ставится только по одному, в карточке новичка.</p>
+      <label class="f"><span>Что отрабатывали вместе</span><select id="bSkill"><option value="">Не отрабатывали</option>${opts}</select></label>
+      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Уровень</span>
+        <div class="pick c2" id="bLvl"><button data-act="bLvl" data-v="1" class="on">Показал</button><button data-act="bLvl" data-v="2">Под контролем</button></div></div>
+      <label class="f"><span>📌 Что отрабатываем на следующей смене (всем)</span><select id="bNext"><option value="">Не выбрано</option>${opts}</select></label>
+      <div class="actions"><button class="btn" data-act="closeSheet">Отмена</button><button class="btn main" data-act="batchSave">Сохранить всех</button></div>`,
+      { kind: 'batch', items, ids: act.map(m => m.id), lvl: 1 });
+  },
+  bPresent: (d, b) => {
+    const it = sheet.items[d.id]; it.present = d.v === '1';
+    b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    $('#bs_' + d.id).hidden = !it.present;
+  },
+  bScore: (d, b) => {
+    const it = sheet.items[d.id], v = +d.v; it.score = it.score === v ? 0 : v;
+    b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === it.score));
+  },
+  bLvl: (d, b) => { sheet.lvl = +d.v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); },
+  batchSave: () => {
+    const dt = $('#bDate').value;
+    if (!dt){ toast('Укажите дату смены'); return; }
+    if (dt > today()){ toast('Дата смены не может быть в будущем'); return; }
+    const ms = sheet.ids.map(findM).filter(Boolean);
+    const early = ms.filter(m => m.hireDate && dt < m.hireDate);
+    if (early.length){ toast(`Дата раньше даты приёма: ${early.map(m => shortFio(m.fio)).join(', ')}`); return; }
+    const clash = ms.filter(m => m.notes.some(n => n.date === dt));
+    if (clash.length && !confirm(`За ${fmt(dt)} уже есть отметки: ${clash.map(m => shortFio(m.fio)).join(', ')}. Заменить их?`)) return;
+    const skill = $('#bSkill').value, lvl = sheet.lvl, next = $('#bNext').value;
+    const sk = skill ? findSkill(skill) : null, nx = next ? findSkill(next) : null;
+    let raised = 0;
+    for (const m of ms){
+      const it = sheet.items[m.id], help = $('#bh_' + m.id).checked;
+      const n = { id: uid(), date: dt, present: it.present, score: it.present ? it.score : 0, tags: [], comment: $('#bc_' + m.id).value.trim(),
+                  help, helpText: '', helpResolved: false, nextSkill: '', nextText: '', ts: Date.now() };
+      if (nx && groupsOf(m).includes(nx.g) && (m.skills[nx.id]?.lvl || 0) < 3) n.nextSkill = nx.id;
+      m.notes = m.notes.filter(x => x.date !== dt); m.notes.push(n);
+      if (sk && it.present && groupsOf(m).includes(sk.g)){
+        const s = m.skills[sk.id] || (m.skills[sk.id] = { lvl: 0, dates: {} }); s.dates = s.dates || {};
+        if ((s.lvl || 0) < lvl){ s.lvl = lvl; s.dates[lvl] = dt; raised++; }
+      }
+      m.updatedAt = Date.now();
+    }
+    save(); closeSheet(); render();
+    const due = ms.filter(m => meetingDue(m)).map(m => shortFio(m.fio));
+    toast(`Сохранено: ${ms.length} ${plural(ms.length,'новичок','новичка','новичков')}${raised ? ', навык отмечен у ' + raised : ''}${due.length ? '. Пора беседа: ' + due.join(', ') : ''}`);
+  },
+
   menteeNew: () => openSheet(`<h3>Новый новичок</h3><p class="lead">Кого вам закрепили</p><form id="nform" onsubmit="return false">${menteeForm()}</form>
     <div class="actions"><button class="btn" data-act="closeSheet">Отмена</button><button class="btn main" data-act="menteeCreate">Добавить</button></div>`, { kind: 'new' }),
   menteeCreate: () => {
@@ -777,6 +1086,7 @@ const ACT = {
     if (m.hireDate && n.date < m.hireDate){ toast('Дата раньше даты приёма'); return; }
     n.comment = $('#nComment').value.trim(); n.help = $('#nHelp').checked; n.helpText = n.help ? $('#nHelpText').value.trim() : '';
     if (!n.help) n.helpResolved = false;
+    n.nextSkill = $('#nNext').value; n.nextText = $('#nNextText').value.trim();
     if (!n.present){ n.score = 0; n.tags = []; }
     n.ts = Date.now();
     const same = m.notes.find(x => x.date === n.date && x.id !== n.id);
@@ -803,25 +1113,86 @@ const ACT = {
     if (s.lvl === l) return;
     s.lvl = l; if (l) s.dates[l] = today();
     for (const k of Object.keys(s.dates)) if (+k > l) delete s.dates[k];
+    if (l < 3){
+      const it = findSkill(d.s);
+      const gs = it && it.g === 'common' ? WORK_GROUPS.map(x => x[0]) : it ? [it.g] : [];
+      const cancelled = gs.filter(g => m.admissions[g] && m.admissions[g].status === 'requested');
+      cancelled.forEach(g => delete m.admissions[g]);
+      if (cancelled.length) toast('Лист допуска отменён: не все пункты освоены');
+    }
     touch(m); render();
   },
   meet: d => {
-    const m = findM(d.id), k = d.k, mt = m.meetings[k] || {};
+    const m = findM(d.id), k = d.k, mt = m.meetings[k] || {}, hint = MEET_HINTS[k];
+    const answers = Object.assign({}, mt.answers || {});
     openSheet(`<h3>Беседа на ${k}-й смене</h3><p class="lead">${esc(m.fio)}</p>
+      <details class="hints" ${mt.done ? '' : 'open'}><summary>Подсказки к беседе</summary><p style="margin:8px 0 0">${esc(hint.focus)}</p>
+        <ul>${hint.q.map(q => `<li>${esc(q)}</li>`).join('')}</ul></details>
       <label class="f"><span>Дата беседы</span><input type="date" id="mDate" value="${mt.date || today()}" max="${today()}"></label>
-      <label class="f"><span>Итоги: как дела, что получается, что мешает, о чём договорились</span><textarea id="mComment" style="min-height:140px">${esc(mt.comment || '')}</textarea></label>
-      <div class="actions">${mt.done ? `<button class="btn danger" data-act="meetUndo">Отменить</button>` : ''}<button class="btn main" data-act="meetSave">Сохранить</button></div>`, { kind: 'meet', mid: m.id, k });
+      <p class="small muted" style="margin:0 0 10px">Опросник: спросите новичка и отметьте его ответ, а не своё мнение.</p>
+      ${SURVEY.map(([id, q]) => `<div class="sq"><div>${esc(q)}</div><div class="pick c5 c5n">${[1,2,3,4,5].map(v => `<button data-act="mAns" data-q="${id}" data-v="${v}" class="${answers[id]===v?'on':''}">${v}<small>${SURVEY_SCALE[v]}</small></button>`).join('')}</div></div>`).join('')}
+      <label class="f"><span>Итоги: что получается, что мешает, о чём договорились</span><textarea id="mComment" style="min-height:120px">${esc(mt.comment || '')}</textarea></label>
+      <div class="actions">${mt.done ? `<button class="btn danger" data-act="meetUndo">Отменить</button>` : ''}<button class="btn main" data-act="meetSave">Сохранить</button></div>`, { kind: 'meet', mid: m.id, k, answers });
   },
   meetSave: () => {
     const m = findM(sheet.mid), dt = $('#mDate').value;
     if (!dt || dt > today()){ toast('Укажите дату не позже сегодняшней'); return; }
-    m.meetings[sheet.k] = { done: true, date: dt, comment: $('#mComment').value.trim() }; touch(m); closeSheet(); render(); toast('Беседа записана');
+    const missing = SURVEY.filter(([id]) => !sheet.answers[id]).length;
+    if (missing && !confirm(`Не отмечено ответов в опроснике: ${missing}. Сохранить так?`)) return;
+    m.meetings[sheet.k] = { done: true, date: dt, comment: $('#mComment').value.trim(), answers: sheet.answers }; touch(m); closeSheet(); render();
+    const rr = riskReasons(m); toast(rr.length ? 'Беседа записана. Риск ухода: ' + rr.join(', ') : 'Беседа записана');
+  },
+  mAns: (d, b) => {
+    const v = +d.v; sheet.answers[d.q] = sheet.answers[d.q] === v ? 0 : v;
+    b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === sheet.answers[d.q]));
+  },
+  admit: d => {
+    const m = findM(d.id), g = d.g;
+    const items = ['common', g].flatMap(gg => skillItems(m, gg).map(it => `<div class="list-item small"><span>${esc(it.name)}</span><span class="muted" style="flex:0;white-space:nowrap">${fmt(m.skills[it.id]?.dates?.[3])}</span></div>`)).join('');
+    openSheet(`<h3>Лист допуска: ${esc(GNAME[g])}</h3><p class="lead">${esc(m.fio)}, отработано смен: ${worked(m)}</p>
+      <div class="card" style="padding:6px 12px">${items}</div>
+      <label class="f"><span>Дата</span><input type="date" id="aDate" value="${today()}" max="${today()}"></label>
+      <label class="f"><span>Комментарий для руководителя (необязательно)</span><textarea id="aComment" placeholder="Например: темп пока ниже нормы, но без ошибок"></textarea></label>
+      <p class="small muted">Решение о допуске принимает руководитель смены. После сохранения откроется меню «Поделиться», чтобы отправить ему лист.</p>
+      <div class="actions"><button class="btn" data-act="closeSheet">Отмена</button><button class="btn main" data-act="admitSave">Оформить и отправить</button></div>`, { kind: 'admit', mid: m.id, g });
+  },
+  admitSave: () => {
+    const m = findM(sheet.mid), g = sheet.g, dt = $('#aDate').value;
+    if (!dt || dt > today()){ toast('Укажите дату не позже сегодняшней'); return; }
+    m.admissions[g] = { status: 'requested', date: dt, comment: $('#aComment').value.trim(), requestedAt: Date.now() };
+    touch(m); closeSheet(); render();
+    shareText(admissionText(m, g), 'Лист допуска скопирован — вставьте его в чат руководителю');
+  },
+  admShare: d => { const m = findM(d.id); shareText(admissionText(m, d.g), 'Лист допуска скопирован'); },
+  admConfirm: d => {
+    const m = findM(d.id), a = m.admissions[d.g];
+    if (!confirm(`Руководитель смены подтвердил допуск ${shortFio(m.fio)} к операциям «${GNAME[d.g]}»?`)) return;
+    a.status = 'confirmed'; a.confirmedDate = today(); touch(m); render(); toast('Допуск подтверждён');
+  },
+  admCancel: d => {
+    const m = findM(d.id); if (!confirm('Отменить лист допуска?')) return;
+    delete m.admissions[d.g]; touch(m); render();
   },
   meetUndo: () => { if (!confirm('Отметить беседу как не проведённую?')) return; const m = findM(sheet.mid); delete m.meetings[sheet.k]; touch(m); closeSheet(); render(); },
 
   sendReport: () => sendReport(false),
   sendAll: () => sendReport(true),
   sendText,
+  sendCode,
+  codeShare: async () => {
+    const c = sheet;
+    if (navigator.share){
+      try { await navigator.share({ text: c.code }); markSent(c.startedAt, c.count); closeSheet(); render(); toast('Отчёт отправлен'); return; }
+      catch(e){ if (e && e.name === 'AbortError') return; }
+    }
+    ACT.codeCopy();
+  },
+  codeCopy: async () => {
+    const c = sheet;
+    try { await navigator.clipboard.writeText(c.code); }
+    catch(e){ const ta = $('#pane textarea'); ta.select(); document.execCommand('copy'); }
+    markSent(c.startedAt, c.count); closeSheet(); render(); toast('Код скопирован — вставьте его в письмо или чат руководителю');
+  },
 
   ckDel: d => {
     const it = S.settings.checklist[d.g].find(x => x.id === d.s);
