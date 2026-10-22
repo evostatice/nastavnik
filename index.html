@@ -185,7 +185,14 @@ textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidde
 .reasons button{font-size:14px}
 .reasons button.on{background:var(--bad);border-color:var(--bad);color:#fff}
 .obrow{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
-.ghead+.obrow{border-top:0}
+.sechead{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;background:none;padding:2px 0 6px;text-align:left;min-height:40px;font-size:16px}
+.sechead .caret{display:inline-block;width:14px;text-align:center}
+.sechead>.muted{white-space:nowrap;flex-shrink:0}
+.card:has(> .sechead[aria-expanded="false"]){padding-top:10px;padding-bottom:10px}
+.sechead[aria-expanded="false"]{padding-bottom:2px}
+.sechead+.obrow,.sechead+.skill{border-top:0}
+.bsec{margin-bottom:6px}
+.bsec summary{cursor:pointer;font-weight:700;font-size:14px;padding:8px 0;min-height:40px}
 .obmark{flex-shrink:0;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--surf);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--surf);font-size:16px;margin-top:2px}
 .obrow.ok .obmark{background:var(--ok);border-color:var(--ok)}
 .obbody{flex:1;min-width:0;text-align:left;border:0;background:none;padding:6px 0;min-height:40px}
@@ -282,7 +289,7 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.7';
 const KEY = 'nastavnik_v1';
 const SIGN = 'Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
 
@@ -321,7 +328,41 @@ const ONBOARD = [
     { id: 'ob2_5', n: '2.5', t: 'Совместный обед', f: 'Совместный обед' }
   ]}
 ];
-const OB_UNITS = ONBOARD.flatMap(s => s.items.flatMap(it => it.sub ? it.sub : [it]));   // всё, что отмечается касанием
+/* Обучение на технике: со 2-й смены, отметка «сделано / нет» */
+const TRAINING = [
+  { id: 'tech', name: 'Техника и доступ', items: [
+    { id: 'ob3_1', n: '3.1', t: 'Карты инлокера и техники, логины', f: 'Карты для инлокера и техники, логины выданы' },
+    { id: 'ob3_2', n: '3.2', t: 'Техника записана в журнал', f: 'Техника записана в журнал' },
+    { id: 'ob3_3', n: '3.3', t: 'Инлокер: получение и сдача ТСД', f: 'Инлокер: получение и сдача ТСД/оборудования' },
+    { id: 'ob3_4', n: '3.4', t: 'Управление техникой, боковые кнопки', f: 'Управление техникой, боковые кнопки, запрет блокировки платформы' }
+  ]},
+  { id: 'fmr', name: 'FMR и безопасное движение', items: [
+    { id: 'ob3_5', n: '3.5', t: 'FMR: маневрирование, дистанция', f: 'FMR-роботы: правила маневрирования, дистанция' },
+    { id: 'ob3_6', n: '3.6', t: 'Опасные зоны FMR', f: 'Опасные зоны FMR (буферы, зарядка, паллетайзер, проезд между складами)' },
+    { id: 'ob3_7', n: '3.7', t: 'Проезд к воротам, передача управления', f: 'Проезд к свободным воротам отгрузки, передача управления стажёру' }
+  ]},
+  { id: 'term', name: 'Терминал и задачи', items: [
+    { id: 'ob3_8',  n: '3.8',  t: 'Где получать АКБ', f: 'Показал, где получать АКБ' },
+    { id: 'ob3_9',  n: '3.9',  t: 'Терминал: команды, логины', f: 'Работа и команды терминала, логины (стажёр + основная)' },
+    { id: 'ob3_10', n: '3.10', t: 'BT-наушники, зарядка в технике', f: 'Подключение BT-наушников + зарядка в технике (какой плюс)' },
+    { id: 'ob3_11', n: '3.11', t: 'Подключение сканера', f: 'Подключение сканера' },
+    { id: 'ob3_12', n: '3.12', t: 'Принтеры, как запросить задачу', f: 'Расположение принтеров, как запрашивать задачу' }
+  ]},
+  { id: 'pickt', name: 'Комплектация', items: [
+    { id: 'ob3_13', n: '3.13', t: 'Техника отбора, подъезд к ячейкам', f: 'Демонстрация техники отбора, подъезд к ячейкам' },
+    { id: 'ob3_14', n: '3.14', t: 'Вода: ячейки 5.1, 5.3', f: 'Вода: отличие ячеек 5.1, 5.3 и остального ассортимента' },
+    { id: 'ob3_15', n: '3.15', t: 'Двухъярусные ряды 10, 11, 16, 22–24', f: 'Двухъярусные ряды (10, 11, 16, 22–24): специфика, исключения в 24-м' },
+    { id: 'ob3_16', n: '3.16', t: 'Крупногабарит: дисплей, соль, сахар', f: 'Крупногабарит: «дисплей», соль, сахар — первоочередной отбор, правила комплектации' },
+    { id: 'ob3_17', n: '3.17', t: 'Нестандарт: «товар есть, система не даёт»', f: 'Нестандарт: «товар есть, система не даёт», отбор «не кванта» в первую очередь' }
+  ]},
+  { id: 'buf', name: 'Буфер и паллеты', items: [
+    { id: 'ob3_18', n: '3.18', t: 'Буфер: размещение, пополнение, пропуск', f: 'Буферная зона: размещение паллет, команды на пополнение, пропуск ряда/ячейки' },
+    { id: 'ob3_19', n: '3.19', t: 'Передача паллет по смене', f: 'Передача паллет по смене' },
+    { id: 'ob3_20', n: '3.20', t: 'Примеры качественных паллет', f: 'Примеры качественных паллет: структура, укладка' }
+  ]}
+];
+const ALL_CHECK = [...ONBOARD, ...TRAINING];
+const OB_UNITS = ALL_CHECK.flatMap(s => s.items.flatMap(it => it.sub ? it.sub : [it]));   // всё, что отмечается касанием
 
 const LEVELS = ['Не начато','Показал','Под контролем','Допущен'];
 const LEVELS_SHORT = ['Не начато','Показал','Под\u00A0контролем','Допущен'];
@@ -346,7 +387,7 @@ const MEET_HINTS = {
 const TAG_GROUPS = [
   ['base',  'Обучение', 0],
   ['safe',  '🛡️ Безопасность и СИЗ', 0],
-  ['qual',  '📦 Качество операций', 4],   // после 3 отмеченных смен
+  ['qual',  '📦 Качество операций', 2],   // со 2-й смены
   ['team',  '👥 Команда и общение', 0],
   ['grow',  '📈 Рост и готовность', 3],   // с 3-й смены
   ['disc',  '⏱️ Дисциплина', 0],
@@ -369,7 +410,7 @@ const TAG_DEFS = [   // min — с какой смены метка доступ
   { t:'Молчит — нужно подталкивать', g:'team', s:-1, core:1 },
   { t:'Опоздал', g:'disc', s:-1, core:1 },
   { t:'Нарушает ТБ', g:'safe', s:-1, hint:'лазает по стеллажам, не фиксирует паллеты' },
-  { t:'Нарушает правила работы с ПРТ', g:'safe', s:-1, hint:'зона погрузчиков' },
+  { t:'Нарушает правила работы с ПРТ', g:'safe', s:-1 },
   { t:'Ошибается в сканировании', g:'qual', s:-1, hint:'сканирует не в той ячейке, путает QR-код, меняет упаковку' },
   { t:'Не соблюдает габариты паллета', g:'qual', s:-1 },
   { t:'Нарушает порядок сборки', g:'qual', s:-1, hint:'не по маршруту или зоне' },
@@ -478,8 +519,12 @@ const obSectionLeft = (m, sec) => sec.items.filter(it => !obItemDone(m, it)).len
 const obLeft = m => ONBOARD.reduce((a, s) => a + obSectionLeft(m, s), 0);
 const obTotal = ONBOARD.reduce((a, s) => a + s.items.length, 0);
 const onboardDone = m => obLeft(m) === 0;
-function obDoneDate(m){ let d = ''; for (const u of OB_UNITS) if (m.onboard[u.id] > d) d = m.onboard[u.id]; return d; }
-const opsVisible = m => curShiftNo(m) >= 2 || onboardDone(m) || groupsOf(m).some(g => skillItems(m, g).some(it => m.skills[it.id]?.lvl));
+const trLeft = m => TRAINING.reduce((a, s) => a + obSectionLeft(m, s), 0);
+const trTotal = TRAINING.reduce((a, s) => a + s.items.length, 0);
+const trainingDone = m => trLeft(m) === 0;
+const secOfUnit = id => ALL_CHECK.find(s => s.items.some(it => it.id === id || (it.sub && it.sub.some(u => u.id === id))));
+function secDoneDate(m, sec){ let d = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if ((m.onboard[u.id] || '') > d) d = m.onboard[u.id]; return d; }
+const opsVisible = m => curShiftNo(m) >= 2 || onboardDone(m) || groupsOf(m).some(g => skillItems(m, g).some(it => m.skills[it.id]?.lvl)) || TRAINING.some(s => obSectionLeft(m, s) < s.items.length);
 function skillItems(m, g){ return (S.settings.checklist[g] || []); }
 function progress(m, onlyGroup){
   const gs = onlyGroup ? [onlyGroup] : groupsOf(m);
@@ -506,7 +551,7 @@ function findSkill(id){
   return null;
 }
 function groupComplete(m, g){ const items = skillItems(m, g); return items.length > 0 && items.every(it => (m.skills[it.id]?.lvl || 0) === 3); }
-function canAdmit(m, g){ return groupComplete(m, g) && onboardDone(m) && !m.admissions[g]; }
+function canAdmit(m, g){ return groupComplete(m, g) && onboardDone(m) && trainingDone(m) && !m.admissions[g]; }
 function lastSurvey(m){
   for (const k of [...MEET].reverse()){ const mt = m.meetings[k]; if (mt && mt.done && mt.answers && Object.values(mt.answers).some(Boolean)) return { k, a: mt.answers }; }
   return null;
@@ -710,49 +755,57 @@ function tabShifts(m){
   return h;
 }
 
+/* Раздел открыт: если пользователь не переключал — открыт, пока не выполнен; выполненный сворачивается сам */
+function secOpen(key, done){ return ui.secOpen && key in ui.secOpen ? ui.secOpen[key] : !done; }
+function secHead(key, title, done, count, extra){
+  const open = secOpen(key, done);
+  return { open, html: `<button class="sechead" data-act="secToggle" data-k="${key}" data-done="${done ? 1 : 0}" aria-expanded="${open}">
+    <b>${done ? '✅ ' : ''}${esc(title)}</b><span class="muted small">${count}${extra || ''} <span class="caret">${open ? '▾' : '▸'}</span></span></button>` };
+}
+function checkSection(m, sec, carry, ro){
+  const left = obSectionLeft(m, sec), done = left === 0, key = m.id + ':' + sec.id;
+  const hd = secHead(key, sec.name, done, `${sec.items.length - left}/${sec.items.length}`, done ? ' · ' + fmt(secDoneDate(m, sec)).slice(0, 5) : '');
+  let h = `<div class="card obsec">` + hd.html;
+  if (hd.open){
+    for (const it of sec.items){
+      const ok = obItemDone(m, it), carried = carry && !ok;
+      const label = `<span class="obn">${it.n}</span><span class="obtx">${esc(it.t)}${carried ? ' <span class="obcarry">перенесено</span>' : ''}</span>`;
+      if (it.sub){
+        h += `<div class="obrow ${ok ? 'ok' : ''}"><span class="obmark" aria-hidden="true">${ok ? '✓' : ''}</span>
+          <div class="obbody"><div class="obt">${label}</div>
+          <div class="obchips">${it.sub.map(su => `<button data-act="obTap" data-id="${m.id}" data-u="${su.id}" class="${m.onboard[su.id] ? 'on' : ''}" title="${esc(su.f)}" ${ro}>${m.onboard[su.id] ? '✓ ' : ''}${esc(su.t)}</button>`).join('')}</div></div>
+          <button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button></div>
+          <div class="obfull" id="obf_${it.id}" hidden>${esc(it.f)}: ${it.sub.map(su => esc(su.f)).join('; ')}</div>`;
+      } else {
+        h += `<div class="obrow ${ok ? 'ok' : ''}"><button class="obmark" data-act="obTap" data-id="${m.id}" data-u="${it.id}" aria-pressed="${ok}" aria-label="${esc(it.f)}" ${ro}>${ok ? '✓' : ''}</button>
+          <button class="obbody obtap" data-act="obTap" data-id="${m.id}" data-u="${it.id}" ${ro}><div class="obt">${label}</div>${ok ? `<div class="obd">${fmt(m.onboard[it.id])}</div>` : ''}</button>
+          <button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button></div>
+          <div class="obfull" id="obf_${it.id}" hidden>${esc(it.f)}</div>`;
+      }
+    }
+    if (left && !ro) h += `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-act="obAll" data-id="${m.id}" data-s="${sec.id}">Отметить весь раздел</button></div>`;
+  }
+  return h + `</div>`;
+}
 function tabSkills(m){
   const ro = m.status !== 'active' ? 'disabled' : '';
-  const cur = curShiftNo(m), done = onboardDone(m);
-  let h = '';
-  // --- Первый день ---
-  if (done && !ui.obOpen){
-    h += `<div class="card obdone"><button class="obsum" data-act="obToggle">✅ <b>Первый день: ${obTotal}/${obTotal}</b><span class="muted small">закрыт ${fmt(obDoneDate(m))} ▸</span></button></div>`;
-  } else {
-    if (!done && cur > 1) h += `<div class="note" style="border-left-color:var(--warn)"><b>Первый день не закрыт</b>Не сделано: ${obLeft(m)}. Отметьте на этой смене — без этого не оформить лист допуска.</div>`;
-    for (const sec of ONBOARD){
-      const left = obSectionLeft(m, sec);
-      h += `<div class="card obsec"><div class="ghead"><b>${esc(sec.name)}</b><span class="muted small">${sec.items.length - left}/${sec.items.length}</span></div>`;
-      for (const it of sec.items){
-        const ok = obItemDone(m, it), carried = !ok && cur > 1;
-        if (it.sub){
-          h += `<div class="obrow ${ok ? 'ok' : ''}"><span class="obmark" aria-hidden="true">${ok ? '✓' : ''}</span>
-            <div class="obbody"><div class="obt"><span class="obn">${it.n}</span><span class="obtx">${esc(it.t)}${carried ? ' <span class="obcarry">перенесено</span>' : ''}</span></div>
-            <div class="obchips">${it.sub.map(su => `<button data-act="obTap" data-id="${m.id}" data-u="${su.id}" class="${m.onboard[su.id] ? 'on' : ''}" title="${esc(su.f)}" ${ro}>${m.onboard[su.id] ? '✓ ' : ''}${esc(su.t)}</button>`).join('')}</div></div>
-            <button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button></div>
-            <div class="obfull" id="obf_${it.id}" hidden>${esc(it.f)}: ${it.sub.map(su => esc(su.f)).join('; ')}</div>`;
-        } else {
-          h += `<div class="obrow ${ok ? 'ok' : ''}"><button class="obmark" data-act="obTap" data-id="${m.id}" data-u="${it.id}" aria-pressed="${ok}" aria-label="${esc(it.f)}" ${ro}>${ok ? '✓' : ''}</button>
-            <button class="obbody obtap" data-act="obTap" data-id="${m.id}" data-u="${it.id}" ${ro}><div class="obt"><span class="obn">${it.n}</span><span class="obtx">${esc(it.t)}${carried ? ' <span class="obcarry">перенесено</span>' : ''}</span></div>${ok ? `<div class="obd">${fmt(m.onboard[it.id])}</div>` : ''}</button>
-            <button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button></div>
-            <div class="obfull" id="obf_${it.id}" hidden>${esc(it.f)}</div>`;
-        }
-      }
-      if (left && !ro) h += `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-act="obAll" data-id="${m.id}" data-s="${sec.id}">Отметить весь раздел</button></div>`;
-      h += `</div>`;
-    }
-    if (done) h += `<div class="row" style="margin-bottom:12px"><button class="btn sm ghost" data-act="obToggle">Свернуть первый день</button></div>`;
-  }
-  // --- Обучение операциям ---
+  const cur = curShiftNo(m);
+  let h = `<h2 style="margin-top:4px">Первый день <span class="muted small" style="font-weight:400">${obTotal - obLeft(m)}/${obTotal}</span></h2>`;
+  if (!onboardDone(m) && cur > 1) h += `<div class="note" style="border-left-color:var(--warn)"><b>Первый день не закрыт</b>Не сделано: ${obLeft(m)}. Отметьте на этой смене — без этого не оформить лист допуска.</div>`;
+  for (const sec of ONBOARD) h += checkSection(m, sec, cur > 1, ro);
+  h += `<h2>Обучение на технике <span class="muted small" style="font-weight:400">${trTotal - trLeft(m)}/${trTotal}</span></h2>`;
   if (!opsVisible(m)){
-    h += `<div class="card"><div class="ghead"><b>Обучение операциям</b></div><p class="muted small" style="margin:6px 0 0">Откроется со 2-й смены. Сейчас — первый день: встреча, оформление, безопасность и личный кабинет.</p></div>`;
+    h += `<div class="card"><p class="muted small" style="margin:0">Откроется со 2-й смены вместе с уровнями по операциям. Сейчас — первый день.</p></div>`;
     return h;
   }
-  h += `<h2 style="margin-top:18px">Обучение операциям</h2><p class="muted small" style="margin:-4px 2px 10px">Показал → под контролем → допущен работать сам.</p>`;
+  for (const sec of TRAINING) h += checkSection(m, sec, false, ro);
+  h += `<h2>Самостоятельность по операциям</h2><p class="muted small" style="margin:-4px 2px 10px">Показал → под контролем → допущен работать сам.</p>`;
   for (const g of groupsOf(m)){
     const items = skillItems(m, g);
     if (!items.length) continue;
-    h += `<div class="card"><div class="ghead"><b>${esc(GNAME[g])}</b><span class="muted small">${progress(m, g)}%</span></div>`;
-    for (const it of items){
+    const done = groupComplete(m, g), hd = secHead(m.id + ':g:' + g, GNAME[g], done, `${progress(m, g)}%`, '');
+    h += `<div class="card">` + hd.html;
+    if (hd.open) for (const it of items){
       const s = m.skills[it.id] || { lvl: 0 };
       const lvl = s.lvl || 0;
       const when = lvl && s.dates && s.dates[lvl] ? `${LEVELS[lvl]}: ${fmt(s.dates[lvl])}` : '';
@@ -774,7 +827,7 @@ function admissionBlock(m, g){
     <div class="row"><button class="btn sm ghost" data-act="admCancel" data-id="${m.id}" data-g="${g}">Отменить лист допуска</button></div></div>`;
   if (m.status !== 'active') return '';
   if (canAdmit(m, g)) return `<div class="adm"><div class="row" style="margin-top:0"><button class="btn main" data-act="admit" data-id="${m.id}" data-g="${g}">Оформить лист допуска</button></div></div>`;
-  if (groupComplete(m, g)) return `<div class="adm small muted">Все пункты освоены. Чтобы оформить допуск, закройте первый день: «Встреча, оформление и безопасность» и «Личный кабинет» (осталось ${obLeft(m)}).</div>`;
+  if (groupComplete(m, g)) return `<div class="adm small muted">Все пункты освоены. Для листа допуска осталось закрыть: ${[obLeft(m) ? `первый день — ${obLeft(m)}` : '', trLeft(m) ? `обучение на технике — ${trLeft(m)}` : ''].filter(Boolean).join(', ')}.</div>`;
   return '';
 }
 function admissionText(m, g){
@@ -782,7 +835,7 @@ function admissionText(m, g){
   const lines = [`ЛИСТ ДОПУСКА К САМОСТОЯТЕЛЬНОЙ РАБОТЕ`, ``,
     `Сотрудник: ${m.fio}${m.tab ? ', таб. ' + m.tab : ''}`, `Принят: ${fmt(m.hireDate)}`, `Операции: ${GNAME[g]}`,
     `Отработано смен: ${shiftNoAt(m, a.date || today())}`, ``, `Освоено:`];
-  for (const sec of ONBOARD){
+  for (const sec of ALL_CHECK){
     let last = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if ((m.onboard[u.id] || '') > last) last = m.onboard[u.id];
     lines.push(`• ${sec.name} — выполнено ${fmt(last)}`);
   }
@@ -984,7 +1037,7 @@ function viewSettings(){
 function openSheet(html, ctx){ sheet = ctx || {}; $('#pane').innerHTML = `<div class="grip"></div>${html}`; $('#sheet').classList.add('open'); document.body.style.overflow = 'hidden'; }
 function obCancelAdmissions(m){
   const req = Object.keys(m.admissions).filter(g => m.admissions[g] && m.admissions[g].status === 'requested');
-  if (req.length){ req.forEach(g => delete m.admissions[g]); toast('Лист допуска отменён: первый день не закрыт'); }
+  if (req.length){ req.forEach(g => delete m.admissions[g]); toast('Лист допуска отменён: не все пункты обучения отмечены'); }
 }
 function closeSheet(){ if (sheet && sheet.rec){ try { sheet.rec.stop(); } catch(e) {} } sheet = null; $('#sheet').classList.remove('open'); document.body.style.overflow = ''; }
 
@@ -1137,8 +1190,9 @@ function reportPayload(list, full){
     mentor: { fio: S.settings.fio, tab: S.settings.tab, shift: S.settings.shift },
     checklist: S.settings.checklist,
     onboarding: ONBOARD,
+    training: TRAINING,
     mentees: list.map(m => Object.assign(JSON.parse(JSON.stringify(m)), {
-      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, curShift: curShiftNo(m) }
+      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal, curShift: curShiftNo(m) }
     }))
   };
 }
@@ -1185,6 +1239,7 @@ function textSummary(){
       if (ln.comment) s += '. ' + ln.comment;
     }
     if (!onboardDone(m)) s += `\n  🗂 Первый день: сделано ${obTotal - obLeft(m)} из ${obTotal}`;
+    if (curShiftNo(m) >= 2 && !trainingDone(m)) s += `\n  🛠 Обучение на технике: ${trTotal - trLeft(m)} из ${trTotal}`;
     const nt = nextTask(m); if (nt) s += `\n  📌 Дальше: ${[nt.name, nt.text].filter(Boolean).join('. ')}`;
     const rr = riskReasons(m); if (rr.length) s += `\n  🔻 Риск ухода: ${rr.join(', ')}`;
     for (const [g] of WORK_GROUPS) if (m.admissions[g] && m.admissions[g].status === 'requested') s += `\n  ✅ Готов к допуску: ${GNAME[g]} (лист от ${fmt(m.admissions[g].date)})`;
@@ -1271,21 +1326,23 @@ const ACT = {
   tab: d => { ui.tab = d.v; render(); },
   hideInstall: () => { S.settings.installHidden = true; save(); render(); },
   closeSheet,
-  obToggle: () => { ui.obOpen = !ui.obOpen; render(); },
+  secToggle: d => { ui.secOpen = ui.secOpen || {}; ui.secOpen[d.k] = !secOpen(d.k, d.done === '1'); render(); },
   obInfo: d => { const el = $('#obf_' + d.u); if (el) el.hidden = !el.hidden; },
   obTap: d => {
     const m = findM(d.id); if (!m || m.status !== 'active') return;
     if (m.onboard[d.u]) delete m.onboard[d.u]; else m.onboard[d.u] = today();
-    if (!onboardDone(m)) obCancelAdmissions(m);
-    const wasDone = onboardDone(m);
+    if (!onboardDone(m) || !trainingDone(m)) obCancelAdmissions(m);
+    const sec = secOfUnit(d.u), secDone = sec && obSectionLeft(m, sec) === 0;
+    if (sec && ui.secOpen) delete ui.secOpen[m.id + ':' + sec.id];   // выполненный раздел свернётся сам
     touch(m); render();
-    if (wasDone && OB_UNITS.some(u => u.id === d.u) && m.onboard[d.u]) toast('Первый день закрыт ✅');
+    if (secDone && m.onboard[d.u]) toast(ONBOARD.includes(sec) && onboardDone(m) ? 'Первый день закрыт ✅' : `Раздел «${sec.name}» закрыт ✅`);
   },
   obAll: d => {
-    const m = findM(d.id), sec = ONBOARD.find(s => s.id === d.s);
+    const m = findM(d.id), sec = ALL_CHECK.find(s => s.id === d.s);
     if (!confirm(`Отметить выполненным весь раздел «${sec.name}»?`)) return;
     for (const it of sec.items) for (const u of (it.sub || [it])) if (!m.onboard[u.id]) m.onboard[u.id] = today();
-    touch(m); render(); toast(onboardDone(m) ? 'Первый день закрыт ✅' : 'Раздел отмечен');
+    if (ui.secOpen) delete ui.secOpen[m.id + ':' + sec.id];
+    touch(m); render(); toast(`Раздел «${sec.name}» закрыт ✅`);
   },
 
   batch: () => {
@@ -1304,9 +1361,14 @@ const ACT = {
         <input type="text" id="bc_${m.id}" maxlength="${COMMENT_MAX}" placeholder="Комментарий (необязательно)" style="margin-top:8px">
         ${helpBlockHtml('b_' + m.id, false, '', '')}
       </div>`).join('')}
-      ${act.some(m => !onboardDone(m)) ? `<h3 style="margin-top:20px;font-size:16px">Первый день — всем вышедшим</h3>
-      <p class="small muted" style="margin:2px 0 10px">Отметьте, что сделали вместе. У кого пункт уже отмечен — не изменится.</p>
-      ${ONBOARD.map(sec => `<div class="tgh">${esc(sec.name)}</div><div class="obchips" style="margin-bottom:6px">${sec.items.flatMap(it => it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t })) : [{ id: it.id, t: it.n + ' ' + it.t }]).filter(u => act.some(m => !m.onboard[u.id])).map(u => `<button data-act="bOb" data-u="${u.id}">${esc(u.t)}</button>`).join('')}</div>`).join('')}` : ''}
+      ${(() => {
+        const secs = ALL_CHECK.map(sec => ({ sec, units: sec.items.flatMap(it => it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t })) : [{ id: it.id, t: it.n + ' ' + it.t }]).filter(u => act.some(m => !m.onboard[u.id])) })).filter(x => x.units.length);
+        if (!secs.length) return '';
+        return `<h3 style="margin-top:20px;font-size:16px">Обучение — всем вышедшим</h3>
+          <p class="small muted" style="margin:2px 0 10px">Отметьте, что показали вместе. У кого пункт уже отмечен — не изменится.</p>
+          ${secs.map(({ sec, units }) => `<details class="bsec" ${ONBOARD.includes(sec) ? 'open' : ''}><summary>${esc(sec.name)} <span class="muted small">(${units.length})</span></summary>
+            <div class="obchips" style="margin-bottom:6px">${units.map(u => `<button data-act="bOb" data-u="${u.id}">${esc(u.t)}</button>`).join('')}</div></details>`).join('')}`;
+      })()}
       <h3 style="margin-top:20px;font-size:16px">Общее занятие</h3>
       <p class="small muted" style="margin:2px 0 12px">Если показывали операцию сразу всем — отметьте её здесь, уровень поднимется у всех вышедших. «Допущен» ставится только по одному, в карточке новичка.</p>
       <label class="f"><span>Что отрабатывали вместе</span><select id="bSkill"><option value="">Не отрабатывали</option>${opts}</select></label>
@@ -1521,7 +1583,7 @@ const ACT = {
   },
   admit: d => {
     const m = findM(d.id), g = d.g;
-    const items = ONBOARD.map(sec => `<div class="list-item small"><span>✅ ${esc(sec.name)}</span></div>`).join('') + skillItems(m, g).map(it => `<div class="list-item small"><span>${esc(it.name)}</span><span class="muted" style="flex:0;white-space:nowrap">${fmt(m.skills[it.id]?.dates?.[3])}</span></div>`).join('');
+    const items = ALL_CHECK.map(sec => `<div class="list-item small"><span>✅ ${esc(sec.name)}</span></div>`).join('') + skillItems(m, g).map(it => `<div class="list-item small"><span>${esc(it.name)}</span><span class="muted" style="flex:0;white-space:nowrap">${fmt(m.skills[it.id]?.dates?.[3])}</span></div>`).join('');
     openSheet(`<h3>Лист допуска: ${esc(GNAME[g])}</h3><p class="lead">${esc(m.fio)}, отработано смен: ${worked(m)}</p>
       <div class="card" style="padding:6px 12px">${items}</div>
       <label class="f"><span>Дата</span><input type="date" id="aDate" value="${today()}" max="${today()}"></label>
