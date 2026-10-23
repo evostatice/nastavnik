@@ -1,5 +1,5 @@
-/* Карманный наставник — офлайн-кэш. При выпуске новой версии меняйте VERSION. */
-const VERSION = 'nastavnik-1.9';
+/* Карманный наставник — офлайн-кэш. Версия приходит из адреса (sw.js?v=…), её задаёт APP_VERSION в index.html */
+const VERSION = 'nastavnik-' + (new URL(location.href).searchParams.get('v') || 'dev');
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

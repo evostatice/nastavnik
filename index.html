@@ -3,32 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1E2933">
+<meta name="theme-color" content="#0f1117">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Наставник">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Карманный наставник</title>
 <style>
+/* Палитра «Паспорта смены»: тёмная тема, панели с тонкой рамкой, синий акцент */
 :root{
-  --bg:#E8ECEF; --surf:#FFFFFF; --surf2:#F2F5F7; --ink:#16212A; --mute:#5A6A77; --line:#CBD4DB;
-  --mark:#F2C230; --markInk:#1B1B1B; --ok:#2B9457; --warn:#C9781A; --bad:#C53B31; --info:#2C68A8;
-  --okBg:#DCF1E4; --warnBg:#FBEBD3; --badBg:#F9DEDB; --infoBg:#DCE8F5;
-  --r:14px; --tap:48px;
-  color-scheme:light dark;
-}
-@media (prefers-color-scheme:dark){
-  :root{
-    --bg:#121A20; --surf:#1C262F; --surf2:#25323D; --ink:#E7EDF1; --mute:#93A2AE; --line:#33424E;
-    --okBg:#173627; --warnBg:#3A2A12; --badBg:#3D1C19; --infoBg:#18304A;
-    --ok:#4CC27E; --warn:#F0A040; --bad:#F06A5F; --info:#6FA8E6;
-  }
+  --bg:#0f1117; --surf:#161b22; --surf2:#0d1117; --ink:#e1e4e8; --mute:#8b949e; --line:#30363d;
+  --mark:#58a6ff; --markInk:#0f1117; --ok:#3fb950; --warn:#d29922; --bad:#f85149; --info:#58a6ff;
+  --okBg:rgba(63,185,80,.14); --warnBg:rgba(210,153,34,.14); --badBg:rgba(248,81,73,.14); --infoBg:rgba(88,166,255,.14);
+  --r:12px; --tap:48px;
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none !important}   /* иначе display:grid/flex у классов перебивает атрибут hidden */
 html,body{margin:0;height:100%}
 body{
   background:var(--bg); color:var(--ink);
@@ -39,12 +34,11 @@ body{
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--info);outline-offset:2px}
+input:focus,select:focus,textarea:focus{border-color:var(--info);outline:none}
 
-/* Верхняя полоса — разметка пола */
-.band{height:6px;background:repeating-linear-gradient(135deg,var(--mark) 0 14px,#2A333A 14px 28px)}
 header.top{position:sticky;top:0;z-index:5;background:var(--surf);border-bottom:1px solid var(--line)}
 .topin{display:flex;align-items:center;gap:10px;padding:0 16px;height:56px}
-.topin h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topin h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--info)}
 .topin .who{font-size:13px;color:var(--mute);text-align:right;line-height:1.25}
 .back{border:0;background:var(--surf2);border-radius:12px;min-width:var(--tap);height:40px;font-size:20px}
 
@@ -60,7 +54,7 @@ nav.bot button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--surf);font-weight:600;text-align:center}
 .btn.main{background:var(--mark);color:var(--markInk);border-color:transparent}
-.btn.dark{background:var(--ink);color:var(--surf);border-color:transparent}
+.btn.dark{background:var(--infoBg);color:var(--info);border-color:var(--info)}
 .btn.ghost{background:transparent}
 .btn.danger{color:var(--bad);border-color:var(--bad);background:transparent}
 .btn.wide{width:100%}
@@ -89,10 +83,10 @@ h2:first-child{margin-top:4px}
 /* Лесенка смен */
 .ladder{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:12px 0 6px}
 .ladder i{height:14px;border-radius:3px;background:var(--surf2);border:1px solid var(--line);position:relative}
-.ladder i.f{background:var(--ink);border-color:var(--ink)}
-.ladder i.m{border:2px solid var(--mark)}
-.ladder i.m.f{background:var(--ink)}
-.ladder i.m.done::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--mark)}
+.ladder i.f{background:var(--info);border-color:var(--info)}
+.ladder i.m{border:2px solid var(--warn)}
+.ladder i.m.f{background:var(--info)}
+.ladder i.m.done::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--warn)}
 .ladcap{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
@@ -110,9 +104,9 @@ h2:first-child{margin-top:4px}
 .barrow .bar{flex:1}
 
 /* Вкладки внутри карточки */
-.tabs{display:flex;gap:4px;background:var(--surf2);border-radius:12px;padding:4px;margin:4px 0 14px;position:sticky;top:57px;z-index:4}
-.tabs button{flex:1;border:0;background:none;border-radius:9px;min-height:40px;font-size:14px;font-weight:600;color:var(--mute)}
-.tabs button.on{background:var(--surf);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.tabs{display:flex;gap:4px;background:var(--bg);border-bottom:1px solid var(--line);margin:4px 0 14px;position:sticky;top:57px;z-index:4}
+.tabs button{flex:1;border:0;border-bottom:2px solid transparent;background:none;min-height:44px;font-size:14px;font-weight:600;color:var(--mute);margin-bottom:-1px}
+.tabs button.on{color:var(--info);border-bottom-color:var(--info)}
 
 /* Навыки */
 .skill{padding:12px 0;border-top:1px solid var(--line)}
@@ -138,20 +132,20 @@ h2:first-child{margin-top:4px}
 
 /* Формы */
 label.f,div.f{display:block;margin-bottom:16px}
-label.f>span{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
-input[type=text],input[type=date],input[type=number],select,textarea{
+label.f>span{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+input[type=text],input[type=search],input[type=date],input[type=number],select,textarea{
   width:100%;min-height:var(--tap);border-radius:12px;border:1px solid var(--line);background:var(--surf2);padding:10px 12px;font-size:16px}
 textarea{min-height:88px;resize:vertical}
 .pick{display:grid;gap:6px}
 .pick.c2{grid-template-columns:1fr 1fr}
 .pick.c5{grid-template-columns:repeat(5,1fr)}
 .pick button{border:1px solid var(--line);background:var(--surf2);border-radius:12px;min-height:var(--tap);font-weight:600;padding:4px}
-.pick button.on{background:var(--ink);color:var(--surf);border-color:var(--ink)}
+.pick button.on{background:var(--info);color:var(--markInk);border-color:var(--info)}
 .pick.c5 button{font-size:20px}
 .pick.c5 button small{display:block;font-size:10.5px;font-weight:500}
 .tagset{display:flex;flex-wrap:wrap;gap:6px}
 .tagset button{border:1px solid var(--line);background:var(--surf2);border-radius:20px;padding:8px 12px;font-size:14px}
-.tagset button.on{background:var(--ink);color:var(--surf);border-color:var(--ink)}
+.tagset button.on{background:var(--info);color:var(--markInk);border-color:var(--info)}
 .tagset button.tg{border-width:1.5px;text-align:left;line-height:1.25}
 .tg.pos{border-color:var(--ok);color:var(--ok)}
 .tg.neg{border-color:var(--bad);color:var(--bad)}
@@ -167,7 +161,6 @@ textarea{min-height:88px;resize:vertical}
 .linkbtn{border:0;background:none;color:var(--info);font-weight:600;padding:8px 0;min-height:40px}
 .qrow{display:flex;gap:6px;overflow-x:auto;margin-top:8px;padding-bottom:2px;-webkit-overflow-scrolling:touch}
 .qrow button{flex-shrink:0;border:1px solid var(--line);background:var(--surf);border-radius:20px;padding:8px 12px;font-size:14px;min-height:40px;white-space:nowrap}
-.qrow button.rec{border-color:var(--bad);color:var(--bad);font-weight:700}
 .cnt{text-align:right;font-size:12px;color:var(--mute);margin-top:4px}
 textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidden;line-height:1.4}
 .helpbar{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surf2);color:var(--mute);text-align:left;margin:6px 0 10px}
@@ -204,6 +197,8 @@ textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidde
 .obcarry{font-size:11px;font-weight:700;color:var(--warn);background:var(--warnBg);border-radius:8px;padding:1px 6px;white-space:nowrap}
 .obinfo{flex-shrink:0;border:0;background:none;color:var(--mute);font-size:18px;width:36px;height:40px}
 .obfull{font-size:13px;color:var(--mute);padding:0 0 8px 44px}
+.obq{margin:6px 0 0;padding-left:18px;color:var(--ink)}
+.obq li{margin:4px 0}
 .obchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .obchips button{border:1.5px solid var(--line);background:var(--surf2);border-radius:18px;padding:7px 11px;font-size:13.5px;min-height:38px}
 .obchips button.on{background:var(--ok);border-color:var(--ok);color:var(--surf);font-weight:600}
@@ -215,11 +210,65 @@ textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidde
 .check input{width:22px;height:22px;flex-shrink:0}
 .check.alert{border-color:var(--bad)}
 
+/* Главный экран: «Сегодня», фильтры, компактные строки */
+.today .trow{display:flex;gap:10px;align-items:flex-start;padding:4px 0}
+.tlink{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;text-align:left;padding:0;min-height:40px}
+.tlink b{flex:1;min-width:0;font-size:15px}
+.tcnt{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.tgo{color:var(--mute);font-size:22px;line-height:1}
+.today .trow .tic{padding-top:8px}
+.today .trow+.trow{border-top:1px solid var(--line)}
+.today .trow.warn b{color:var(--warn)}
+.tic{font-size:20px;line-height:1.3;flex-shrink:0}
+.tbd{flex:1;min-width:0}
+.tbd>b{display:block;font-size:15px;padding-top:8px}
+.nchips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.nchip{border:1px solid var(--line);background:var(--surf2);border-radius:16px;padding:6px 11px;font-size:13.5px;min-height:36px}
+.nchip.more{background:transparent;color:var(--info);font-weight:600;border-color:transparent}
+.lctl{display:flex;gap:8px;margin:14px 0 8px}
+.lctl input{flex:1;min-width:0}
+.lctl .btn{flex-shrink:0;min-height:var(--tap)}
+.fchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.fchips button{flex-shrink:0;border:1px solid var(--line);background:var(--surf);border-radius:18px;padding:6px 12px;font-size:14px;min-height:38px;white-space:nowrap}
+.fchips button.on{background:var(--infoBg);color:var(--info);border-color:var(--info);font-weight:600}
+.fchips button span{opacity:.65;font-size:12px}
+.mrow{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:10px 10px 10px 14px;margin-bottom:6px;cursor:pointer}
+.mmain{flex:1;min-width:0}
+.mnm{font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msub{font-size:12.5px;color:var(--mute);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbar{height:4px;border-radius:3px;background:var(--surf2);margin-top:6px;overflow:hidden}
+.mbar span{display:block;height:100%;background:var(--ok)}
+.mic{display:flex;gap:2px;font-size:16px;flex-shrink:0}
+.mbtn{flex-shrink:0;width:46px;height:46px;border-radius:12px;border:0;background:var(--mark);color:var(--markInk);font-size:20px;font-weight:800}
+.mbtn.done{background:var(--okBg);color:var(--ok)}
+
+/* Групповая отметка «исключениями» */
+.brow{border:1px solid var(--line);border-radius:12px;padding:8px;margin-bottom:6px;background:var(--surf)}
+.btop{display:flex;align-items:center;gap:8px}
+.bpres{flex-shrink:0;width:46px;height:46px;border-radius:12px;border:2px solid var(--ok);background:var(--okBg);color:var(--ok);font-size:20px;font-weight:800}
+.bpres.off{border-color:var(--bad);background:var(--badBg);color:var(--bad)}
+.bname{flex:1;min-width:0;text-align:left;border:0;background:none;padding:2px 0;min-height:46px}
+.bname b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btop .bout{width:96px;flex-shrink:0;padding:8px 10px}
+.bmore{margin-top:8px}
+
+/* «Пункты группе» */
+.gwrap{overflow-x:auto;margin:0 -16px;padding:0 16px;-webkit-overflow-scrolling:touch}
+table.grid{border-collapse:separate;border-spacing:0;font-size:13px}
+.grid th,.grid td{border-bottom:1px solid var(--line);padding:4px;text-align:center;vertical-align:middle}
+.grid th{font-size:11px;font-weight:600;color:var(--mute);min-width:52px;line-height:1.2;white-space:nowrap}
+.grid .gfirst{position:sticky;left:0;background:var(--surf);text-align:left;min-width:150px;max-width:180px;z-index:1;box-shadow:1px 0 0 var(--line)}
+.gall{border:0;background:none;text-align:left;padding:4px 0;font-size:13px;line-height:1.25;min-height:44px;width:100%}
+.gall small{display:block;color:var(--info);font-weight:600;font-size:11.5px}
+.gcell{width:42px;height:42px;border-radius:10px;border:1.5px solid var(--line);background:var(--surf2);font-weight:800;font-size:16px;color:#fff}
+.gcell.on{background:var(--ok);border-color:var(--ok)}
+.gna{color:var(--mute)}
+
 /* Нижний лист */
 #sheet{position:fixed;inset:0;z-index:20;display:none}
 #sheet.open{display:block}
-#sheet .shade{position:absolute;inset:0;background:rgba(0,0,0,.45)}
-#sheet .pane{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow:auto;background:var(--surf);border-radius:18px 18px 0 0;
+#sheet .shade{position:absolute;inset:0;background:rgba(0,0,0,.7)}
+#sheet .pane{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow:auto;background:var(--surf);border:1px solid var(--line);border-bottom:0;border-radius:var(--r) var(--r) 0 0;
   padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));max-width:640px;margin:0 auto;animation:up .18s ease-out}
 @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){#sheet .pane{animation:none}}
@@ -229,7 +278,15 @@ textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidde
 .pane .actions{display:flex;gap:10px;margin-top:18px;position:sticky;bottom:-18px;background:var(--surf);padding:10px 0 4px}
 .pane .actions .btn{flex:1}
 
-#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surf);
+/* Окно подтверждения — своё, т.к. confirm() в части браузеров молча возвращает «Отмена» */
+#ask{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+#ask[hidden]{display:none}
+#ask .shade{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+#ask .box{position:relative;background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:18px 16px 14px;max-width:420px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+#ask p{margin:0 0 16px;font-size:16px;white-space:pre-line}
+#ask .row>.btn{flex:1}
+
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--surf);color:var(--ink);border:1px solid var(--line);box-shadow:0 6px 20px rgba(0,0,0,.4);
   padding:10px 16px;border-radius:12px;font-size:14px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.show{opacity:1}
 
@@ -248,6 +305,9 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
 .big-send{padding:22px 16px;text-align:center}
 .big-send .n{font-size:44px;font-weight:800;line-height:1}
 .task{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--surf2);border:1px dashed var(--line);font-size:14px}
+/* Свободный текст наставника (задача, комментарий, причина) переносится, даже если это одно длинное слово */
+.task,.risk,.note,.hist .bd,.kv dd,.adm,.obfull,.chip,.tg,.nchip,.chead .nm,.ans span{overflow-wrap:anywhere}
+.chead>div:first-child{min-width:0}
 .task b{font-weight:600}
 .risk{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--badBg);color:var(--bad);font-size:14px}
 .risk b{display:block}
@@ -262,6 +322,11 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
 .hq .hqa{display:block;font-size:15px;font-weight:600}
 .hq li.key{background:var(--warnBg);border-radius:10px;padding:8px 10px;margin-left:-18px;list-style:none}
 .hq .hqn{display:block;font-size:13px;color:var(--warn);margin-top:4px;font-weight:600}
+.crit{background:var(--warnBg);border:1px solid var(--warn);border-left:5px solid var(--warn);border-radius:var(--r);padding:12px 14px;margin:4px 0 14px;font-size:15px}
+.crit>b{display:block;color:var(--warn);font-size:16px;margin-bottom:6px}
+.crit ul{margin:0 0 10px;padding-left:20px}
+.crit li{margin:4px 0}
+.crit p{margin:0;padding-top:10px;border-top:1px dashed var(--warn)}
 .sq{margin-bottom:14px}
 .sq>div:first-child{font-size:15px;margin-bottom:6px}
 .pick.c5n button{font-size:17px}
@@ -281,10 +346,11 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
 </style>
 </head>
 <body>
-<div class="band" aria-hidden="true"></div>
 <div id="app"></div>
 <div id="sheet" role="dialog" aria-modal="true"><div class="shade" data-act="closeSheet"></div><div class="pane" id="pane"></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="ask" role="alertdialog" aria-modal="true" aria-labelledby="askMsg" hidden><div class="shade"></div><div class="box"><p id="askMsg"></p>
+  <div class="row"><button class="btn" id="askNo">Отмена</button><button class="btn main" id="askYes">Да</button></div></div></div>
 <input type="file" id="fileIn" hidden>
 
 <script>
@@ -294,9 +360,12 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.9';
+const APP_VERSION = '1.35';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
-const SIGN = 'Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
+/* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
+const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
+const leaderOf = () => SHIFTS[S.settings.shift] || S.settings.leader || '';
+const SIGN ='Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
 
 const GROUPS = [['pick','Комплектация']];   // v1.4: отгрузка, ВЭШ, приёмка убраны; v1.6: «Общее» заменено чек-листом первого дня
 const GNAME = Object.fromEntries(GROUPS);
@@ -334,6 +403,7 @@ const ONBOARD = [
     { id: 'ob2_5', n: '2.5', t: 'Совместный обед', f: 'Совместный обед' }
   ]}
 ];
+const ONBOARD_GOAL = 'Человек знает смену, когда и где ему работать, находит все нужные помещения и зоны, понимает, кто за что отвечает и к кому обращаться, видит, где что лежит, умеет пользоваться техникой, соблюдает правила техбеза, понимает, как работают FMR-роботы, знает нюансы комплектации заказов — и уже на практике собрал одну-две паллеты.';
 /* Подготовка: со 2-й смены, отметка «сделано / нет» */
 const TRAINING = [   // id не меняются при перенумерации — отметки сохраняются
   { id: 'tech', name: 'Техника и доступ', items: [
@@ -346,35 +416,106 @@ const TRAINING = [   // id не меняются при перенумераци
   { id: 'fmr', name: 'FMR и безопасное движение', items: [
     { id: 'ob3_5',  n: '3.6', t: 'FMR: маневрирование, дистанция', f: 'FMR-роботы: правила маневрирования, дистанция' },
     { id: 'ob3_22', n: '3.7', t: 'Аварийная остановка FMR', f: 'Аварийная остановка FMR: где кнопка, когда жать' },
-    { id: 'ob3_6',  n: '3.8', t: 'Опасные зоны FMR', f: 'Опасные зоны FMR (буферы, зарядка, паллетайзер, проезд между складами)' },
-    { id: 'ob3_7',  n: '3.9', t: 'Проезд к воротам, передача управления', f: 'Проезд к свободным воротам отгрузки, передача управления стажёру' }
+    { id: 'ob3_18', n: '3.8', t: 'Буфер: размещение паллет', f: 'Буферная зона: размещение паллет' },
+    { id: 'ob3_6',  n: '3.9', t: 'Опасные зоны FMR', f: 'Опасные зоны FMR (буферы, зарядка, паллетайзер, проезд между складами)' },
+    { id: 'ob3_7',  n: '3.10', t: 'Проезд к воротам, передача управления', f: 'Проезд к свободным воротам отгрузки, передача управления стажёру' }
   ]},
   { id: 'term', name: 'Терминал и задачи', items: [
-    { id: 'ob3_8',  n: '3.10', t: 'Где получать АКБ', f: 'Показал, где получать АКБ' },
-    { id: 'ob3_9',  n: '3.11', t: 'Терминал: команды, логины', f: 'Работа и команды терминала, логины (стажёр + основная)' },
-    { id: 'ob3_10', n: '3.12', t: 'BT-наушники, зарядка в технике', f: 'Подключение BT-наушников + зарядка в технике (какой плюс)' },
-    { id: 'ob3_11', n: '3.13', t: 'Подключение сканера', f: 'Подключение сканера' },
-    { id: 'ob3_12', n: '3.14', t: 'Принтеры, как запросить задачу', f: 'Расположение принтеров, как запрашивать задачу' }
+    { id: 'ob3_8',  n: '3.11', t: 'Где получать АКБ', f: 'Показал, где получать АКБ' },
+    { id: 'ob3_9',  n: '3.12', t: 'Терминал: команды, логины', f: 'Работа и команды терминала, логины (стажёр + основная)' },
+    { id: 'ob3_10', n: '3.13', t: 'BT-наушники, зарядка в технике', f: 'Подключение BT-наушников + зарядка в технике (какой плюс)' },
+    { id: 'ob3_11', n: '3.14', t: 'Подключение сканера', f: 'Подключение сканера' },
+    { id: 'ob3_12', n: '3.15', t: 'Принтеры, как запросить задачу', f: 'Расположение принтеров, как запрашивать задачу' }
   ]},
   { id: 'pickt', name: 'Нюансы комплектации', items: [
-    { id: 'ob3_13', n: '3.15', t: 'Техника отбора, подъезд к ячейкам', f: 'Демонстрация техники отбора, подъезд к ячейкам' },
-    { id: 'ob3_14', n: '3.16', t: 'Вода: ячейки 5.1, 5.3', f: 'Вода: отличие ячеек 5.1, 5.3 и остального ассортимента' },
-    { id: 'ob3_15', n: '3.17', t: 'Двухъярусные ряды 10, 11, 16, 22–24', f: 'Двухъярусные ряды (10, 11, 16, 22–24): специфика, исключения в 24-м' },
-    { id: 'ob3_16', n: '3.18', t: 'Крупногабарит: дисплей, соль, сахар', f: 'Крупногабарит: «дисплей», соль, сахар — первоочередной отбор, правила комплектации' },
-    { id: 'ob3_17', n: '3.19', t: 'Нестандарт: «товар есть, система не даёт»', f: 'Нестандарт: «товар есть, система не даёт», отбор «не кванта» в первую очередь' }
-  ]},
-  { id: 'buf', name: 'Буфер и паллеты', items: [
-    { id: 'ob3_18', n: '3.20', t: 'Буфер: размещение, пополнение, пропуск', f: 'Буферная зона: размещение паллет, команды на пополнение, пропуск ряда/ячейки' },
-    { id: 'ob3_19', n: '3.21', t: 'Передача паллет по смене', f: 'Передача паллет по смене' },
-    { id: 'ob3_20', n: '3.22', t: 'Примеры качественных паллет', f: 'Примеры качественных паллет: структура, укладка' },
-    { id: 'ob3_23', n: '3.23', t: 'Некачественная паллета: что нельзя', f: 'Критерии «некачественной» паллеты — что нельзя' }
+    { id: 'ob3_13', n: '3.16', t: 'Техника отбора, подъезд к ячейкам', f: 'Демонстрация техники отбора, подъезд к ячейкам' },
+    { id: 'ob3_14', n: '3.17', t: 'Вода: ячейки 5.1, 5.3', f: 'Вода: отличие ячеек 5.1, 5.3 и остального ассортимента' },
+    { id: 'ob3_15', n: '3.18', t: 'Двухъярусные ряды 10, 11, 16, 22–24', f: 'Двухъярусные ряды (10, 11, 16, 22–24): специфика, исключения в 24-м' },
+    { id: 'ob3_16', n: '3.19', t: 'Крупногабарит: дисплей, соль, сахар', f: 'Крупногабарит: «дисплей», соль, сахар — первоочередной отбор, правила комплектации' },
+    { id: 'ob3_17', n: '3.20', t: 'Нестандарт: «товар есть, система не даёт»', f: 'Нестандарт: «товар есть, система не даёт», отбор «не кванта» в первую очередь' },
+    { id: 'ob3_24', n: '3.21', t: 'Команды: Пополнить, Пропуск ячейки/ряда', f: 'Команды «Пополнить» и «Пропуск ячейки/ряда»' },
+    { id: 'ob3_19', n: '3.22', t: 'Передача паллет по смене', f: 'Передача паллет по смене' },
+    { id: 'ob3_20', n: '3.23', t: 'Примеры качественных паллет', f: 'Примеры качественных паллет: структура, укладка' },
+    { id: 'ob3_23', n: '3.24', t: 'Примеры некачественных паллет: что нельзя', f: 'Примеры некачественных паллет — что нельзя' },
+    { id: 'ob3_25', n: '3.25', t: 'Регламенты: пустые ячейки → штабелер → ГУТЗ', f: 'Регламенты: пустые ячейки → штабелер → ГУТЗ (знает, что делать)' }
   ]}
 ];
-const ALL_CHECK = [...ONBOARD, ...TRAINING];
+/* Обучение операциям: отметка «сделано / нет», как в «Подготовке» */
+const OPS = [
+  { id: 'ops', name: 'Комплектация: первые паллеты', items: [
+    { id: 'ob4_1', n: '4.1', t: 'Наставник собирает, стажёры наблюдают', f: '1 паллет собирает наставник, стажёры наблюдают' },
+    { id: 'ob4_2', n: '4.2', t: 'Паллет на стажёрскую учётку', f: '1 паллет на стажёрскую учётку (сам берёт задачу с ТСД)' },
+    { id: 'ob4_3', n: '4.3', t: 'Паллет на свою учётку, под контролем', f: '1 паллета на свою учётку (под контролем)' }
+  ]},
+  { id: 'opsq', name: 'Качество и разбор ошибок', items: [
+    { id: 'ob4_4', n: '4.4', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
+    { id: 'ob4_5', n: '4.5', t: 'Проверка паллета вместе со стажёром', f: 'Процесс проверки паллета (вместе со стажёром и разбором)' },
+    { id: 'ob4_6', n: '4.6', t: 'Качество комплектации, проверки КРО', f: 'Соблюдение качества комплектации, проверки КРО: почему это важно, как влияют ошибки комплектации' }
+  ]},
+  { id: 'opsend', name: 'Завершение смены', items: [
+    { id: 'ob4_7', n: '4.7', t: 'Сдача оборудования, АКБ', f: 'Сдача оборудования и АКБ в конце смены' },
+    { id: 'ob4_8', n: '4.8', t: 'Уборка в закреплённом ряду', f: 'Уборка в закреплённом ряду: где смотреть закреплённый ряд, что необходимо убирать и куда отвозить' },
+    { id: 'ob4_9', n: '4.9', t: 'Беседа: самочувствие и вопросы', f: 'Самочувствие, понимание. Главное — чтобы новичок не остался с вопросом, который постеснялся задать.',
+      q: ['Физически ок? Ноги, спина — ничего не «болит»?', '«Что было самым непонятным сегодня?»', '«Почему нельзя класть тяжёлое сверху лёгкого?»', '«Что делаешь, если товара нет в ячейке?»', '«Что бы ты хотел, чтобы я показал ещё раз завтра?»'] }
+  ]},
+  /* min — с какой смены новичка раздел (или пункт) виден; до неё он скрыт */
+  { id: 'day2', name: 'День 2 — закрепление и рост объёма', min: 2, goal: 'Сам берёт задачи, план на смену 400 кор. Всё — под наблюдением наставника.', items: [
+    { id: 'ob5_1', n: '4.10', t: 'Переодевание, медосмотр, встреча', f: 'Переодевание, медосмотр, встреча (в форме, на месте)' },
+    { id: 'ob5_2', n: '4.11', t: 'Получение техники, ТСД, АКБ, стрейч', f: 'Получение техники, ТСД, АКБ, стрейч' },
+    { id: 'ob5_3', n: '4.12', t: 'Собрание', f: 'Собрание' },
+    { id: 'ob5_4', n: '4.13', t: 'Паллет на свою учётку, под контролем', f: 'Паллет на свою учётку, под контролем (сам берёт задачи)' },
+    { id: 'ob5_5', n: '4.14', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
+    { id: 'ob5_6', n: '4.15', t: 'Следующие паллеты на стажёрскую учётку', f: 'Следующие паллеты на стажёрскую учётку (под контролем)' },
+    { id: 'ob5_7', n: '4.16', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' }
+  ]},
+  { id: 'day3', name: 'День 3 — автономность и финальная проверка', min: 3, goal: 'Сам берёт задачи, план на смену 600 кор.', items: [
+    { id: 'ob6_1', n: '4.17', t: 'Переодевание, медосмотр, встреча', f: 'Переодевание, медосмотр, встреча (в форме, на месте)' },
+    { id: 'ob6_2', n: '4.18', t: 'Получение техники, ТСД, АКБ, стрейч', f: 'Получение техники, ТСД, АКБ, стрейч' },
+    { id: 'ob6_3', n: '4.19', t: 'Собрание', f: 'Собрание' },
+    { id: 'ob6_4', n: '4.20', t: 'Паллет на свою учётку, под контролем', f: 'Паллет на свою учётку, под контролем (сам берёт задачи)' },
+    { id: 'ob6_5', n: '4.21', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
+    { id: 'ob6_6', n: '4.22', t: 'Следующие паллеты на стажёрскую учётку', f: 'Следующие паллеты на стажёрскую учётку (под контролем)' },
+    { id: 'ob6_7', n: '4.23', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
+    /* meet — пункт закрывается сам, когда записана беседа этой смены; касание открывает вкладку «Беседы» */
+    { id: 'ob6_8', n: '4.24', t: 'Беседа на 3-й смене — обязательна', f: 'Беседа на 3-й день обязательна — записывается во вкладке «Беседы»', meet: 3 }
+  ]}
+];
+const ADMIT_SHIFT = 3;   // лист допуска — не раньше этой смены
+const itemOn = (m, sec, it) => curShiftNo(m) >= (it.min || sec.min || 0);
+/* Смена, на которую пункт положен по программе: «Старт» — 1-я, «Подготовка» — 2-я, «Обучение операциям» — по min раздела */
+const dueShiftOf = (sec, it) => Math.max(ONBOARD.includes(sec) ? 1 : TRAINING.includes(sec) ? 2 : (sec.min || 1), it.min || 0);
+/* То же по id отмечаемого пункта (в т.ч. подпункта) */
+function unitOn(m, id){
+  for (const sec of ALL_CHECK) for (const it of sec.items) if (it.id === id || (it.sub && it.sub.some(u => u.id === id))) return itemOn(m, sec, it) && !it.meet;
+  return false;
+}
+/* Цель по выработке (коробов) — карточка с полем «факт» показывается только на этой смене */
+const OUTPUT_GOAL = { 2: [400, 500], 3: [600] };   // [от, до] или [от]
+const goalText = g => g[1] ? `${g[0]}–${g[1]}` : `${g[0]}`;
+/* Примечание в конце «Обучения операциям» — показывается только на своей смене */
+const SHIFT_CRIT = {
+  1: { list: [
+        'Не торопить. 1–2 паллета — минимум, не максимум.',
+        'Показывать до того, как он делает. Не «смотри, я делаю», а рука в руке.',
+        'Укладка: проверка геометрии. Не «положил и поехал».'],
+      foot: ['Критерий перехода к смене 2', '1 паллета собрана без завала, 1 заказ без переборки, уборка сделана.'] },
+  2: { list: [
+        'Один склад, один формат. Не гонять.',
+        'Завал → не помогать сразу. Спросить: «Почему завалилось?»',
+        'Сложные заказы (вода, дисплеи, алкоголь) — помощь наставника.',
+        'Задачи с КИЗ — только под наблюдением наставника, при переходе на самостоятельную работу ОТКЛЮЧАЕМ.'],
+      foot: ['Конец дня', '400–500 кор., 60 мин автономии (работа без наставника, но паллет после сборки проверяем).'] },
+  3: { list: [
+        'Не усложнять. Ровный темп, не «подними до 1300».',
+        'Шоу-боксы — повышенная ответственность, отдельный ввод.',
+        'КИЗ — отдельный блок, не «между делом».',
+        'Задачи с КИЗ — только под наблюдением наставника, при переходе на самостоятельную работу ОТКЛЮЧАЕМ.',
+        'Сопротивление → не давить. Дать время.'],
+      foot: ['Конец дня (итог 3-х дней)', '600+ кор., 120 мин автономии (работа без наставника, но паллет после сборки проверяем).'] }
+};
+const ALL_CHECK = [...ONBOARD, ...TRAINING, ...OPS];
 const OB_UNITS = ALL_CHECK.flatMap(s => s.items.flatMap(it => it.sub ? it.sub : [it]));   // всё, что отмечается касанием
 
-const LEVELS = ['Не начато','Показал','Под контролем','Допущен'];
-const LEVELS_SHORT = ['Не начато','Показал','Под\u00A0контролем','Допущен'];
 const MEET = [3,7,14];
 const SURVEY = [
   ['clear','Понятно, что и как делать на смене'],
@@ -423,12 +564,12 @@ const TAG_DEFS = [   // min — с какой смены метка доступ
   { t:'Безопасность — ок', g:'safe', s:1, core:1 },
   { t:'Выносливый', g:'state', s:1, core:1 },
   { t:'Готов к самостоятельной работе', g:'grow', s:1, core:1 },
-  { t:'Путает ячейки', g:'qual', s:-1, core:1 },
+  { t:'Путает ячейки', g:'qual', s:-1 },
   { t:'Медленный темп', g:'base', s:-1, core:1 },
-  { t:'Ошибки в отборе', g:'base', s:-1, core:1 },
-  { t:'Не носит СИЗ', g:'safe', s:-1, core:1, hint:'каска, жилет, перчатки' },
+  { t:'Ошибки в отборе', g:'qual', s:-1 },
+  { t:'Не носит СИЗ', g:'safe', s:-1, hint:'каска, жилет, перчатки' },
   { t:'Молчит — нужно подталкивать', g:'team', s:-1, core:1 },
-  { t:'Опоздал', g:'disc', s:-1, core:1 },
+  { t:'Опоздал', g:'disc', s:-1 },
   { t:'Нарушает ТБ', g:'safe', s:-1, hint:'лазает по стеллажам, не фиксирует паллеты' },
   { t:'Нарушает правила работы с ПРТ', g:'safe', s:-1 },
   { t:'Ошибается в сканировании', g:'qual', s:-1, hint:'сканирует не в той ячейке, путает QR-код, меняет упаковку' },
@@ -462,7 +603,7 @@ const PHRASES = [
 const COMMENT_MAX = 200;
 const HELP_REASONS = [['leave','🔴 Риск ухода'],['safety','🛡️ Нарушение ТБ'],['conflict','🤝 Конфликт'],['other','💬 Другое']];
 const HELP_LABEL = { leave:'Риск ухода', safety:'Нарушение ТБ', conflict:'Конфликт', other:'Другое' };
-const helpTitle = n => n.helpReason ? 'Нужна помощь: ' + HELP_LABEL[n.helpReason].toLowerCase() : 'Нужна помощь руководителя';
+const helpTitle = n => n.helpReason ? 'Нужна помощь: ' + HELP_LABEL[n.helpReason].charAt(0).toLowerCase() + HELP_LABEL[n.helpReason].slice(1) : 'Нужна помощь руководителя';   // «ТБ» остаётся заглавными
 const SCORE = ['', 'Плохо', 'Слабо', 'Норм', 'Хорошо', 'Отлично'];
 const SCORE_IC = ['', '😟', '😕', '😐', '🙂', '😃'];
 const LEAVE_REASONS = ['Нагрузка','График','Зарплата','Коллектив','Не прошёл адаптацию','Личные причины','Другое'];
@@ -480,6 +621,17 @@ const MON = ['янв','фев','мар','апр','мая','июн','июл','а�
 function plural(n, a, b, c){ n = Math.abs(n) % 100; const n1 = n % 10; if (n > 10 && n < 20) return c; if (n1 > 1 && n1 < 5) return b; if (n1 === 1) return a; return c; }
 function shortFio(f){ const p = String(f||'').trim().split(/\s+/); if (p.length < 2) return p[0] || ''; return p[0] + ' ' + p.slice(1).map(x => x[0] + '.').join(''); }
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+/* Вопрос «да / отмена» поверх всего. Возвращает Promise<boolean>. noCancel — просто сообщение с кнопкой «Понятно» */
+function ask(msg, noCancel){
+  return new Promise(res => {
+    const el = $('#ask'), yes = $('#askYes'), no = $('#askNo'), shade = el.querySelector('.shade');
+    $('#askMsg').textContent = msg; yes.textContent = noCancel ? 'Понятно' : 'Да'; no.hidden = !!noCancel;
+    const done = v => { el.hidden = true; yes.onclick = no.onclick = shade.onclick = null; ask.close = null; res(v); };
+    yes.onclick = () => done(true); no.onclick = shade.onclick = () => done(false); ask.close = () => done(false);
+    el.hidden = false; yes.focus();
+  });
+}
+const say = msg => ask(msg, true);
 function fileStamp(){ const d = new Date(); return isoLocal(d) + '_' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0'); }
 
 /* ---------- хранилище ---------- */
@@ -496,17 +648,34 @@ let S;
 function load(){
   try { const raw = localStorage.getItem(KEY); S = raw ? JSON.parse(raw) : blankState(); }
   catch(e){ S = blankState(); }
+  if (!S || typeof S !== 'object' || Array.isArray(S)) S = blankState();
   const b = blankState();
   S.settings = Object.assign(b.settings, S.settings || {});
   for (const [g] of GROUPS) if (!Array.isArray(S.settings.checklist[g])) S.settings.checklist[g] = b.settings.checklist[g];
   for (const g of Object.keys(S.settings.checklist)) if (!GNAME[g]) delete S.settings.checklist[g];
   S.mentees = Array.isArray(S.mentees) ? S.mentees : [];
   S.mentees.forEach(normMentee);
-  S.sentLog = Array.isArray(S.sentLog) ? S.sentLog : [];
+  S.sentLog = (Array.isArray(S.sentLog) ? S.sentLog : []).filter(l => l && typeof l === 'object').map(l => ({ ts: +l.ts || 0, count: +l.count || 0, full: !!l.full }));
+  for (const k of ['fio', 'tab', 'shift', 'leader', 'division']) S.settings[k] = okStr(S.settings[k]);
   S.lastSentAt = +S.lastSentAt || 0;
 }
+/* Проверка данных из памяти и из файлов: всё, что попадает в разметку, приводится к ожидаемому виду */
+const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+const okDate = v => typeof v === 'string' && ISO_RE.test(v) ? v : '';
+const okId = v => typeof v === 'string' && /^[\w-]{1,40}$/.test(v) ? v : uid();
+const okStr = v => typeof v === 'string' ? v : (typeof v === 'number' ? String(v) : '');
+const okObj = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+function normNote(n){
+  n.id = okId(n.id); n.date = okDate(n.date); n.present = n.present !== false;
+  n.score = Math.max(0, Math.min(5, parseInt(n.score, 10) || 0));
+  n.tags = Array.isArray(n.tags) ? n.tags.filter(t => typeof t === 'string') : [];
+  for (const k of ['comment', 'helpText', 'nextText', 'nextSkill', 'helpReason']) n[k] = okStr(n[k]);
+  if (!HELP_LABEL[n.helpReason]) n.helpReason = '';
+  n.help = !!n.help; n.helpResolved = !!n.helpResolved; n.ts = +n.ts || 0;
+  return n;
+}
 function normMentee(m){
-  m.id = m.id || uid(); m.fio = m.fio || ''; m.tab = m.tab || ''; m.hireDate = m.hireDate || '';
+  m.id = okId(m.id); m.fio = okStr(m.fio); m.tab = okStr(m.tab); m.hireDate = okDate(m.hireDate);
   const before = JSON.stringify([m.mainGroup, m.groups, m.admissions]);
   m.mainGroup = WORK_GROUPS.some(g => g[0] === m.mainGroup) ? m.mainGroup : WORK_GROUPS[0][0];
   m.groups = (Array.isArray(m.groups) ? m.groups : []).filter(g => WORK_GROUPS.some(x => x[0] === g));
@@ -514,13 +683,43 @@ function normMentee(m){
   if (m.admissions) for (const g of Object.keys(m.admissions)) if (!WORK_GROUPS.some(x => x[0] === g)) delete m.admissions[g];
   if (m.mainGroup && before !== JSON.stringify([m.mainGroup, m.groups, m.admissions]) && m.updatedAt) m.updatedAt = Date.now();   // уйдёт в следующий отчёт
   if (!m.groups.includes(m.mainGroup)) m.groups.unshift(m.mainGroup);
-  m.shiftsBefore = +m.shiftsBefore || 0; m.status = m.status || 'active';
-  m.skills = m.skills || {}; m.notes = Array.isArray(m.notes) ? m.notes : []; m.meetings = m.meetings || {};
-  m.admissions = m.admissions || {}; m.onboard = m.onboard || {};
-  m.createdAt = m.createdAt || Date.now(); m.updatedAt = m.updatedAt || Date.now();
+  m.shiftsBefore = Math.max(0, Math.min(200, parseInt(m.shiftsBefore, 10) || 0));
+  m.status = ['active', 'done', 'left'].includes(m.status) ? m.status : 'active';
+  m.statusDate = okDate(m.statusDate); m.statusReason = okStr(m.statusReason); m.statusComment = okStr(m.statusComment);
+  m.skills = okObj(m.skills);
+  // отметки без корректной даты отбрасываются: из-за них не открывался список
+  m.notes = (Array.isArray(m.notes) ? m.notes : []).filter(n => n && typeof n === 'object').map(normNote).filter(n => n.date);
+  m.meetings = okObj(m.meetings);
+  for (const k of Object.keys(m.meetings)){
+    const mt = m.meetings[k];
+    if (!MEET.includes(+k) || !mt || typeof mt !== 'object'){ delete m.meetings[k]; continue; }
+    mt.done = !!mt.done; mt.date = okDate(mt.date); mt.comment = okStr(mt.comment);
+    const a = okObj(mt.answers); mt.answers = {};
+    for (const [id] of SURVEY){ const v = parseInt(a[id], 10); if (v >= 1 && v <= 5) mt.answers[id] = v; }
+  }
+  m.admissions = okObj(m.admissions);
+  for (const g of Object.keys(m.admissions)){ const a = m.admissions[g];
+    if (!a || typeof a !== 'object' || !['requested', 'confirmed'].includes(a.status)){ delete m.admissions[g]; continue; }
+    a.date = okDate(a.date); a.confirmedDate = okDate(a.confirmedDate); a.comment = okStr(a.comment); }
+  m.onboard = okObj(m.onboard);
+  for (const k of Object.keys(m.onboard)) if (!okDate(m.onboard[k])) delete m.onboard[k];
+  // выработка: { номер смены: коробов } — только целые числа
+  const out = okObj(m.output); m.output = {};
+  for (const k of Object.keys(out)){ const v = parseInt(out[k], 10); if (/^\d{1,3}$/.test(k) && v >= 0 && v <= 9999) m.output[k] = v; }
+  m.createdAt = +m.createdAt || Date.now(); m.updatedAt = +m.updatedAt || Date.now();
   return m;
 }
+/* Кэш расчётов на одну перерисовку: номер смены, отметки по дате, риски считаются по разу на новичка.
+   Сбрасывается при каждом сохранении и перерисовке */
+let GEN = 0;
+const MEMO = new WeakMap();
+function memo(m, key, fn){
+  let c = MEMO.get(m);
+  if (!c || c.g !== GEN){ c = { g: GEN }; MEMO.set(m, c); }
+  return key in c ? c[key] : (c[key] = fn());
+}
 function save(){
+  GEN++;
   try { localStorage.setItem(KEY, JSON.stringify(S)); return true; }
   catch(e){ toast('Не удалось сохранить: память браузера недоступна'); return false; }
 }
@@ -529,12 +728,15 @@ const findM = id => S.mentees.find(m => m.id === id);
 
 /* ---------- расчёты ---------- */
 const presentNotes = m => m.notes.filter(n => n.present);
-const worked = m => (+m.shiftsBefore || 0) + presentNotes(m).length;
-function stageOf(n){ if (n <= 3) return 'Знакомство'; if (n <= 7) return 'Обучение'; if (n <= 14) return 'Закрепление'; return 'Самостоятельная работа'; }
+const worked = m => memo(m, 'worked', () => (+m.shiftsBefore || 0) + presentNotes(m).length);
+function stageOf(n){ if (n < 3) return 'Обучение (дни 1–3)'; if (n < 14) return 'Закрепление'; return 'Самостоятельная работа'; }   // n — отработано смен
 const groupsOf = m => m.groups.filter(g => GNAME[g]);
 /* Номер текущей смены новичка: смены до записей + отмеченные выходы до сегодняшней смены + эта */
-function curShiftNo(m){ const d = shiftDefaultDate(); return (+m.shiftsBefore || 0) + m.notes.filter(n => n.present && n.date < d).length + 1; }
-const obItemDone = (m, it) => it.sub ? it.sub.every(s => m.onboard[s.id]) : !!m.onboard[it.id];
+function curShiftNo(m){ return memo(m, 'cur', () => shiftOnDate(m, shiftDefaultDate())); }
+/* Номер смены новичка на дату: смены до записей + отмеченные выходы раньше этой даты + эта */
+function shiftOnDate(m, d){ return (+m.shiftsBefore || 0) + m.notes.filter(n => n.present && n.date < d).length + 1; }
+const obItemDone = (m, it) => it.meet ? meetDone(m, it.meet) : it.sub ? it.sub.every(s => m.onboard[s.id]) : !!m.onboard[it.id];
+const itemDate = (m, it) => it.meet ? (meetDone(m, it.meet) ? m.meetings[it.meet].date : '') : (m.onboard[it.id] || '');
 const obSectionLeft = (m, sec) => sec.items.filter(it => !obItemDone(m, it)).length;
 const obLeft = m => ONBOARD.reduce((a, s) => a + obSectionLeft(m, s), 0);
 const obTotal = ONBOARD.reduce((a, s) => a + s.items.length, 0);
@@ -542,42 +744,52 @@ const onboardDone = m => obLeft(m) === 0;
 const trLeft = m => TRAINING.reduce((a, s) => a + obSectionLeft(m, s), 0);
 const trTotal = TRAINING.reduce((a, s) => a + s.items.length, 0);
 const trainingDone = m => trLeft(m) === 0;
+const opsLeft = m => OPS.reduce((a, s) => a + obSectionLeft(m, s), 0);
+const opsTotal = OPS.reduce((a, s) => a + s.items.length, 0);
+const opsDone = m => opsLeft(m) === 0;
+/* Пункт «что отрабатываем дальше» выполнен: пункт чек-листа отмечен (или старый навык — «допущен») */
+const unitDone = (m, id) => !!m.onboard[id] || (m.skills[id]?.lvl || 0) === 3;
 const secOfUnit = id => ALL_CHECK.find(s => s.items.some(it => it.id === id || (it.sub && it.sub.some(u => u.id === id))));
-function secDoneDate(m, sec){ let d = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if ((m.onboard[u.id] || '') > d) d = m.onboard[u.id]; return d; }
+function secDoneDate(m, sec){ let d = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if (itemDate(m, u) > d) d = itemDate(m, u); return d; }
 const trainingVisible = m => curShiftNo(m) >= 2 || onboardDone(m) || TRAINING.some(s => obSectionLeft(m, s) < s.items.length);
-function skillItems(m, g){ return (S.settings.checklist[g] || []); }
-function progress(m, onlyGroup){
-  const gs = onlyGroup ? [onlyGroup] : groupsOf(m);
-  let sum = 0, cnt = 0;
-  for (const g of gs) for (const it of skillItems(m, g)) { sum += (m.skills[it.id]?.lvl || 0); cnt++; }
-  return cnt ? Math.round(sum / (cnt * 3) * 100) : 0;
-}
+/* Прогресс обучения: доля выполненных пунктов «Старт» + «Подготовка» + «Обучение операциям» */
+const ALL_ITEMS = ALL_CHECK.reduce((a, s) => a + s.items.length, 0);
+function progress(m){ return Math.round((ALL_ITEMS - ALL_CHECK.reduce((a, s) => a + obSectionLeft(m, s), 0)) / ALL_ITEMS * 100); }
+/* Уровни навыков прежних версий — только для отчёта (поле calc.levels) */
 function countLevels(m){
   const c = [0,0,0,0];
-  for (const g of groupsOf(m)) for (const it of skillItems(m, g)) c[m.skills[it.id]?.lvl || 0]++;
+  for (const g of groupsOf(m)) for (const it of (S.settings.checklist[g] || [])) c[m.skills[it.id]?.lvl || 0]++;
   return c;
 }
 const meetDone = (m, k) => !!(m.meetings[k] && m.meetings[k].done);
 function nextMeeting(m){ for (const k of MEET) if (!meetDone(m, k)) return k; return null; }
-const meetingDue = m => { const k = nextMeeting(m); return k !== null && worked(m) >= k ? k : null; };
+/* Беседа k-й смены положена уже на самой k-й смене (как и пункт «Беседа» в «Дне 3») */
+const meetingDue = m => { const k = nextMeeting(m); return k !== null && curShiftNo(m) >= k ? k : null; };
 const openHelp = m => m.notes.filter(n => n.help && !n.helpResolved);
-const sortedNotes = m => [...m.notes].sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
+const sortedNotes = m => memo(m, 'sorted', () => [...m.notes].sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts));
 const lastNote = m => sortedNotes(m)[0];
 const unsent = () => S.mentees.filter(m => m.updatedAt > S.lastSentAt);
 const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
 function shiftNoAt(m, date){ return (+m.shiftsBefore || 0) + m.notes.filter(n => n.present && n.date <= date).length; }
+/* Название пункта по id: пункт чек-листа или навык прежних версий */
 function findSkill(id){
+  if (!id) return null;
+  for (const sec of ALL_CHECK) for (const it of sec.items){
+    if (it.id === id) return { id, name: `${it.n} ${it.t}` };
+    const su = it.sub && it.sub.find(u => u.id === id); if (su) return { id, name: `${it.n} ${su.t}` };
+  }
   for (const [g] of GROUPS){ const it = (S.settings.checklist[g] || []).find(x => x.id === id); if (it) return Object.assign({ g }, it); }
   return null;
 }
-function groupComplete(m, g){ const items = skillItems(m, g); return items.length > 0 && items.every(it => (m.skills[it.id]?.lvl || 0) === 3); }
-function canAdmit(m, g){ return groupComplete(m, g) && onboardDone(m) && trainingDone(m) && !m.admissions[g]; }
+const allDone = m => onboardDone(m) && trainingDone(m) && opsDone(m);
+function canAdmit(m, g){ return allDone(m) && curShiftNo(m) >= ADMIT_SHIFT && !m.admissions[g]; }
 function lastSurvey(m){
   for (const k of [...MEET].reverse()){ const mt = m.meetings[k]; if (mt && mt.done && mt.answers && Object.values(mt.answers).some(Boolean)) return { k, a: mt.answers }; }
   return null;
 }
 /* Риск ухода: только прозрачные правила, чтобы наставник видел причину */
-function riskReasons(m){
+function riskReasons(m){ return memo(m, 'risk', () => calcRisk(m)); }
+function calcRisk(m){
   if (m.status !== 'active') return [];
   const r = [], ns = sortedNotes(m);
   if (ns.length >= 2 && !ns[0].present && !ns[1].present) r.push('2 невыхода подряд');
@@ -602,7 +814,7 @@ function nextTask(m){
   const ln = lastNote(m);
   if (!ln || (!ln.nextSkill && !ln.nextText)) return null;
   const it = ln.nextSkill ? findSkill(ln.nextSkill) : null;
-  if (it && (m.skills[it.id]?.lvl || 0) === 3 && !ln.nextText) return null;
+  if (it && unitDone(m, it.id) && !ln.nextText) return null;
   return { name: it ? it.name : '', text: ln.nextText || '' };
 }
 function taskHtml(m){
@@ -615,13 +827,14 @@ function riskHtml(m){
 }
 
 /* ---------- состояние экрана ---------- */
-const ui = { view: 'list', id: null, tab: 'shifts' };
+const ui = { view: 'list', id: null, tab: 'shifts', filter: 'all', q: '' };
 let sheet = null;   // контекст открытого листа
 
 function go(view, id){ ui.view = view; if (id !== undefined) ui.id = id; if (view === 'mentee' && id !== undefined) ui.tab = 'shifts'; render(); window.scrollTo(0,0); }
 
 /* ---------- отрисовка ---------- */
 function render(){
+  GEN++;
   let head = '', body = '';
   const who = S.settings.fio ? `${esc(shortFio(S.settings.fio))}${S.settings.shift ? '<br>смена ' + esc(S.settings.shift) : ''}` : '';
   if (ui.view === 'mentee' && findM(ui.id)){
@@ -661,6 +874,16 @@ function ladderHtml(m){
     <div class="ladcap"><span>${esc(stageOf(w))}</span><span>${w > 14 ? `+${w-14} после 14-й` : 'беседы на 3, 7 и 14 смене'}</span></div>`;
 }
 
+function outputChip(k, v){
+  const g = OUTPUT_GOAL[k], ok = v >= g[0];
+  return `<span class="chip ${ok ? 'ok' : 'warn'}">📈 ${k}-я смена: ${v} кор.${ok ? '' : ` (цель ${goalText(g)})`}</span>`;
+}
+/* Итог под полем «Факт выработка»; обновляется на месте, без перерисовки экрана */
+function outStatus(k, v){
+  if (v === undefined) return '';
+  const g = OUTPUT_GOAL[k];
+  return `<div class="chips">${v >= g[0] ? '<span class="chip ok">✓ Цель выполнена</span>' : `<span class="chip warn">До цели не хватило ${g[0] - v} кор.</span>`}</div>`;
+}
 function flagsHtml(m){
   const f = [];
   const help = openHelp(m).length;
@@ -676,6 +899,7 @@ function flagsHtml(m){
     if (a && a.status === 'requested') f.push(`<span class="chip info">Допуск: ${esc(GNAME[g])}, ждёт подтверждения</span>`);
     else if (m.status === 'active' && canAdmit(m, g) && m.groups.includes(g)) f.push(`<span class="chip ok">Можно оформить допуск: ${esc(GNAME[g])}</span>`);
   }
+  for (const k of Object.keys(OUTPUT_GOAL)) if (m.output[k] !== undefined) f.push(outputChip(k, m.output[k]));
   if (m.updatedAt > S.lastSentAt) f.push(`<span class="chip info">Не отправлено</span>`);
   return f.length ? `<div class="chips">${f.join('')}</div>` : '';
 }
@@ -686,10 +910,10 @@ function menteeCard(m){
     <div class="chead">
       <div><div class="nm">${esc(m.fio || 'Без имени')}</div>
         <div class="sub">${m.tab ? 'Таб. ' + esc(m.tab) + ', ' : ''}${esc(GNAME[m.mainGroup] || '')}</div></div>
-      <div class="num"><b>${w}</b><span>${plural(w,'смена','смены','смен')}</span></div>
+      <div class="num"><b>${w}</b><span>${plural(w,'смена','смены','смен')}<br>отработано</span></div>
     </div>
     ${ladderHtml(m)}
-    <div class="barrow"><span>Навыки</span><div class="bar"><span style="width:${p}%"></span></div><span>${p}%</span></div>
+    <div class="barrow"><span>Обучение</span><div class="bar"><span style="width:${p}%"></span></div><span>${p}%</span></div>
     ${riskHtml(m)}
     ${flagsHtml(m)}
     ${taskHtml(m)}
@@ -697,6 +921,83 @@ function menteeCard(m){
   </div>`;
 }
 
+/* ---------- главный список: «Сегодня», фильтры, поиск, компактные строки ---------- */
+const FILTERS = [['all', 'Все'], ['att', 'Внимание'], ['d1', 'День 1'], ['d2', 'День 2'], ['d3', 'День 3'], ['fix', '4+ смена']];
+const noMark = m => { const ln = lastNote(m); return !ln || ln.date < shiftDefaultDate(); };
+/* Смены с целью по выработке, за которые число не вписано (текущая — только если смена уже отмечена) */
+function outMissing(m){
+  const cur = curShiftNo(m), ln = lastNote(m), markedToday = ln && ln.present && ln.date === shiftDefaultDate();
+  return Object.keys(OUTPUT_GOAL).map(Number).filter(k => m.output[k] === undefined && (cur > k || (cur === k && markedToday)));
+}
+const admitReady = m => groupsOf(m).some(g => canAdmit(m, g));
+const needsAttention = m => !!(openHelp(m).length || riskReasons(m).length || meetingDue(m) || noMark(m) || outMissing(m).length || admitReady(m));
+/* Дела на сегодня — строки блока «Сегодня»; их же можно выбрать фильтром списка */
+const TASKS = [
+  { k: 'help',   ic: '🚨', title: () => 'Нужна помощь руководителя', test: m => openHelp(m).length > 0, act: 'openT', tab: 'shifts', urgent: 1 },
+  { k: 'risk',   ic: '🔻', title: () => 'Риск ухода', test: m => riskReasons(m).length > 0, act: 'openT', tab: 'shifts', urgent: 1 },
+  { k: 'nomark', ic: '📝', title: () => `Нет отметки за ${fmt(shiftDefaultDate()).slice(0, 5)}`, test: noMark, act: 'noteNew', tab: '' },
+  { k: 'meet',   ic: '💬', title: () => 'Пора провести беседу', test: m => !!meetingDue(m), act: 'openT', tab: 'meet' },
+  { k: 'out',    ic: '📦', title: () => 'Не вписана выработка', test: m => outMissing(m).length > 0, act: 'openT', tab: 'shifts' },
+  { k: 'admit',  ic: '✅', title: () => 'Можно оформить лист допуска', test: admitReady, act: 'openT', tab: 'skills' }
+];
+const TASK_MAP = Object.fromEntries(TASKS.map(t => [t.k, t]));
+function matchFilter(m, f){
+  if (TASK_MAP[f]) return TASK_MAP[f].test(m);
+  if (f === 'att') return needsAttention(m);
+  if (f === 'all') return true;
+  const cur = curShiftNo(m);
+  return f === 'fix' ? cur >= 4 : f === 'd' + cur;
+}
+function matchQuery(m){
+  const q = (ui.q || '').trim().toLowerCase();
+  return !q || m.fio.toLowerCase().includes(q) || m.tab.toLowerCase().includes(q);
+}
+function activeSorted(){
+  const rank = m => (openHelp(m).length ? 0 : riskReasons(m).length ? 1 : meetingDue(m) ? 2 : 3);
+  return S.mentees.filter(m => m.status === 'active').sort((a, b) => rank(a) - rank(b) || a.fio.localeCompare(b.fio, 'ru'));
+}
+function listHtml(act){
+  const xs = act.filter(m => matchFilter(m, ui.filter) && matchQuery(m));
+  if (!xs.length) return `<p class="muted" style="text-align:center;margin:18px 0">Никого не найдено</p>`;
+  return S.settings.listMode === 'full' ? xs.map(menteeCard).join('') : xs.map(compactRow).join('');
+}
+function compactRow(m){
+  const cur = curShiftNo(m), p = progress(m), ln = lastNote(m), rr = riskReasons(m);
+  const ic = [openHelp(m).length && ['🚨', 'Нужна помощь руководителя'], rr.length && ['🔻', 'Риск ухода: ' + rr.join(', ')],
+    meetingDue(m) && ['💬', 'Пора провести беседу'], noMark(m) && ['📝', 'Нет отметки за смену'],
+    outMissing(m).length && ['📦', 'Не вписана выработка'], admitReady(m) && ['✅', 'Можно оформить лист допуска']].filter(Boolean);
+  // ✓ — отметить смену; если уже отмечена сегодня — открыть эту отметку
+  const btn = noMark(m) ? `<button class="mbtn" data-act="noteNew" data-id="${m.id}" aria-label="Отметить смену">✓</button>`
+    : `<button class="mbtn done" data-act="noteEdit" data-id="${m.id}" data-n="${ln.id}" aria-label="Смена отмечена, изменить">✓</button>`;
+  return `<div class="mrow" data-act="open" data-id="${m.id}">
+    <div class="mmain"><div class="mnm">${esc(m.fio || 'Без имени')}</div>
+      <div class="msub">${cur <= 3 ? 'День ' + cur : cur + '-я смена'} · обучение ${p}%${m.tab ? ' · таб. ' + esc(m.tab) : ''}</div>
+      <div class="mbar"><span style="width:${p}%"></span></div></div>
+    ${ic.length ? `<div class="mic">${ic.map(([i, t]) => `<span title="${esc(t)}">${i}</span>`).join('')}</div>` : ''}
+    ${btn}</div>`;
+}
+/* Архив, который можно удалить: завершили или уволились > 3 мес. назад и уже отправлены руководителю */
+const oldArchived = () => S.mentees.filter(m => m.status !== 'active' && m.statusDate && m.statusDate < isoLocal(Date.now() - 90 * 864e5) && m.updatedAt <= S.lastSentAt);
+function storeSize(){ try { return (localStorage.getItem(KEY) || '').length; } catch(e){ return 0; } }
+function todayHtml(act){
+  const rows = [], u = unsent();
+  // напоминание об отправке: изменения есть, а отчёт не уходил 2 дня и больше
+  const since = S.lastSentAt || Math.min(...u.map(m => m.createdAt));
+  const days = u.length ? Math.floor((Date.now() - since) / 864e5) : 0;
+  if (u.length && days >= 2) rows.push(`<div class="trow warn"><span class="tic">📤</span><div class="tbd"><b>Отчёт не отправлялся ${days} ${plural(days, 'день', 'дня', 'дней')}</b>
+    <span class="small muted">Изменения есть у ${u.length} чел. Отправка — это ещё и резервная копия записей.</span></div><button class="btn sm main" data-act="go" data-v="send">Отправить</button></div>`);
+  if (storeSize() > 3.5e6) rows.push(`<div class="trow warn"><span class="tic">💾</span><div class="tbd"><b>Память приложения почти заполнена</b>
+    <span class="small muted">Удалите старых завершивших в настройках.</span></div><button class="btn sm" data-act="go" data-v="settings">Открыть</button></div>`);
+  for (const t of TASKS){
+    const list = act.filter(t.test); if (!list.length) continue;
+    // одна строка на дело: касание фильтрует список ниже; имена — только у срочных (помощь, риск), не больше 4
+    const names = t.urgent ? `<div class="nchips">${list.slice(0, 4).map(m => `<button class="nchip" data-act="${t.act}" data-id="${m.id}" data-t="${t.tab}">${esc(shortFio(m.fio))}</button>`).join('')}</div>` : '';
+    rows.push(`<div class="trow"><span class="tic">${t.ic}</span><div class="tbd">
+      <button class="tlink" data-act="taskFilter" data-v="${t.k}"><b>${t.title()}</b><span class="tcnt">${list.length}</span><span class="tgo">›</span></button>${names}</div></div>`);
+  }
+  return `<div class="card today"><div class="ghead"><b>Сегодня</b><span class="muted small">смена ${fmt(shiftDefaultDate()).slice(0, 5)}</span></div>
+    ${rows.join('') || '<p class="muted small" style="margin:8px 0 0">Всё сделано ✅</p>'}</div>`;
+}
 function viewList(){
   let h = '';
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
@@ -711,17 +1012,21 @@ function viewList(){
     h += `<div class="note"><b>Начните с ваших данных</b>Укажите ФИО и смену — они попадут в отчёт руководителю.
       <div class="row"><button class="btn sm" data-act="go" data-v="settings">Заполнить</button></div></div>`;
   }
-  const act = S.mentees.filter(m => m.status === 'active');
-  const rank = m => (openHelp(m).length ? 0 : riskReasons(m).length ? 1 : meetingDue(m) ? 2 : 3);
-  act.sort((a, b) => rank(a) - rank(b) || a.fio.localeCompare(b.fio, 'ru'));
+  const act = activeSorted();
   if (!act.length){
     h += `<div class="empty"><div class="big">🦺</div><p>Пока нет новичков. Добавьте того, кого вам закрепили, или загрузите задание от руководителя смены.</p>
       <div class="row"><button class="btn main" data-act="menteeNew">Добавить новичка</button></div>
       <div class="row" style="margin-top:10px"><button class="btn" data-act="import">Загрузить файл</button></div></div>`;
   } else {
-    if (act.length >= 2) h += `<div class="row" style="margin-bottom:12px"><button class="btn dark" data-act="batch">✔️ Отметить смену всем (${act.length})</button></div>`;
-    h += act.map(menteeCard).join('');
-    h += `<div class="row"><button class="btn" data-act="menteeNew">＋ Добавить новичка</button></div>`;
+    h += todayHtml(act);
+    if (act.length >= 2) h += `<div class="row" style="margin-bottom:4px"><button class="btn dark" data-act="batch">✔️ Смена всем</button><button class="btn" data-act="grid">☑ Пункты всем</button></div>`;
+    const compact = S.settings.listMode !== 'full';
+    if (act.length >= 3) h += `<div class="lctl"><input type="search" id="q" placeholder="🔍 ФИО или таб. номер" value="${esc(ui.q)}" autocomplete="off">
+        <button class="btn sm" data-act="listMode">${compact ? '☰ Подробно' : '▤ Кратко'}</button></div>
+      <div class="fchips" id="fchips">${TASK_MAP[ui.filter] ? `<button class="on" data-act="filter" data-v="all">${TASK_MAP[ui.filter].ic} ${esc(TASK_MAP[ui.filter].title())} ✕</button>` : ''}${FILTERS.map(([k, l]) => `<button data-act="filter" data-v="${k}" class="${ui.filter === k ? 'on' : ''}">${l} <span>${act.filter(m => matchFilter(m, k)).length}</span></button>`).join('')}</div>`;
+    else h += `<div style="height:10px"></div>`;
+    h += `<div id="mlist">${listHtml(act)}</div>`;
+    h += `<div class="row" style="margin-top:10px"><button class="btn" data-act="menteeNew">＋ Добавить новичка</button></div>`;
   }
   const arch = S.mentees.filter(m => m.status !== 'active');
   if (arch.length){
@@ -735,12 +1040,12 @@ function viewList(){
 }
 
 function viewMentee(m){
-  const tabs = [['shifts','Смены'],['skills','Навыки'],['meet','Беседы'],['data','Данные']];
+  const tabs = [['shifts','Смены'],['skills','Обучение'],['meet','Беседы'],['data','Данные']];
   let h = `<div class="card">
     <div class="chead"><div><div class="nm">${esc(m.fio)}</div>
       <div class="sub">${m.tab ? 'Таб. ' + esc(m.tab) + ', ' : ''}принят ${fmt(m.hireDate)}</div>
       <div class="sub">${esc(GNAME[m.mainGroup])}${m.groups.length > 1 ? ' + ' + m.groups.filter(g => g !== m.mainGroup).map(g => GNAME[g]).join(', ') : ''}</div></div>
-      <div class="num"><b>${worked(m)}</b><span>${plural(worked(m),'смена','смены','смен')}</span></div></div>
+      <div class="num"><b>${worked(m)}</b><span>${plural(worked(m),'смена','смены','смен')}<br>отработано</span></div></div>
     ${ladderHtml(m)}
     ${m.status !== 'active' ? `<div class="chips"><span class="chip ${m.status==='done'?'ok':'bad'}">${m.status==='done'?'Завершил адаптацию':'Уволился'} ${fmt(m.statusDate)}</span></div>` : riskHtml(m) + flagsHtml(m) + taskHtml(m)}
   </div>
@@ -755,6 +1060,15 @@ function viewMentee(m){
 
 function tabShifts(m){
   let h = m.status === 'active' ? `<div class="row" style="margin-bottom:14px"><button class="btn main" data-act="noteNew" data-id="${m.id}">Отметить смену</button></div>` : '';
+  // Выработка: все смены с целью, до которых новичок дошёл, — можно вписать и задним числом
+  const cur = curShiftNo(m), ro = m.status !== 'active' ? 'disabled' : '';
+  const ks = Object.keys(OUTPUT_GOAL).filter(k => cur >= +k || m.output[k] !== undefined);
+  if (ks.length) h += `<div class="card"><b>Выработка</b>${ks.map(k => {
+    const g = OUTPUT_GOAL[k], v = m.output[k];
+    return `<label class="f" style="margin:10px 0 0"><span>${k}-я смена, коробов (цель ${goalText(g)})</span>
+      <input type="number" min="0" max="9999" inputmode="numeric" placeholder="Впишите число" data-out="${k}" data-id="${m.id}" value="${v === undefined ? '' : v}" ${ro}></label>
+      <div data-outst="${k}">${outStatus(k, v)}</div>`;
+  }).join('')}</div>`;
   const ns = sortedNotes(m);
   if (!ns.length) return h + `<div class="empty"><p>Отметок пока нет. После каждой смены нажмите «Отметить смену» — это занимает полминуты.</p></div>`;
   if (m.shiftsBefore) h += `<p class="muted small">До начала записей отработал смен: ${m.shiftsBefore}</p>`;
@@ -764,6 +1078,8 @@ function tabShifts(m){
       <div class="dt"><b>${+d}</b><span>${MON[+mo-1]}</span></div>
       <div class="bd">
         <div>${n.present ? `<b>${SCORE_IC[n.score] || ''} ${SCORE[n.score] || 'Без оценки'}</b>` : '<b>Не вышел на смену</b>'}</div>
+        ${n.present ? (() => { const no = shiftOnDate(m, n.date), v = m.output[no];
+          return `<div class="small muted">${no}-я смена${v !== undefined ? ` · 📦 ${v} кор.` : ''}</div>`; })() : ''}
         ${n.tags && n.tags.length ? `<div class="chips">${n.tags.map(t => `<span class="chip ${tagChipCls(t)}">${tagSign(t) > 0 ? '✓ ' : tagSign(t) < 0 ? '⚠ ' : ''}${esc(t)}</span>`).join('')}</div>` : ''}
         ${n.comment ? `<p>${esc(n.comment)}</p>` : ''}
         ${n.nextSkill || n.nextText ? `<p class="small muted">📌 ${esc([findSkill(n.nextSkill)?.name, n.nextText].filter(Boolean).join('. '))}</p>` : ''}
@@ -783,11 +1099,14 @@ function secHead(key, title, done, count, extra){
     <b>${done ? '✅ ' : ''}${esc(title)}</b><span class="muted small">${count}${extra || ''} <span class="caret">${open ? '▾' : '▸'}</span></span></button>` };
 }
 function checkSection(m, sec, carry, ro){
-  const left = obSectionLeft(m, sec), done = left === 0, key = m.id + ':' + sec.id;
-  const hd = secHead(key, sec.name, done, `${sec.items.length - left}/${sec.items.length}`, done ? ' · ' + fmt(secDoneDate(m, sec)).slice(0, 5) : '');
+  const vis = sec.items.filter(it => itemOn(m, sec, it));   // пункты «со 2-й смены» и т.п. до своей смены скрыты
+  if (!vis.length) return '';
+  const left = vis.filter(it => !obItemDone(m, it)).length, done = obSectionLeft(m, sec) === 0, key = m.id + ':' + sec.id;
+  const hd = secHead(key, sec.name, done, `${vis.length - left}/${vis.length}`, done ? ' · ' + fmt(secDoneDate(m, sec)).slice(0, 5) : '');
   let h = `<div class="card obsec">` + hd.html;
   if (hd.open){
-    for (const it of sec.items){
+    if (sec.goal) h += `<p class="muted small" style="margin:0 0 6px"><b>Цель:</b> ${esc(sec.goal)}</p>`;
+    for (const it of vis){
       const ok = obItemDone(m, it), carried = carry && !ok;
       const label = `<span class="obn">${it.n}</span><span class="obtx">${esc(it.t)}${carried ? ' <span class="obcarry">перенесено</span>' : ''}</span>`;
       if (it.sub){
@@ -797,42 +1116,52 @@ function checkSection(m, sec, carry, ro){
           <button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button></div>
           <div class="obfull" id="obf_${it.id}" hidden>${esc(it.f)}: ${it.sub.map(su => esc(su.f)).join('; ')}</div>`;
       } else {
-        h += `<div class="obrow ${ok ? 'ok' : ''}"><button class="obmark" data-act="obTap" data-id="${m.id}" data-u="${it.id}" aria-pressed="${ok}" aria-label="${esc(it.f)}" ${ro}>${ok ? '✓' : ''}</button>
-          <button class="obbody obtap" data-act="obTap" data-id="${m.id}" data-u="${it.id}" ${ro}><div class="obt">${label}</div>${ok ? `<div class="obd">${fmt(m.onboard[it.id])}</div>` : ''}</button>
-          <button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button></div>
-          <div class="obfull" id="obf_${it.id}" hidden>${esc(it.f)}</div>`;
+        // пункт-беседа (meet) отмечается сам по записанной беседе, касание ведёт во вкладку «Беседы»
+        const act = it.meet ? `data-act="tab" data-v="meet"` : `data-act="obTap" data-id="${m.id}" data-u="${it.id}" ${ro}`;
+        const sub = ok ? fmt(itemDate(m, it)) : it.meet ? 'Запишите во вкладке «Беседы» →' : '';
+        h += `<div class="obrow ${ok ? 'ok' : ''}"><button class="obmark" ${act} aria-pressed="${ok}" aria-label="${esc(it.f)}">${ok ? '✓' : ''}</button>
+          <button class="obbody obtap" ${act}><div class="obt">${label}</div>${sub ? `<div class="obd">${sub}</div>` : ''}</button>
+          ${it.q ? '' : `<button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button>`}</div>
+          <div class="obfull" id="obf_${it.id}" ${it.q ? '' : 'hidden'}>${esc(it.f)}${it.q ? `<ul class="obq">${it.q.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</div>`;   // с вопросами (q) — всегда развёрнуто
       }
     }
-    if (left && !ro) h += `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-act="obAll" data-id="${m.id}" data-s="${sec.id}">Отметить весь раздел</button></div>`;
+    if (vis.some(it => !it.meet && !obItemDone(m, it)) && !ro) h += `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-act="obAll" data-id="${m.id}" data-s="${sec.id}">Отметить весь раздел</button></div>`;
   }
   return h + `</div>`;
 }
 function tabSkills(m){
   const ro = m.status !== 'active' ? 'disabled' : '';
   const cur = curShiftNo(m);
-  let h = `<h2 style="margin-top:4px">Старт <span class="muted small" style="font-weight:400">${obTotal - obLeft(m)}/${obTotal}</span></h2>`;
+  let h = '';
+  if (m.status === 'active'){
+    const ln = lastNote(m), gap = cur > 1 && (!ln || ln.date < isoLocal(Date.parse(shiftDefaultDate()) - 864e5));
+    h += `<div class="note" ${gap ? 'style="border-left-color:var(--warn)"' : ''}><b>Сейчас ${cur}-я смена новичка</b>${gap
+      ? 'Последняя отметка — ' + (ln ? fmt(ln.date) : 'нет') + '. Если с тех пор были смены, сначала отметьте их во вкладке «Смены»: от номера смены зависят «День 2/3», «Критично» и выработка.'
+      : 'Номер считается по отметкам «Вышел». Если он не совпадает — проверьте отметки во вкладке «Смены».'}</div>`;
+  }
+  h += `<h2 style="margin-top:4px">Старт <span class="muted small" style="font-weight:400">${obTotal - obLeft(m)}/${obTotal}</span></h2>
+    <p class="muted small" style="margin:-4px 2px 10px"><b>Цель:</b> ${esc(ONBOARD_GOAL)}</p>`;
   if (!onboardDone(m) && cur > 1) h += `<div class="note" style="border-left-color:var(--warn)"><b>«Старт» не закрыт</b>Не сделано: ${obLeft(m)}. Отметьте на этой смене — без этого не оформить лист допуска.</div>`;
   for (const sec of ONBOARD) h += checkSection(m, sec, cur > 1, ro);
   h += `<h2>Подготовка <span class="muted small" style="font-weight:400">${trTotal - trLeft(m)}/${trTotal}</span></h2>`;
   if (!trainingVisible(m)) h += `<div class="card"><p class="muted small" style="margin:0">Откроется со 2-й смены. Сейчас — «Старт».</p></div>`;
   else for (const sec of TRAINING) h += checkSection(m, sec, false, ro);
-  h += `<h2>Обучение операциям</h2><p class="muted small" style="margin:-4px 2px 10px">Показал → под контролем → допущен работать сам.</p>`;
-  for (const g of groupsOf(m)){
-    const items = skillItems(m, g);
-    if (!items.length) continue;
-    const done = groupComplete(m, g), hd = secHead(m.id + ':g:' + g, GNAME[g], done, `${progress(m, g)}%`, '');
-    h += `<div class="card">` + hd.html;
-    if (hd.open) for (const it of items){
-      const s = m.skills[it.id] || { lvl: 0 };
-      const lvl = s.lvl || 0;
-      const when = lvl && s.dates && s.dates[lvl] ? `${LEVELS[lvl]}: ${fmt(s.dates[lvl])}` : '';
-      h += `<div class="skill"><div class="sn">${esc(it.name)}</div>
-        <div class="seg">${LEVELS_SHORT.map((tt, i) => `<button class="l${i} ${lvl===i?'on':''}" data-act="lvl" data-id="${m.id}" data-s="${it.id}" data-l="${i}" ${ro}>${tt}</button>`).join('')}</div>
-        ${when ? `<div class="sd">${when}</div>` : ''}</div>`;
-    }
-    h += admissionBlock(m, g);
-    h += `</div>`;
+  const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it)));
+  h += `<h2>Обучение операциям <span class="muted small" style="font-weight:400">${opsVis.filter(it => obItemDone(m, it)).length}/${opsVis.length}</span></h2>`;
+  for (const sec of OPS) h += checkSection(m, sec, false, ro);
+  const crit = SHIFT_CRIT[cur];
+  if (m.status === 'active' && crit) h += `<div class="crit"><b>⚠️ Критично на ${cur}-й смене</b><ul>${crit.list.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+    <p><b>${esc(crit.foot[0])}:</b> ${esc(crit.foot[1])}</p></div>`;
+  const og = OUTPUT_GOAL[cur];
+  if (m.status === 'active' && og){
+    const fact = m.output[cur];
+    h += `<div class="card"><b>Выработка за ${cur}-ю смену</b>
+      <dl class="kv" style="margin:8px 0 12px"><dt>Цель</dt><dd>${goalText(og)} коробов</dd>
+        ${cur > 1 ? `<dt>Прошлая смена</dt><dd>${m.output[cur - 1] !== undefined ? m.output[cur - 1] + ' кор.' : 'не вписано'}</dd>` : ''}</dl>
+      <label class="f" style="margin:0"><span>Факт выработка, коробов</span><input type="number" min="0" max="9999" inputmode="numeric" placeholder="Впишите число" data-out="${cur}" data-id="${m.id}" value="${fact === undefined ? '' : fact}"></label>
+      <div data-outst="${cur}">${outStatus(cur, fact)}</div></div>`;
   }
+  for (const g of groupsOf(m)){ const a = admissionBlock(m, g); if (a) h += `<div class="card">${a}</div>`; }
   return h;
 }
 
@@ -844,7 +1173,9 @@ function admissionBlock(m, g){
     <div class="row"><button class="btn sm ghost" data-act="admCancel" data-id="${m.id}" data-g="${g}">Отменить лист допуска</button></div></div>`;
   if (m.status !== 'active') return '';
   if (canAdmit(m, g)) return `<div class="adm"><div class="row" style="margin-top:0"><button class="btn main" data-act="admit" data-id="${m.id}" data-g="${g}">Оформить лист допуска</button></div></div>`;
-  if (groupComplete(m, g)) return `<div class="adm small muted">Все пункты освоены. Для листа допуска осталось закрыть: ${[obLeft(m) ? `«Старт» — ${obLeft(m)}` : '', trLeft(m) ? `«Подготовка» — ${trLeft(m)}` : ''].filter(Boolean).join(', ')}.</div>`;
+  const early = curShiftNo(m) < ADMIT_SHIFT;
+  if (allDone(m) && early) return `<div class="adm small muted">Всё обучение пройдено. Лист допуска можно оформить с ${ADMIT_SHIFT}-й смены.</div>`;
+  if (opsDone(m)) return `<div class="adm small muted">«Обучение операциям» пройдено. Для листа допуска осталось закрыть: ${[obLeft(m) ? `«Старт» — ${obLeft(m)}` : '', trLeft(m) ? `«Подготовка» — ${trLeft(m)}` : ''].filter(Boolean).join(', ')}${early ? `. Оформить его можно с ${ADMIT_SHIFT}-й смены` : ''}.</div>`;
   return '';
 }
 function admissionText(m, g){
@@ -855,9 +1186,6 @@ function admissionText(m, g){
   for (const sec of ALL_CHECK){
     let last = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if ((m.onboard[u.id] || '') > last) last = m.onboard[u.id];
     lines.push(`• ${sec.name} — выполнено ${fmt(last)}`);
-  }
-  for (const it of skillItems(m, g)){
-    const s = m.skills[it.id] || {}; lines.push(`• ${it.name} — допущен ${fmt(s.dates && s.dates[3])}`);
   }
   lines.push('', `Наставник: ${S.settings.fio || '—'}${S.settings.shift ? ', смена ' + S.settings.shift : ''}`, `Дата: ${fmt(a.date || today())}`);
   if (a.comment) lines.push(`Комментарий: ${a.comment}`);
@@ -871,14 +1199,15 @@ async function shareText(t, okMsg){
 }
 
 function tabMeet(m){
-  const w = worked(m);
+  const cur = curShiftNo(m);
   let h = `<p class="muted small" style="margin-top:0">Короткие беседы один на один: как дела, что получается, что мешает. Итоги увидит руководитель смены.</p>`;
   for (const k of MEET){
     const mt = m.meetings[k];
     let st;
     if (mt && mt.done) st = `<span class="chip ok">Проведена ${fmt(mt.date)}</span>`;
-    else if (w >= k) st = `<span class="chip warn">Пора провести</span>`;
-    else st = `<span class="chip">Через ${k - w} ${plural(k - w,'смену','смены','смен')}</span>`;
+    else if (cur === k) st = `<span class="chip warn">Сегодня — пора провести</span>`;
+    else if (cur > k) st = `<span class="chip warn">Пора провести</span>`;
+    else st = `<span class="chip">Через ${k - cur} ${plural(k - cur,'смену','смены','смен')}</span>`;
     const ans = mt && mt.answers ? SURVEY.filter(([id]) => mt.answers[id]).map(([id, q]) => `<div class="ans"><span>${esc(q)}</span><b class="${mt.answers[id] <= 2 ? 'low' : ''}">${SURVEY_SCALE[mt.answers[id]]}</b></div>`).join('') : '';
     h += `<div class="card"><div class="ghead"><b>Беседа на ${k}-й смене</b></div><div class="chips">${st}</div>
       ${ans ? `<div style="margin-top:10px">${ans}</div>` : ''}
@@ -937,6 +1266,36 @@ function viewStats(){
     <div class="stat"><b>${left.length}</b><span>уволились</span></div>
     <div class="stat wide"><b>${ret === null ? '—' : ret + '%'}</b><span>${base ? `удержание до 14-й смены: ${reached} из ${base}` : 'удержание до 14-й смены — пока никто не дошёл до итога'}${base && base < 5 ? '. Данных пока мало, цифра неточная' : ''}</span></div>
   </div>`;
+
+  // Выработка: средняя по новичкам за каждую смену, по сменам с целью — сколько её достигли
+  const outKs = [...new Set(all.flatMap(m => Object.keys(m.output).map(Number)))].sort((a, b) => a - b).slice(0, 14);
+  if (outKs.length){
+    h += `<h2>Выработка</h2><div class="card"><p class="small muted" style="margin:0 0 4px">Средняя по новичкам, коробов за смену.</p>`;
+    for (const k of outKs){
+      const v = all.map(m => m.output[k]).filter(x => x !== undefined), g = OUTPUT_GOAL[k];
+      h += `<div class="ans"><span>${k}-я смена${g ? ` <span class="muted">· цель ${goalText(g)}</span>` : ''}</span>
+        <b>${Math.round(avg(v))}${g ? ` · достигли ${v.filter(x => x >= g[0]).length} из ${v.length}` : ` · ${v.length} чел.`}</b></div>`;
+    }
+    h += `</div>`;
+  }
+
+  // Где застревают: пункт закрыт позже своей смены или открыт и до сих пор не закрыт
+  const late = [];
+  for (const sec of ALL_CHECK) for (const u of gridUnits(sec)){
+    const due = dueShiftOf(sec, u.it); let n = 0, base = 0;
+    for (const m of all){
+      if (m.shiftsBefore) continue;   // пришёл не с 1-й смены — сроки по нему не показательны
+      const d = m.onboard[u.id];
+      if (d){ base++; if (shiftOnDate(m, d) > due) n++; }
+      else if (m.status === 'active' && curShiftNo(m) > due){ base++; n++; }
+    }
+    if (n) late.push({ t: u.t, n, base });
+  }
+  if (late.length){
+    late.sort((a, b) => b.n - a.n || b.n / b.base - a.n / a.base);
+    h += `<h2>Где застревают</h2><div class="card"><p class="small muted" style="margin:0 0 4px">Пункты, которые закрыли позже своей смены или не закрыли до сих пор: у скольких новичков из тех, кто до них дошёл.</p>
+      ${late.slice(0, 7).map(x => `<div class="ans"><span>${esc(x.t)}</span><b>${x.n} из ${x.base}</b></div>`).join('')}</div>`;
+  }
 
   // Допуски
   const adm = [];
@@ -1005,8 +1364,8 @@ function viewSend(){
     <div style="margin-top:18px"><button class="btn main wide" data-act="sendReport" ${u.length ? '' : 'disabled style="opacity:.5"'}>📤 Отправить отчёт за смену</button></div>
     <div class="row" style="margin-top:10px"><button class="btn" data-act="sendText">Сводка текстом</button><button class="btn" data-act="sendCode" ${u.length ? '' : 'disabled style="opacity:.5"'}>Отчёт кодом</button></div>
   </div>
-  <div class="note"><b>Как это работает</b>Откроется меню «Поделиться» — выберите мессенджер или почту и чат руководителя смены${S.settings.leader ? ' (' + esc(S.settings.leader) + ')' : ''}. Уйдёт небольшой файл, который руководитель загрузит в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.<br><br>
-  <b>Если файл не доходит</b> до рабочего компьютера руководителя — нажмите «Отчёт кодом»: тот же отчёт уйдёт текстом, его можно отправить по почте или в чат. «Сводка текстом» — только для чтения, в «Паспорт смены» её не загрузить.</div>
+  <div class="note"><b>Как это работает</b>Откроется меню «Поделиться» — выберите xRooms и чат руководителя смены${leaderOf() ? ' (' + esc(leaderOf()) + ')' : ''}. Уйдёт небольшой файл, который руководитель загрузит в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.<br><br>
+  <b>Если файл не доходит</b> до рабочего компьютера руководителя — нажмите «Отчёт кодом»: тот же отчёт уйдёт текстом, его можно отправить в чат xRooms. «Сводка текстом» — только для чтения, в «Паспорт смены» её не загрузить.</div>
   <div class="card"><dl class="kv"><dt>Последняя отправка</dt><dd>${fmtTs(S.lastSentAt)}</dd></dl>
     ${S.sentLog.length ? `<details style="margin-top:8px"><summary class="muted small">История отправок</summary>
       ${S.sentLog.slice().reverse().map(l => `<div class="list-item small"><span>${fmtTs(l.ts)}</span><span class="muted" style="flex:0">${l.count}&nbsp;чел.</span></div>`).join('')}</details>` : ''}
@@ -1020,31 +1379,28 @@ function viewSettings(){
   let h = `<h2>Мои данные</h2><div class="card">
     <label class="f"><span>ФИО наставника</span><input type="text" data-set="fio" value="${esc(st.fio)}" autocapitalize="words" autocomplete="name"></label>
     <label class="f"><span>Табельный номер</span><input type="text" data-set="tab" value="${esc(st.tab)}" inputmode="numeric"></label>
-    <label class="f"><span>Смена</span><select data-set="shift"><option value="">—</option>${['1','2','3','4'].map(s => `<option ${st.shift===s?'selected':''}>${s}</option>`).join('')}</select></label>
-    <label class="f"><span>Руководитель смены</span><input type="text" data-set="leader" value="${esc(st.leader)}" autocapitalize="words"></label>
+    <label class="f"><span>Смена</span><select data-set="shift"><option value="">—</option>${Object.entries(SHIFTS).map(([s, name]) => `<option value="${s}" ${st.shift === s ? 'selected' : ''}>${s} — ${esc(name)}</option>`).join('')}</select></label>
     <label class="f" style="margin-bottom:0"><span>Подразделение</span><input type="text" data-set="division" value="${esc(st.division)}"></label>
   </div>
-
-  <h2>Чек-лист обучения</h2>
-  <p class="muted small" style="margin:-4px 2px 10px">Пункты обучения операциям одинаковы для всех ваших новичков. Удаление пункта не стирает уже сделанные отметки. Чек-листы «Старт» и «Подготовка» — стандарт РЦ, они не редактируются.</p>`;
-  for (const [g, n] of GROUPS){
-    h += `<details class="card"><summary style="cursor:pointer;font-weight:700">${esc(n)} <span class="muted small">(${st.checklist[g].length})</span></summary>
-      <div style="margin-top:8px">${st.checklist[g].map(it => `<div class="list-item"><span>${esc(it.name)}</span><button class="x" data-act="ckDel" data-g="${g}" data-s="${it.id}" aria-label="Удалить пункт">✕</button></div>`).join('')}</div>
-      <div class="row" style="margin-top:8px"><input type="text" id="ck_${g}" placeholder="Новый пункт" style="flex:3"><button class="btn sm" data-act="ckAdd" data-g="${g}" style="flex:1">Добавить</button></div>
-    </details>`;
-  }
-  h += `<div class="row"><button class="btn ghost sm" data-act="ckReset">Вернуть стандартный чек-лист</button></div>
 
   <h2>Резервная копия</h2>
   <div class="card"><p class="small muted" style="margin-top:0">Записи хранятся только на этом телефоне. Полная копия пригодится при смене телефона.</p>
     <div class="row"><button class="btn" data-act="backup">💾 Сохранить копию</button><button class="btn" data-act="import">📂 Загрузить файл</button></div>
     <p class="small muted" style="margin-bottom:0">«Загрузить файл» принимает полную копию, ваш отчёт или задание от руководителя смены.</p></div>
 
+  <h2>Память и архив</h2>
+  <div class="card small"><dl class="kv"><dt>Занято</dt><dd>${Math.round(storeSize() / 1024)} КБ из ~5 000 КБ</dd>
+    <dt>В архиве</dt><dd>${S.mentees.filter(m => m.status !== 'active').length} чел.</dd></dl>
+    ${oldArchived().length ? `<p style="margin:10px 0 0">Можно удалить с телефона ${oldArchived().length} ${plural(oldArchived().length, 'человека', 'человек', 'человек')}: завершили адаптацию или уволились больше 3 месяцев назад, данные уже отправлены руководителю.</p>
+      <div class="row" style="margin-top:10px"><button class="btn" data-act="cleanArch">Удалить старых из архива</button></div>`
+    : `<p class="muted" style="margin:10px 0 0">Удалять пока нечего: в архиве нет отправленных записей старше 3 месяцев.</p>`}</div>
+
   <h2>О приложении</h2>
   <div class="card small"><dl class="kv"><dt>Версия</dt><dd>${APP_VERSION}</dd><dt>Новичков</dt><dd>${S.mentees.length}</dd>
     <dt>Где данные</dt><dd>Только в памяти этого телефона. На сайт ничего не отправляется.</dd>
-    <dt>Этапы</dt><dd>Знакомство 1–3 смена, обучение 4–7, закрепление 8–14, дальше самостоятельная работа.</dd>
-    <dt>Риск ухода</dt><dd>Загорается, если: 2 невыхода подряд или 2 из последних 5 смен; две слабые смены подряд; «жалуется на нагрузку» в последних 3 сменах; в беседе ответ «хочу остаться» — «нет» или «скорее нет», или средний ответ 2,5 и ниже; беседа просрочена на 2 смены.</dd></dl></div>
+    <dt>Этапы</dt><dd>Обучение — смены 1–3 (дни 1–3), закрепление — 4–14, дальше самостоятельная работа. Беседы — на 3, 7 и 14 смене.</dd>
+    <dt>Номер смены</dt><dd>Считается по отметкам «Вышел». От него зависят «День 2/3», «Критично» и выработка — отмечайте каждую смену.</dd>
+    <dt>Риск ухода</dt><dd>Загорается, если: 2 невыхода подряд или 2 из последних 5 смен; две слабые смены подряд; жалобы на нагрузку или самочувствие либо конфликт с коллегами в последних 3 сменах; невыход без предупреждения в последних 5 сменах; наставник отметил «Нужна помощь: риск ухода»; в беседе ответ «хочу остаться» — «нет» или «скорее нет», или средний ответ 2,5 и ниже; беседа просрочена на 2 смены.</dd></dl></div>
   <div class="row"><button class="btn danger" data-act="wipe">Удалить все данные на телефоне</button></div>
   <div class="sign">${esc(SIGN)}</div>`;
   return h;
@@ -1056,17 +1412,17 @@ function obCancelAdmissions(m){
   const req = Object.keys(m.admissions).filter(g => m.admissions[g] && m.admissions[g].status === 'requested');
   if (req.length){ req.forEach(g => delete m.admissions[g]); toast('Лист допуска отменён: не все пункты обучения отмечены'); }
 }
-function closeSheet(){ if (sheet && sheet.rec){ try { sheet.rec.stop(); } catch(e) {} } sheet = null; $('#sheet').classList.remove('open'); document.body.style.overflow = ''; }
+function closeSheet(){
+  const kind = sheet && sheet.kind;
+  sheet = null; $('#sheet').classList.remove('open'); document.body.style.overflow = '';
+  if (kind === 'grid') render();   // отметки в таблице сохраняются сразу — обновить экран под ней
+}
 
 function noteSheet(m, n){
   const isNew = !n;
-  const prevTask = lastNote(m);
-  const carry = prevTask && prevTask.nextSkill && (m.skills[prevTask.nextSkill]?.lvl || 0) < 3 ? prevTask.nextSkill : '';
-  n = n ? JSON.parse(JSON.stringify(n)) : { id: uid(), date: shiftDefaultDate(), present: true, score: 0, tags: [], comment: '', help: false, helpText: '', helpResolved: false, nextSkill: carry, nextText: '' };
-  const nextOpts = groupsOf(m).map(g => {
-    const its = skillItems(m, g).filter(it => (m.skills[it.id]?.lvl || 0) < 3 || it.id === n.nextSkill);
-    return its.length ? `<optgroup label="${esc(GNAME[g])}">${its.map(it => `<option value="${it.id}" ${n.nextSkill===it.id?'selected':''}>${esc(it.name)} (${LEVELS[m.skills[it.id]?.lvl || 0].toLowerCase()})</option>`).join('')}</optgroup>` : '';
-  }).join('');
+  n = n ? JSON.parse(JSON.stringify(n)) : { id: uid(), date: shiftDefaultDate(), present: true, score: 0, tags: [], comment: '', help: false, helpText: '', helpResolved: false, nextSkill: '', nextText: '' };
+  // «что отрабатываем» теперь только текстом: пункт из старого списка переносим в текст
+  if (n.nextSkill){ const it = findSkill(n.nextSkill); n.nextText = [it ? it.name : '', n.nextText].filter(Boolean).join('. '); n.nextSkill = ''; }
   openSheet(`<h3>${isNew ? 'Отметка за смену' : 'Изменить отметку'}</h3><p class="lead">${esc(m.fio)}</p>
     <label class="f"><span>Дата смены (для ночной — дата начала)</span><input type="date" id="nDate" value="${n.date}" max="${today()}"></label>
     <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Вышел на смену?</span>
@@ -1074,14 +1430,14 @@ function noteSheet(m, n){
     <div id="nWork" ${n.present ? '' : 'hidden'}>
       <div class="f"><span class="muted small" style="display:block;margin-bottom:6px" id="nShiftCap"></span>
         <div class="pick c5">${[1,2,3,4,5].map(i => `<button data-act="nScore" data-v="${i}" class="${n.score===i?'on':''}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div></div>
+      <label class="f"><span id="nOutCap">Выработка, коробов</span><input type="number" id="nOut" min="0" max="9999" inputmode="numeric" placeholder="Впишите число, если знаете"></label>
     </div>
     <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Что заметили <span id="nTagCap"></span></span><div id="nTags"></div></div>
     <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Комментарий</span>
       <textarea id="nComment" class="grow" rows="1" maxlength="${COMMENT_MAX}" placeholder="${n.present ? 'Коротко: что получилось, что нет' : 'Причина, если известна'}">${esc(n.comment)}</textarea>
       <div class="qrow" id="nPhrases"></div>
       <div class="cnt"><span id="nCnt">0</span>/${COMMENT_MAX}</div></div>
-    <label class="f"><span>📌 Что отрабатываем на следующей смене</span><select id="nNext"><option value="">Не выбрано</option>${nextOpts}</select></label>
-    <label class="f"><input type="text" id="nNextText" value="${esc(n.nextText || '')}" placeholder="или своими словами"></label>
+    <label class="f"><span>📌 Что отрабатываем на следующей смене</span><input type="text" id="nNextText" value="${esc(n.nextText || '')}" maxlength="${COMMENT_MAX}" placeholder="Своими словами"></label>
     ${helpBlockHtml('n', n.help, n.helpReason, n.helpText)}
     <div class="actions">${isNew ? '' : `<button class="btn danger" data-act="noteDel">Удалить</button>`}<button class="btn main" data-act="noteSave">Сохранить</button></div>`,
     { kind: 'note', mid: m.id, note: n, isNew, more: false, help: { on: !!n.help, reason: n.helpReason || '' } });
@@ -1089,6 +1445,8 @@ function noteSheet(m, n){
   const ta = $('#nComment');
   ta.addEventListener('input', growComment);
   $('#nDate').addEventListener('change', () => { refreshNoteTags(); });
+  const no0 = noteShiftNo(m, n, n.date);
+  if (m.output[no0] !== undefined) $('#nOut').value = m.output[no0];
   growComment();
   refreshNoteTags();
   renderPhrases();
@@ -1111,6 +1469,7 @@ function refreshNoteTags(){
   const no = noteShiftNo(m, n, date);
   sheet.shiftNo = no;
   const cap = $('#nShiftCap'); if (cap) cap.textContent = `Как прошла ${no}-я смена`;
+  const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов${OUTPUT_GOAL[no] ? ` (цель ${goalText(OUTPUT_GOAL[no])})` : ''}`;
   const box = $('#nTags'); if (!box) return;
   $('#nTagCap').textContent = `${n.tags.length}/${MAX_TAGS}`;
   if (!n.present){
@@ -1139,9 +1498,8 @@ function refreshNoteTags(){
 }
 function renderPhrases(){
   const box = $('#nPhrases'); if (!box || !sheet) return;
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  box.innerHTML = (sheet.note.present ? PHRASES.map((p, i) => `<button data-act="nPhrase" data-v="${i}">${p[0]}</button>`).join('') : '') +
-    `<button data-act="nVoice" id="nVoice" class="${sheet.rec ? 'rec' : ''}">${sheet.rec ? '🔴 Слушаю… стоп' : '🗣️ Голос'}</button>`;
+  box.innerHTML = sheet.note.present ? PHRASES.map((p, i) => `<button data-act="nPhrase" data-v="${i}">${p[0]}</button>`).join('') : '';
+  box.hidden = !sheet.note.present;
 }
 function growComment(){
   const ta = $('#nComment'); if (!ta) return;
@@ -1155,6 +1513,39 @@ function appendComment(text){
   const next = (cur ? cur + ' ' : '') + text;
   if (next.length > COMMENT_MAX){ toast(`Комментарий не длиннее ${COMMENT_MAX} знаков`); return; }
   ta.value = next; growComment();
+}
+/* «Пункты группе»: таблица «пункт × новичок», касание ставит или снимает отметку сразу */
+function gridUnits(sec){
+  return sec.items.filter(it => !it.meet).flatMap(it => it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t, it })) : [{ id: it.id, t: it.n + ' ' + it.t, it }]);
+}
+function gridName(m){ const p = m.fio.trim().split(/\s+/); return esc((p[0] || '?').slice(0, 7)) + (p[1] ? '<br>' + esc(p[1][0]) + '.' : ''); }   // уже экранировано
+function gridHtml(){
+  const sec = ALL_CHECK.find(s => s.id === sheet.sec);
+  const ms = sheet.ids.map(findM).filter(m => m && sec.items.some(it => itemOn(m, sec, it)));
+  if (!ms.length) return '<p class="muted">Этот раздел пока ни у кого не открыт.</p>';
+  return `<div class="gwrap"><table class="grid"><thead><tr><th class="gfirst">Пункт</th>${ms.map(m => `<th title="${esc(m.fio)}">${gridName(m)}</th>`).join('')}</tr></thead>
+    <tbody>${gridUnits(sec).map(u => `<tr><td class="gfirst"><button class="gall" data-act="gRow" data-u="${u.id}">${esc(u.t)}<small>отметить всем</small></button></td>${ms.map(m => {
+      if (!itemOn(m, sec, u.it)) return '<td class="gna" title="Ещё не открыт">—</td>';
+      const on = !!m.onboard[u.id];
+      return `<td><button class="gcell ${on ? 'on' : ''}" data-act="gCell" data-id="${m.id}" data-u="${u.id}" aria-pressed="${on}" aria-label="${esc(m.fio)}: ${esc(u.t)}">${on ? '✓' : ''}</button></td>`;
+    }).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function refreshGrid(){   // горизонтальная прокрутка таблицы сохраняется
+  const w = $('#gBox .gwrap'), x = w ? w.scrollLeft : 0;
+  $('#gBox').innerHTML = gridHtml();
+  const w2 = $('#gBox .gwrap'); if (w2) w2.scrollLeft = x;
+}
+/* Групповая отметка: номер смены и цель по выработке у каждого — на выбранную дату */
+function batchLabels(){
+  if (!sheet || sheet.kind !== 'batch') return;
+  const dt = $('#bDate').value || shiftDefaultDate();
+  for (const id of sheet.ids){
+    const m = findM(id); if (!m) continue;
+    const no = shiftOnDate(m, dt), g = OUTPUT_GOAL[no], inp = $('#bo_' + id);
+    $('#bl_' + id).textContent = no <= 3 ? `День ${no}` : `${no}-я смена`;
+    inp.placeholder = g ? `цель ${g[0]}` : 'кор.';
+    inp.value = m.output[no] !== undefined ? m.output[no] : '';
+  }
 }
 function helpBlockHtml(prefix, on, reason, text){
   return `<button type="button" class="helpbar ${on ? 'on' : ''} ${prefix === 'n' ? '' : 'sm'}" id="${prefix}HelpBar" data-act="helpBar" data-p="${prefix}" aria-pressed="${!!on}">
@@ -1203,13 +1594,15 @@ function reportPayload(list, full){
   return {
     format: 'pasport-mentor-report', version: 1, app: 'Карманный наставник ' + APP_VERSION,
     createdAt: new Date().toISOString(), full: !!full, since: full ? null : (S.lastSentAt ? new Date(S.lastSentAt).toISOString() : null),
-    division: S.settings.division, leader: S.settings.leader,
+    division: S.settings.division, leader: leaderOf(),
     mentor: { fio: S.settings.fio, tab: S.settings.tab, shift: S.settings.shift },
     checklist: S.settings.checklist,
     onboarding: ONBOARD,
     training: TRAINING,
+    operations: OPS,
+    outputGoals: OUTPUT_GOAL,   // «Паспорт смены» 3.26+ показывает выработку с целью смены
     mentees: list.map(m => Object.assign(JSON.parse(JSON.stringify(m)), {
-      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal, curShift: curShiftNo(m) }
+      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal, operationsLeft: opsLeft(m), operationsTotal: opsTotal, curShift: curShiftNo(m) }
     }))
   };
 }
@@ -1239,35 +1632,121 @@ async function sendReport(full){
   const name = `наставник_${safeName(shortFio(S.settings.fio))}_${fileStamp()}.json`;
   const res = await shareFile(name, reportPayload(list, full), 'Отчёт наставника');
   if (res === 'cancel') return;
-  if (res === 'downloaded' && !confirm('Файл сохранён в «Загрузки». Отправьте его руководителю смены.\n\nОтметить изменения как отправленные?')) return;
+  if (res === 'downloaded' && !await ask('Файл сохранён в «Загрузки». Отправьте его руководителю смены.\n\nОтметить изменения как отправленные?')) return;
   S.lastSentAt = startedAt; S.sentLog.push({ ts: startedAt, count: list.length, full: !!full });
   S.sentLog = S.sentLog.slice(-30); save(); render(); toast('Отчёт отправлен');
 }
 
-function textSummary(){
-  const st = S.settings;
-  const lines = [`Отчёт наставника: ${st.fio || '—'}${st.shift ? ', смена ' + st.shift : ''}, ${fmt(shiftDefaultDate())}`];
-  for (const m of S.mentees.filter(x => x.status === 'active')){
-    const w = worked(m), ln = lastNote(m), c = countLevels(m);
-    let s = `\n• ${shortFio(m.fio)} — ${w} ${plural(w,'смена','смены','смен')} (${stageOf(w).toLowerCase()}), навыки ${progress(m)}%: допущен ${c[3]}, под контролем ${c[2]}`;
-    if (ln){
-      s += `\n  ${fmt(ln.date)}: ${ln.present ? (SCORE[ln.score] ? SCORE[ln.score].toLowerCase() : 'без оценки') : 'не вышел'}`;
-      if (ln.tags && ln.tags.length) s += '; ' + ln.tags.join(', ').toLowerCase();
-      if (ln.comment) s += '. ' + ln.comment;
-    }
-    if (!onboardDone(m)) s += `\n  🗂 Старт: сделано ${obTotal - obLeft(m)} из ${obTotal}`;
-    if (curShiftNo(m) >= 2 && !trainingDone(m)) s += `\n  🛠 Подготовка: ${trTotal - trLeft(m)} из ${trTotal}`;
-    const nt = nextTask(m); if (nt) s += `\n  📌 Дальше: ${[nt.name, nt.text].filter(Boolean).join('. ')}`;
-    const rr = riskReasons(m); if (rr.length) s += `\n  🔻 Риск ухода: ${rr.join(', ')}`;
-    for (const [g] of WORK_GROUPS) if (m.admissions[g] && m.admissions[g].status === 'requested') s += `\n  ✅ Готов к допуску: ${GNAME[g]} (лист от ${fmt(m.admissions[g].date)})`;
-    for (const h of openHelp(m)) s += `\n  🚨 ${helpTitle(h)} (${fmt(h.date)})${h.helpText ? ': ' + h.helpText : ''}`;
-    const d = meetingDue(m); if (d) s += `\n  ⏰ Пора провести беседу ${d}-й смены`;
-    lines.push(s);
-  }
-  if (lines.length === 1) lines.push('\nАктивных новичков нет.');
-  return lines.join('\n');
+/* ---------- «Сводка текстом»: подробно и живым языком ----------
+   Факты те же, а формулировки выбираются из вариантов. Выбор зависит от наставника, даты и номера варианта,
+   поэтому сводки разных наставников и разных дней не одинаковые, а повторное открытие в тот же день даёт тот же текст */
+function hashStr(s){ let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.codePointAt(0), 16777619); return h >>> 0; }
+function seededRandom(seed){
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
-function sendText(){ return shareText(textSummary()); }
+const SUM = {
+  head:    ['Отчёт наставника', 'Итоги смены по новичкам', 'Сводка по обучению новичков', 'Как прошла смена у новичков', 'Новички: итоги смены'],
+  hello:   ['Здравствуйте!', 'Добрый день!', 'Коллеги, привет!', '', ''],
+  shiftOk: ['Смена', 'Оценка за смену', 'По смене', 'Как прошла смена'],
+  absent:  ['Пропуск смены', 'Смена пропущена', 'На смене отсутствие', 'Невыход на смену'],
+  good:    ['Из хорошего', 'Что получается', 'Отмечу плюсы', 'Сильные стороны'],
+  bad:     ['Над чем работаем', 'Есть замечания', 'Пока не получается', 'Что подтянуть'],
+  comment: ['Комментарий', 'Коротко', 'От себя', 'Заметка'],
+  out:     ['Выработка', 'Собрано', 'Результат по коробам', 'За смену собрано'],
+  outOk:   ['цель выполнена', 'план есть', 'в норме', 'норматив закрыт'],
+  outLow:  ['до цели не хватило', 'ниже цели на', 'до плана осталось'],
+  done:    ['За смену закрыли', 'Сегодня прошли', 'На смене отработали', 'Освоено за смену'],
+  late:    ['Доотмечено за прошлые смены', 'Закрыты хвосты прошлых смен', 'Догнали пропущенное с прошлых смен', 'Отмечено задним числом'],
+  prog:    ['Прогресс по обучению', 'Обучение в целом', 'По чек-листам', 'Где сейчас по программе'],
+  left:    ['Впереди', 'Ещё не закрыто', 'Осталось пройти', 'Дальше по программе'],
+  next:    ['План на следующую смену', 'Завтра отрабатываем', 'Следующий шаг', 'Дальше делаем упор на'],
+  meetDue: ['Пора провести беседу', 'Запланирована беседа', 'Нужно поговорить один на один —'],
+  meetOk:  ['Беседа проведена', 'Поговорили один на один', 'Провели беседу'],
+  noMark:  ['Без отметки за смену', 'Ещё не отмечены за смену', 'По ним отметок за смену пока нет'],
+  bye:     ['Если есть вопросы — на связи.', 'Подробности — в отчёте файлом.', 'Спасибо!', 'Хорошей смены!', '', '']
+};
+function textSummary(variant){
+  const st = S.settings, d = shiftDefaultDate();
+  const R = seededRandom(hashStr((st.fio || '') + '|' + d + '|' + (variant || 0)));
+  const pick = arr => arr[Math.floor(R() * arr.length)];
+  const lc = s => s.charAt(0).toLowerCase() + s.slice(1);
+  const act = S.mentees.filter(x => x.status === 'active').sort((a, b) => a.fio.localeCompare(b.fio, 'ru'));
+  const marked = act.filter(m => m.notes.some(n => n.date === d)), unmarked = act.filter(m => !m.notes.some(n => n.date === d));
+  const out = [];
+  const hello = pick(SUM.hello); if (hello) out.push(hello);
+  out.push(`${pick(SUM.head)} за ${fmt(d)}${st.fio ? ' — ' + shortFio(st.fio) : ''}${st.shift ? ', смена ' + st.shift : ''}.`);
+  out.push(`Новичков в обучении: ${act.length}${unmarked.length && marked.length ? `, отмечено за смену: ${marked.length}` : ''}.`);
+
+  for (const m of marked){
+    const n = m.notes.find(x => x.date === d), no = shiftOnDate(m, d), lines = [];
+    lines.push(`\n▪️ ${m.fio} — ${no}-я смена${no <= 3 ? ` (день ${no} обучения)` : `, ${lc(stageOf(worked(m)))}`}`);
+    if (!n.present){
+      lines.push(`${pick(SUM.absent)}${(n.tags || []).length ? ` (${n.tags.map(lc).join(', ')})` : ''}${n.comment ? ': ' + n.comment : '.'}`);
+    } else {
+      if (SCORE[n.score]) lines.push(`${pick(SUM.shiftOk)}: ${lc(SCORE[n.score])}.`);
+      const good = (n.tags || []).filter(t => tagSign(t) > 0), bad = (n.tags || []).filter(t => tagSign(t) <= 0);
+      const notes = [];
+      if (good.length) notes.push(`${pick(SUM.good)}: ${good.map(lc).join(', ')}.`);
+      if (bad.length) notes.push(`${pick(SUM.bad)}: ${bad.map(lc).join(', ')}.`);
+      if (R() < 0.5) notes.reverse();   // порядок плюсов и замечаний тоже меняется
+      lines.push(...notes);
+      if (n.comment) lines.push(`${pick(SUM.comment)}: ${n.comment}`);
+      const v = m.output[no], g = OUTPUT_GOAL[no];
+      if (v !== undefined) lines.push(`${pick(SUM.out)}: ${v} кор.${g ? (v >= g[0] ? ` — ${pick(SUM.outOk)} (${goalText(g)})` : ` — ${pick(SUM.outLow)} ${g[0] - v} кор. (цель ${goalText(g)})`) : ''}`);
+      // отмеченное в эту смену: пункты этой смены — «закрыли за смену»,
+      // пункты, положенные на прошлые смены (дозаполнили задним числом или перенесли), — отдельно
+      const done = { cur: [[], []], late: [[], []] };   // [список, по разделам]
+      for (const sec of ALL_CHECK){
+        const c = { cur: 0, late: 0 };
+        for (const it of sec.items){
+          if (it.meet) continue;
+          const k = dueShiftOf(sec, it) < no ? 'late' : 'cur';
+          if (it.sub){ const su = it.sub.filter(u => m.onboard[u.id] === d); if (su.length){ done[k][0].push(`${it.t} (${su.map(u => u.t).join(', ')})`); c[k]++; } }
+          else if (m.onboard[it.id] === d){ done[k][0].push(it.t); c[k]++; }
+        }
+        for (const k of ['cur', 'late']) if (c[k]) done[k][1].push(`«${sec.name}» — ${c[k]} ${plural(c[k], 'пункт', 'пункта', 'пунктов')}`);
+      }
+      // немного пунктов — списком, много — по разделам, чтобы сообщение не растягивалось
+      const listOf = ([xs, bySec]) => xs.length <= 6 ? xs.join('; ') : bySec.join(', ');
+      if (done.cur[0].length) lines.push(`${pick(SUM.done)}: ${listOf(done.cur)}.`);
+      if (done.late[0].length) lines.push(`${pick(SUM.late)}: ${listOf(done.late)}.`);
+    }
+    // общий прогресс и что впереди
+    const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it)));
+    const parts = [`«Старт» ${obTotal - obLeft(m)}/${obTotal}`];
+    if (trainingVisible(m)) parts.push(`«Подготовка» ${trTotal - trLeft(m)}/${trTotal}`);
+    parts.push(`«Обучение операциям» ${opsVis.filter(it => obItemDone(m, it)).length}/${opsVis.length}`);
+    lines.push(`${pick(SUM.prog)}: ${parts.join(', ')}.`);
+    const ahead = [...ONBOARD, ...(trainingVisible(m) ? TRAINING : []), ...OPS].flatMap(sec => sec.items.filter(it => itemOn(m, sec, it) && !obItemDone(m, it)));
+    if (ahead.length) lines.push(`${pick(SUM.left)}: ${ahead.slice(0, 3).map(it => it.t).join('; ')}${ahead.length > 3 ? ` (всего ${ahead.length})` : ''}.`);
+    // задача на следующую смену — из сегодняшней отметки, иначе последняя незакрытая
+    const nt = nextTask(m), nextTxt = (n.nextText || '').trim() || (nt ? [nt.name, nt.text].filter(Boolean).join('. ') : '');
+    if (nextTxt) lines.push(`${pick(SUM.next)}: ${nextTxt}`);
+    const mt = MEET.map(k => [k, m.meetings[k]]).find(([, x]) => x && x.done && x.date === d);
+    if (mt){
+      const low = SURVEY.filter(([id]) => mt[1].answers[id] && mt[1].answers[id] <= 2).map(([, q]) => lc(q));
+      lines.push(`${pick(SUM.meetOk)} (${mt[0]}-я смена)${low.length ? `. Обратить внимание: ${low.join('; ')}` : ', тревожных ответов нет'}.`);
+    } else { const k = meetingDue(m); if (k) lines.push(`${pick(SUM.meetDue)} ${k}-й смены.`); }
+    // помощь: из сегодняшней отметки (даже если уже решена) и незакрытые просьбы прошлых смен
+    if (n.help) lines.push(`🚨 ${helpTitle(n)}${n.helpText ? ': ' + n.helpText : ''}${n.helpResolved ? ' — вопрос уже решён' : ''}`);
+    for (const h of openHelp(m)) if (h.id !== n.id) lines.push(`🚨 ${helpTitle(h)} (с ${fmt(h.date).slice(0, 5)})${h.helpText ? ': ' + h.helpText : ''}`);
+    const rr = riskReasons(m); if (rr.length) lines.push(`🔻 Риск ухода: ${rr.join(', ')}.`);
+    for (const [g] of WORK_GROUPS) if (m.admissions[g] && m.admissions[g].status === 'requested') lines.push(`✅ Оформлен лист допуска: ${GNAME[g]} (от ${fmt(m.admissions[g].date)}) — нужно ваше подтверждение.`);
+    out.push(lines.join('\n'));
+  }
+  if (unmarked.length) out.push(`\n${pick(SUM.noMark)}: ${unmarked.map(m => `${shortFio(m.fio)} (${curShiftNo(m)}-я смена)`).join(', ')}.`);
+  if (!act.length) out.push('\nАктивных новичков нет.');
+  const bye = pick(SUM.bye);
+  out.push(`\n${bye ? bye + '\n' : ''}— ${st.fio ? shortFio(st.fio) : 'наставник'}${st.shift ? ', смена ' + st.shift : ''}`);
+  return out.join('\n');
+}
+/* Окно сводки: текст можно поправить, «Другой вариант» — те же факты другими словами */
+function sendText(){
+  openSheet(`<h3>Сводка текстом</h3><p class="lead">Можно поправить текст перед отправкой. «Другой вариант» — те же факты другими словами.</p>
+    <textarea id="sumText" style="min-height:320px;font-size:14px;line-height:1.45">${esc(textSummary(0))}</textarea>
+    <div class="actions"><button class="btn" data-act="sumAgain">🔄 Другой вариант</button><button class="btn main" data-act="sumShare">Поделиться</button></div>`, { kind: 'sum', variant: 0 });
+}
 
 /* Отчёт кодом: тот же отчёт, сжатый и записанный текстом — для почты или если файлы не доходят до рабочего ПК */
 async function reportCode(list){
@@ -1314,15 +1793,16 @@ function importAssignment(d){
     S.mentees.push(normMentee({ id: uid(), fio, tab, hireDate: r.hireDate || '', mainGroup: main, groups: [main], shiftsBefore: +r.shiftsWorked || +r.shiftsBefore || 0 }));
     added++;
   }
-  if (d.mentor && !S.settings.leader && d.leader) S.settings.leader = d.leader;
+  if (d.leader && !S.settings.leader) S.settings.leader = d.leader;
   return { added, skipped };
 }
-function handleFile(text){
+async function handleFile(text){
   let d;
   try { d = JSON.parse(text); } catch(e){ d = null; }
-  if (!d || typeof d !== 'object'){ alert('Это не файл наставника. Нужен файл .json из «Карманного наставника» или задание от руководителя смены.'); return; }
+  if (!d || typeof d !== 'object'){ say('Это не файл наставника. Нужен файл .json из «Карманного наставника» или задание от руководителя смены.'); return; }
   if (d.format === 'pasport-mentor-backup'){
-    if (!confirm(`Заменить все данные на телефоне копией от ${fmtTs(Date.parse(d.createdAt))}?\nНовичков в копии: ${(d.state?.mentees || []).length}`)) return;
+    if (!d.state || typeof d.state !== 'object' || !Array.isArray(d.state.mentees)){ say('Файл копии повреждён — данные на телефоне не изменены.'); return; }
+    if (!await ask(`Заменить все данные на телефоне копией от ${fmtTs(Date.parse(d.createdAt))}?\nНовичков в копии: ${(d.state?.mentees || []).length}`)) return;
     localStorage.setItem(KEY, JSON.stringify(d.state)); load(); save(); go('list'); toast('Копия восстановлена'); return;
   }
   if (d.format === 'pasport-mentor-report'){
@@ -1333,13 +1813,17 @@ function handleFile(text){
     const r = importAssignment(d); save(); go('list');
     toast(`Новичков добавлено: ${r.added}${r.skipped ? ', пропущено (уже есть): ' + r.skipped : ''}`); return;
   }
-  alert('Файл не распознан. Подходят: полная копия, отчёт наставника или задание от руководителя смены.');
+  say('Файл не распознан. Подходят: полная копия, отчёт наставника или задание от руководителя смены.');
 }
 
 /* ---------- действия ---------- */
 const ACT = {
   go: d => go(d.v),
   open: d => go('mentee', d.id),
+  openT: d => { ui.view = 'mentee'; ui.id = d.id; ui.tab = d.t || 'shifts'; render(); window.scrollTo(0, 0); },
+  filter: d => { ui.filter = d.v; render(); },
+  taskFilter: d => { ui.filter = d.v; ui.q = ''; render(); const el = $('#fchips'); if (el) el.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); },
+  listMode: () => { S.settings.listMode = S.settings.listMode === 'full' ? 'compact' : 'full'; save(); render(); },
   tab: d => { ui.tab = d.v; render(); },
   hideInstall: () => { S.settings.installHidden = true; save(); render(); },
   closeSheet,
@@ -1347,66 +1831,89 @@ const ACT = {
   obInfo: d => { const el = $('#obf_' + d.u); if (el) el.hidden = !el.hidden; },
   obTap: d => {
     const m = findM(d.id); if (!m || m.status !== 'active') return;
-    if (m.onboard[d.u]) delete m.onboard[d.u]; else m.onboard[d.u] = today();
-    if (!onboardDone(m) || !trainingDone(m)) obCancelAdmissions(m);
+    if (m.onboard[d.u]) delete m.onboard[d.u]; else m.onboard[d.u] = shiftDefaultDate();   // дата смены: ночью после полуночи — дата её начала
+    if (!allDone(m)) obCancelAdmissions(m);
     const sec = secOfUnit(d.u), secDone = sec && obSectionLeft(m, sec) === 0;
     if (sec && ui.secOpen) delete ui.secOpen[m.id + ':' + sec.id];   // выполненный раздел свернётся сам
     touch(m); render();
     if (secDone && m.onboard[d.u]) toast(ONBOARD.includes(sec) && onboardDone(m) ? '«Старт» закрыт ✅' : `Раздел «${sec.name}» закрыт ✅`);
   },
-  obAll: d => {
+  obAll: async d => {
     const m = findM(d.id), sec = ALL_CHECK.find(s => s.id === d.s);
-    if (!confirm(`Отметить выполненным весь раздел «${sec.name}»?`)) return;
-    for (const it of sec.items) for (const u of (it.sub || [it])) if (!m.onboard[u.id]) m.onboard[u.id] = today();
+    if (!await ask(`Отметить выполненным весь раздел «${sec.name}»?`)) return;
+    for (const it of sec.items) if (itemOn(m, sec, it) && !it.meet) for (const u of (it.sub || [it])) if (!m.onboard[u.id]) m.onboard[u.id] = shiftDefaultDate();
     if (ui.secOpen) delete ui.secOpen[m.id + ':' + sec.id];
-    touch(m); render(); toast(`Раздел «${sec.name}» закрыт ✅`);
+    touch(m); render(); toast(obSectionLeft(m, sec) ? `Раздел «${sec.name}»: отмечено` : `Раздел «${sec.name}» закрыт ✅`);
   },
 
   batch: () => {
     const act = S.mentees.filter(m => m.status === 'active').sort((a, b) => a.fio.localeCompare(b.fio, 'ru'));
     const items = {}; act.forEach(m => items[m.id] = { present: true, score: 0, helpSt: { on: false, reason: '' } });
-    const opts = GROUPS.map(([g, name]) => {
-      const its = (S.settings.checklist[g] || []).filter(it => act.some(m => groupsOf(m).includes(g) && (m.skills[it.id]?.lvl || 0) < 3));
-      return its.length ? `<optgroup label="${esc(name)}">${its.map(it => `<option value="${it.id}">${esc(it.name)}</option>`).join('')}</optgroup>` : '';
-    }).join('');
-    openSheet(`<h3>Отметка за смену всем</h3><p class="lead">Сначала дата, потом по каждому новичку — пара касаний</p>
+    // «Исключениями»: все уже «Вышел»; ✓/✕ — вышел или нет, имя раскрывает оценку, комментарий и помощь
+    openSheet(`<h3>Отметка за смену всем</h3><p class="lead">Все отмечены «Вышел» — меняйте только исключения. ✓ / ✕ — вышел или нет, имя — оценка, комментарий, помощь, справа — выработка.</p>
       <label class="f"><span>Дата смены (для ночной — дата начала)</span><input type="date" id="bDate" value="${shiftDefaultDate()}" max="${today()}"></label>
-      ${act.map(m => `<div class="card" style="padding:12px">
-        <div style="font-weight:700;margin-bottom:8px">${esc(m.fio)} <span class="muted small" style="font-weight:400">— ${worked(m)} ${plural(worked(m),'смена','смены','смен')}</span></div>
-        <div class="pick c2" style="margin-bottom:8px"><button data-act="bPresent" data-id="${m.id}" data-v="1" class="on">Вышел</button><button data-act="bPresent" data-id="${m.id}" data-v="0">Не вышел</button></div>
-        <div class="pick c5" id="bs_${m.id}">${[1,2,3,4,5].map(i => `<button data-act="bScore" data-id="${m.id}" data-v="${i}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div>
-        <input type="text" id="bc_${m.id}" maxlength="${COMMENT_MAX}" placeholder="Комментарий (необязательно)" style="margin-top:8px">
-        ${helpBlockHtml('b_' + m.id, false, '', '')}
-      </div>`).join('')}
+      ${act.map(m => `<div class="brow">
+        <div class="btop">
+          <button class="bpres" data-act="bToggle" data-id="${m.id}" aria-label="Вышел. Нажмите, если не вышел">✓</button>
+          <button class="bname" data-act="bMore" data-id="${m.id}"><b>${esc(m.fio)}</b><span class="muted small" id="bl_${m.id}"></span></button>
+          <input type="number" class="bout" id="bo_${m.id}" min="0" max="9999" inputmode="numeric" placeholder="кор." aria-label="Выработка, коробов">
+        </div>
+        <div class="bmore" id="bm_${m.id}" hidden>
+          <div class="pick c5" id="bs_${m.id}">${[1,2,3,4,5].map(i => `<button data-act="bScore" data-id="${m.id}" data-v="${i}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div>
+          <input type="text" id="bc_${m.id}" maxlength="${COMMENT_MAX}" placeholder="Комментарий (необязательно)" style="margin-top:8px">
+          ${helpBlockHtml('b_' + m.id, false, '', '')}
+        </div></div>`).join('')}
       ${(() => {
-        const secs = ALL_CHECK.map(sec => ({ sec, units: sec.items.flatMap(it => it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t })) : [{ id: it.id, t: it.n + ' ' + it.t }]).filter(u => act.some(m => !m.onboard[u.id])) })).filter(x => x.units.length);
+        const secs = ALL_CHECK.map(sec => ({ sec, units: sec.items.flatMap(it => (it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t })) : [{ id: it.id, t: it.n + ' ' + it.t }])
+          .filter(u => !it.meet && act.some(m => itemOn(m, sec, it) && !m.onboard[u.id]))) })).filter(x => x.units.length);
         if (!secs.length) return '';
         return `<h3 style="margin-top:20px;font-size:16px">Обучение — всем вышедшим</h3>
           <p class="small muted" style="margin:2px 0 10px">Отметьте, что показали вместе. У кого пункт уже отмечен — не изменится.</p>
-          ${secs.map(({ sec, units }) => `<details class="bsec" ${ONBOARD.includes(sec) ? 'open' : ''}><summary>${esc(sec.name)} <span class="muted small">(${units.length})</span></summary>
+          ${secs.map(({ sec, units }) => `<details class="bsec" ${ONBOARD.includes(sec) || OPS.includes(sec) ? 'open' : ''}><summary>${esc(sec.name)} <span class="muted small">(${units.length})</span></summary>
             <div class="obchips" style="margin-bottom:6px">${units.map(u => `<button data-act="bOb" data-u="${u.id}">${esc(u.t)}</button>`).join('')}</div></details>`).join('')}`;
       })()}
-      <h3 style="margin-top:20px;font-size:16px">Общее занятие</h3>
-      <p class="small muted" style="margin:2px 0 12px">Если показывали операцию сразу всем — отметьте её здесь, уровень поднимется у всех вышедших. «Допущен» ставится только по одному, в карточке новичка.</p>
-      <label class="f"><span>Что отрабатывали вместе</span><select id="bSkill"><option value="">Не отрабатывали</option>${opts}</select></label>
-      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Уровень</span>
-        <div class="pick c2" id="bLvl"><button data-act="bLvl" data-v="1" class="on">Показал</button><button data-act="bLvl" data-v="2">Под контролем</button></div></div>
-      <label class="f"><span>📌 Что отрабатываем на следующей смене (всем)</span><select id="bNext"><option value="">Не выбрано</option>${opts}</select></label>
+      <label class="f" style="margin-top:20px"><span>📌 Что отрабатываем на следующей смене (всем)</span><input type="text" id="bNext" maxlength="${COMMENT_MAX}" placeholder="Своими словами"></label>
       <div class="actions"><button class="btn" data-act="closeSheet">Отмена</button><button class="btn main" data-act="batchSave">Сохранить всех</button></div>`,
-      { kind: 'batch', items, ids: act.map(m => m.id), lvl: 1, ob: {} });
+      { kind: 'batch', items, ids: act.map(m => m.id), ob: {} });
+    batchLabels(); $('#bDate').addEventListener('change', batchLabels);
   },
-  bPresent: (d, b) => {
-    const it = sheet.items[d.id]; it.present = d.v === '1';
-    b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-    $('#bs_' + d.id).hidden = !it.present;
+  grid: () => {
+    const act = S.mentees.filter(m => m.status === 'active').sort((a, b) => a.fio.localeCompare(b.fio, 'ru'));
+    const secs = ALL_CHECK.filter(sec => gridUnits(sec).some(u => act.some(m => itemOn(m, sec, u.it))));
+    if (!secs.length){ toast('Пока нет открытых пунктов'); return; }
+    // по умолчанию — первый раздел, где у кого-то остались невыполненные пункты
+    const def = secs.find(sec => gridUnits(sec).some(u => act.some(m => itemOn(m, sec, u.it) && !m.onboard[u.id]))) || secs[0];
+    openSheet(`<h3>Пункты группе</h3><p class="lead">Касание ставит или снимает отметку сразу. «Отметить всем» — всем, у кого пункт открыт.</p>
+      <label class="f"><span>Раздел</span><select id="gSec">${secs.map(s => `<option value="${s.id}" ${s === def ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>
+      <div id="gBox"></div>
+      <div class="actions"><button class="btn main" data-act="closeSheet">Готово</button></div>`, { kind: 'grid', ids: act.map(m => m.id), sec: def.id });
+    $('#gSec').addEventListener('change', e => { sheet.sec = e.target.value; refreshGrid(); });
+    refreshGrid();
   },
+  gCell: d => {
+    const m = findM(d.id); if (!m) return;
+    if (m.onboard[d.u]){ delete m.onboard[d.u]; if (!allDone(m)) obCancelAdmissions(m); } else m.onboard[d.u] = shiftDefaultDate();
+    touch(m); refreshGrid();
+  },
+  gRow: d => {
+    const sec = ALL_CHECK.find(s => s.id === sheet.sec), u = gridUnits(sec).find(x => x.id === d.u);
+    let n = 0;
+    for (const m of sheet.ids.map(findM)) if (m && itemOn(m, sec, u.it) && !m.onboard[u.id]){ m.onboard[u.id] = shiftDefaultDate(); m.updatedAt = Date.now(); n++; }
+    save(); refreshGrid(); toast(n ? `Отмечено: ${n} ${plural(n, 'новичок', 'новичка', 'новичков')}` : 'Уже отмечено у всех');
+  },
+  bToggle: (d, b) => {
+    const it = sheet.items[d.id]; it.present = !it.present;
+    b.classList.toggle('off', !it.present); b.textContent = it.present ? '✓' : '✕';
+    b.setAttribute('aria-label', it.present ? 'Вышел. Нажмите, если не вышел' : 'Не вышел. Нажмите, если вышел');
+    $('#bo_' + d.id).hidden = !it.present; $('#bs_' + d.id).hidden = !it.present;
+  },
+  bMore: d => { const el = $('#bm_' + d.id); el.hidden = !el.hidden; },
   bScore: (d, b) => {
     const it = sheet.items[d.id], v = +d.v; it.score = it.score === v ? 0 : v;
     b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === it.score));
   },
   bOb: (d, b) => { sheet.ob[d.u] = !sheet.ob[d.u]; b.classList.toggle('on', sheet.ob[d.u]); b.textContent = (sheet.ob[d.u] ? '✓ ' : '') + b.textContent.replace(/^✓ /, ''); },
-  bLvl: (d, b) => { sheet.lvl = +d.v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); },
-  batchSave: () => {
+  batchSave: async () => {
     const dt = $('#bDate').value;
     if (!dt){ toast('Укажите дату смены'); return; }
     if (dt > today()){ toast('Дата смены не может быть в будущем'); return; }
@@ -1418,26 +1925,22 @@ const ACT = {
     const early = ms.filter(m => m.hireDate && dt < m.hireDate);
     if (early.length){ toast(`Дата раньше даты приёма: ${early.map(m => shortFio(m.fio)).join(', ')}`); return; }
     const clash = ms.filter(m => m.notes.some(n => n.date === dt));
-    if (clash.length && !confirm(`За ${fmt(dt)} уже есть отметки: ${clash.map(m => shortFio(m.fio)).join(', ')}. Заменить их?`)) return;
-    const skill = $('#bSkill').value, lvl = sheet.lvl, next = $('#bNext').value;
-    const sk = skill ? findSkill(skill) : null, nx = next ? findSkill(next) : null;
-    let raised = 0;
+    if (clash.length && !await ask(`За ${fmt(dt)} уже есть отметки: ${clash.map(m => shortFio(m.fio)).join(', ')}. Заменить их?`)) return;
+    const next = $('#bNext').value.trim();
     for (const m of ms){
       const it = sheet.items[m.id], help = it.helpSt.on, htxt = $('#b_' + m.id + 'HelpText').value.trim();
+      const no = shiftOnDate(m, dt), raw = $('#bo_' + m.id).value.trim();   // номер смены — до замены отметок за эту дату
+      if (it.present && raw !== '' && parseInt(raw, 10) >= 0) m.output[no] = Math.min(parseInt(raw, 10), 9999);
       const n = { id: uid(), date: dt, present: it.present, score: it.present ? it.score : 0, tags: [], comment: $('#bc_' + m.id).value.trim(),
-                  help, helpReason: help ? it.helpSt.reason : '', helpText: help ? htxt : '', helpResolved: false, nextSkill: '', nextText: '', ts: Date.now() };
-      if (nx && groupsOf(m).includes(nx.g) && (m.skills[nx.id]?.lvl || 0) < 3) n.nextSkill = nx.id;
+                  help, helpReason: help ? it.helpSt.reason : '', helpText: help ? htxt : '', helpResolved: false, nextSkill: '', nextText: next, ts: Date.now() };
       m.notes = m.notes.filter(x => x.date !== dt); m.notes.push(n);
-      if (sk && it.present && groupsOf(m).includes(sk.g)){
-        const s = m.skills[sk.id] || (m.skills[sk.id] = { lvl: 0, dates: {} }); s.dates = s.dates || {};
-        if ((s.lvl || 0) < lvl){ s.lvl = lvl; s.dates[lvl] = dt; raised++; }
-      }
-      if (it.present) for (const u of Object.keys(sheet.ob)) if (sheet.ob[u] && !m.onboard[u]) m.onboard[u] = dt;
+      // пункт ставится только тем, у кого он уже открыт (пункты «Дня 2/3» скрыты до своей смены)
+      if (it.present) for (const u of Object.keys(sheet.ob)) if (sheet.ob[u] && !m.onboard[u] && unitOn(m, u)) m.onboard[u] = dt;
       m.updatedAt = Date.now();
     }
     save(); closeSheet(); render();
     const due = ms.filter(m => meetingDue(m)).map(m => shortFio(m.fio));
-    toast(`Сохранено: ${ms.length} ${plural(ms.length,'новичок','новичка','новичков')}${raised ? ', навык отмечен у ' + raised : ''}${due.length ? '. Пора беседа: ' + due.join(', ') : ''}`);
+    toast(`Сохранено: ${ms.length} ${plural(ms.length,'новичок','новичка','новичков')}${due.length ? '. Пора беседа: ' + due.join(', ') : ''}`);
   },
 
   menteeNew: () => openSheet(`<h3>Новый новичок</h3><p class="lead">Кого вам закрепили</p><form id="nform" onsubmit="return false">${menteeForm()}</form>
@@ -1452,9 +1955,9 @@ const ACT = {
     if (err){ toast(err); return; }
     Object.assign(m, v); touch(m); render(); toast('Сохранено');
   },
-  menteeDelete: d => {
+  menteeDelete: async d => {
     const m = findM(d.id);
-    if (!confirm(`Удалить ${m.fio} и все записи о нём с этого телефона?`)) return;
+    if (!await ask(`Удалить ${m.fio} и все записи о нём с этого телефона?`)) return;
     S.mentees = S.mentees.filter(x => x.id !== m.id); save(); go('list'); toast('Удалено');
   },
   status: d => {
@@ -1484,19 +1987,6 @@ const ACT = {
   },
   nMore: () => { sheet.more = !sheet.more; refreshNoteTags(); },
   nPhrase: d => appendComment(PHRASES[+d.v][1]),
-  nVoice: () => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const ta = $('#nComment');
-    if (sheet.rec){ try { sheet.rec.stop(); } catch(e) {} return; }
-    if (!SR){ ta.focus(); toast('Нажмите 🎤 на клавиатуре телефона — диктовка встроена в неё'); return; }
-    try {
-      const r = new SR(); r.lang = 'ru-RU'; r.interimResults = false; r.maxAlternatives = 1;
-      r.onresult = e => { const txt = Array.from(e.results).map(x => x[0].transcript).join(' ').trim(); if (txt) appendComment(txt.charAt(0).toUpperCase() + txt.slice(1) + (/[.!?]$/.test(txt) ? '' : '.')); };
-      r.onerror = () => { ta.focus(); toast('Голос недоступен — нажмите 🎤 на клавиатуре'); };
-      r.onend = () => { if (sheet) { sheet.rec = null; renderPhrases(); } };
-      sheet.rec = r; r.start(); renderPhrases();
-    } catch(e){ sheet.rec = null; ta.focus(); toast('Голос недоступен — нажмите 🎤 на клавиатуре'); }
-  },
   helpBar: (d, b) => {
     const st = helpState(d.p); if (!st) return;
     st.on = !st.on;
@@ -1522,7 +2012,7 @@ const ACT = {
     else { if (t.length >= MAX_TAGS){ toast(`Не больше ${MAX_TAGS} меток — оставьте главное`); return; } t.push(d.v); }
     refreshNoteTags();
   },
-  noteSave: () => {
+  noteSave: async () => {
     const m = findM(sheet.mid), n = sheet.note;
     n.date = $('#nDate').value;
     if (!n.date){ toast('Укажите дату смены'); return; }
@@ -1531,20 +2021,23 @@ const ACT = {
     const hs = sheet.help, htxt = $('#nHelpText').value.trim();
     if (hs.on && !hs.reason){ toast('Выберите причину — одним касанием'); return; }
     if (hs.on && hs.reason === 'other' && !htxt){ toast('Напишите коротко, что случилось'); $('#nHelpText').focus(); return; }
-    if (sheet.rec){ try { sheet.rec.stop(); } catch(e) {} }
     n.comment = $('#nComment').value.trim().slice(0, COMMENT_MAX);
     if (hs.on && !n.help) n.helpResolved = false;
     n.help = hs.on; n.helpReason = hs.on ? hs.reason : ''; n.helpText = hs.on ? htxt : '';
     const no = noteShiftNo(m, n, n.date);
-    n.tags = (n.tags || []).filter(t => { const d = TAG_MAP[t]; if (!d) return true; if (!n.present) return !!d.absent; return !d.absent && tagAllowed(d, no); });
+    n.tags = (n.tags || []).filter(t => { const d = TAG_MAP[t]; if (!d) return n.present; if (!n.present) return !!d.absent; return !d.absent && tagAllowed(d, no); });
     if (!n.help) n.helpResolved = false;
-    n.nextSkill = $('#nNext').value; n.nextText = $('#nNextText').value.trim();
-    if (!n.present){ n.score = 0; n.tags = []; }
+    n.nextSkill = ''; n.nextText = $('#nNextText').value.trim();
+    if (!n.present) n.score = 0;   // метки невыхода («Отсутствовал без предупреждения») остаются
     n.ts = Date.now();
     const same = m.notes.find(x => x.date === n.date && x.id !== n.id);
     if (same){
-      if (!confirm(`За ${fmt(n.date)} уже есть отметка. Заменить её?`)) return;
+      if (!await ask(`За ${fmt(n.date)} уже есть отметка. Заменить её?`)) return;
       m.notes = m.notes.filter(x => x.id !== same.id);
+    }
+    if (n.present){   // выработка хранится по номеру смены: m.output[no]
+      const raw = $('#nOut').value.trim(), v = parseInt(raw, 10);
+      if (raw === '') delete m.output[no]; else if (v >= 0) m.output[no] = Math.min(v, 9999);
     }
     const i = m.notes.findIndex(x => x.id === n.id);
     if (i >= 0) m.notes[i] = n; else m.notes.push(n);
@@ -1552,28 +2045,12 @@ const ACT = {
     const due = meetingDue(m);
     toast(due ? `Сохранено. Пора провести беседу ${due}-й смены` : 'Сохранено');
   },
-  noteDel: () => {
-    if (!confirm('Удалить эту отметку?')) return;
+  noteDel: async () => {
+    if (!await ask('Удалить эту отметку?')) return;
     const m = findM(sheet.mid); m.notes = m.notes.filter(x => x.id !== sheet.note.id); touch(m); closeSheet(); render();
   },
   helpResolve: (d, b, e) => { e.stopPropagation(); const m = findM(d.id); const n = m.notes.find(x => x.id === d.n); n.helpResolved = true; n.helpResolvedDate = today(); touch(m); render(); },
 
-  lvl: d => {
-    const m = findM(d.id), l = +d.l;
-    const s = m.skills[d.s] || (m.skills[d.s] = { lvl: 0, dates: {} });
-    s.dates = s.dates || {};
-    if (s.lvl === l) return;
-    s.lvl = l; if (l) s.dates[l] = today();
-    for (const k of Object.keys(s.dates)) if (+k > l) delete s.dates[k];
-    if (l < 3){
-      const it = findSkill(d.s);
-      const gs = it ? [it.g] : [];
-      const cancelled = gs.filter(g => m.admissions[g] && m.admissions[g].status === 'requested');
-      cancelled.forEach(g => delete m.admissions[g]);
-      if (cancelled.length) toast('Лист допуска отменён: не все пункты освоены');
-    }
-    touch(m); render();
-  },
   meet: d => {
     const m = findM(d.id), k = d.k, mt = m.meetings[k] || {}, hint = MEET_HINTS[k];
     const answers = Object.assign({}, mt.answers || {});
@@ -1586,11 +2063,11 @@ const ACT = {
       <label class="f"><span>Итоги: что получается, что мешает, о чём договорились</span><textarea id="mComment" style="min-height:120px">${esc(mt.comment || '')}</textarea></label>
       <div class="actions">${mt.done ? `<button class="btn danger" data-act="meetUndo">Отменить</button>` : ''}<button class="btn main" data-act="meetSave">Сохранить</button></div>`, { kind: 'meet', mid: m.id, k, answers });
   },
-  meetSave: () => {
+  meetSave: async () => {
     const m = findM(sheet.mid), dt = $('#mDate').value;
     if (!dt || dt > today()){ toast('Укажите дату не позже сегодняшней'); return; }
     const missing = SURVEY.filter(([id]) => !sheet.answers[id]).length;
-    if (missing && !confirm(`Не отмечено ответов в опроснике: ${missing}. Сохранить так?`)) return;
+    if (missing && !await ask(`Не отмечено ответов в опроснике: ${missing}. Сохранить так?`)) return;
     m.meetings[sheet.k] = { done: true, date: dt, comment: $('#mComment').value.trim(), answers: sheet.answers }; touch(m); closeSheet(); render();
     const rr = riskReasons(m); toast(rr.length ? 'Беседа записана. Риск ухода: ' + rr.join(', ') : 'Беседа записана');
   },
@@ -1600,7 +2077,7 @@ const ACT = {
   },
   admit: d => {
     const m = findM(d.id), g = d.g;
-    const items = ALL_CHECK.map(sec => `<div class="list-item small"><span>✅ ${esc(sec.name)}</span></div>`).join('') + skillItems(m, g).map(it => `<div class="list-item small"><span>${esc(it.name)}</span><span class="muted" style="flex:0;white-space:nowrap">${fmt(m.skills[it.id]?.dates?.[3])}</span></div>`).join('');
+    const items = ALL_CHECK.map(sec => `<div class="list-item small"><span>✅ ${esc(sec.name)}</span><span class="muted" style="flex:0;white-space:nowrap">${fmt(secDoneDate(m, sec))}</span></div>`).join('');
     openSheet(`<h3>Лист допуска: ${esc(GNAME[g])}</h3><p class="lead">${esc(m.fio)}, отработано смен: ${worked(m)}</p>
       <div class="card" style="padding:6px 12px">${items}</div>
       <label class="f"><span>Дата</span><input type="date" id="aDate" value="${today()}" max="${today()}"></label>
@@ -1616,20 +2093,22 @@ const ACT = {
     shareText(admissionText(m, g), 'Лист допуска скопирован — вставьте его в чат руководителю');
   },
   admShare: d => { const m = findM(d.id); shareText(admissionText(m, d.g), 'Лист допуска скопирован'); },
-  admConfirm: d => {
+  admConfirm: async d => {
     const m = findM(d.id), a = m.admissions[d.g];
-    if (!confirm(`Руководитель смены подтвердил допуск ${shortFio(m.fio)} к операциям «${GNAME[d.g]}»?`)) return;
+    if (!await ask(`Руководитель смены подтвердил допуск ${shortFio(m.fio)} к операциям «${GNAME[d.g]}»?`)) return;
     a.status = 'confirmed'; a.confirmedDate = today(); touch(m); render(); toast('Допуск подтверждён');
   },
-  admCancel: d => {
-    const m = findM(d.id); if (!confirm('Отменить лист допуска?')) return;
+  admCancel: async d => {
+    const m = findM(d.id); if (!await ask('Отменить лист допуска?')) return;
     delete m.admissions[d.g]; touch(m); render();
   },
-  meetUndo: () => { if (!confirm('Отметить беседу как не проведённую?')) return; const m = findM(sheet.mid); delete m.meetings[sheet.k]; touch(m); closeSheet(); render(); },
+  meetUndo: async () => { if (!await ask('Отметить беседу как не проведённую?')) return; const m = findM(sheet.mid); delete m.meetings[sheet.k]; if (!allDone(m)) obCancelAdmissions(m); touch(m); closeSheet(); render(); },
 
   sendReport: () => sendReport(false),
   sendAll: () => sendReport(true),
   sendText,
+  sumAgain: () => { sheet.variant++; $('#sumText').value = textSummary(sheet.variant); },
+  sumShare: () => shareText($('#sumText').value.trim(), 'Сводка скопирована — вставьте её в чат xRooms'),
   sendCode,
   codeShare: async () => {
     const c = sheet;
@@ -1646,27 +2125,20 @@ const ACT = {
     markSent(c.startedAt, c.count); closeSheet(); render(); toast('Код скопирован — вставьте его в письмо или чат руководителю');
   },
 
-  ckDel: d => {
-    const it = S.settings.checklist[d.g].find(x => x.id === d.s);
-    if (!confirm(`Убрать пункт «${it.name}» из чек-листа?`)) return;
-    S.settings.checklist[d.g] = S.settings.checklist[d.g].filter(x => x.id !== d.s); S.mentees.forEach(m => m.updatedAt = Date.now()); save(); render();
-  },
-  ckAdd: d => {
-    const inp = $('#ck_' + d.g), v = inp.value.trim(); if (!v) return;
-    S.settings.checklist[d.g].push({ id: `${d.g}_c${uid()}`, name: v }); S.mentees.forEach(m => m.updatedAt = Date.now()); save(); render();
-    const det = document.querySelectorAll('#app details.card')[GROUPS.findIndex(g => g[0] === d.g)]; if (det) det.open = true;
-  },
-  ckReset: () => { if (!confirm('Вернуть стандартные пункты? Ваши добавленные пункты пропадут из списка.')) return; S.settings.checklist = makeChecklist(); save(); render(); toast('Чек-лист восстановлен'); },
-
   backup: async () => {
     const res = await shareFile(`наставник_копия_${safeName(shortFio(S.settings.fio))}_${fileStamp()}.json`,
       { format: 'pasport-mentor-backup', version: 1, createdAt: new Date().toISOString(), state: S }, 'Копия: Карманный наставник');
     if (res !== 'cancel') toast(res === 'shared' ? 'Копия отправлена' : 'Копия сохранена в «Загрузки»');
   },
   import: () => { const f = $('#fileIn'); f.value = ''; f.click(); },
-  wipe: () => {
-    if (!confirm('Удалить всех новичков и все записи с этого телефона?')) return;
-    if (!confirm('Точно? Восстановить можно будет только из сохранённой копии или отчётов.')) return;
+  cleanArch: async () => {
+    const old = oldArchived(); if (!old.length) return;
+    if (!await ask(`Удалить с телефона ${old.length} ${plural(old.length, 'человека', 'человек', 'человек')} из архива? Их данные уже у руководителя, восстановить можно из резервной копии.`)) return;
+    const ids = new Set(old.map(m => m.id)); S.mentees = S.mentees.filter(m => !ids.has(m.id)); save(); render(); toast('Архив очищен');
+  },
+  wipe: async () => {
+    if (!await ask('Удалить всех новичков и все записи с этого телефона?')) return;
+    if (!await ask('Точно? Восстановить можно будет только из сохранённой копии или отчётов.')) return;
     S = blankState(); save(); go('list'); toast('Данные удалены');
   }
 };
@@ -1678,14 +2150,28 @@ document.addEventListener('click', e => {
   fn(b.dataset, b, e);
 });
 document.addEventListener('change', e => {
+  const out = e.target.dataset && e.target.dataset.out;
+  if (out){
+    const m = findM(e.target.dataset.id); if (!m) return;
+    const v = parseInt(e.target.value, 10);
+    if (isNaN(v) || v < 0) delete m.output[out]; else m.output[out] = Math.min(v, 9999);
+    // без render(): иначе касание кнопки сразу после ввода «теряется» из-за перерисовки
+    touch(m); document.querySelectorAll(`[data-outst="${out}"]`).forEach(el => el.innerHTML = outStatus(out, m.output[out]));
+    toast('Выработка сохранена'); return;
+  }
   const k = e.target.dataset && e.target.dataset.set; if (!k) return;
   S.settings[k] = e.target.value.trim(); save();
   if (k === 'fio' || k === 'shift') render();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet) closeSheet(); });
+/* Поиск: обновляется только список, поле ввода не перерисовывается и не теряет фокус */
+document.addEventListener('input', e => {
+  if (e.target.id !== 'q') return;
+  ui.q = e.target.value; const box = $('#mlist'); if (box) box.innerHTML = listHtml(activeSorted());
+});
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (ask.close) ask.close(); else if (sheet) closeSheet(); });
 $('#fileIn').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
-  const r = new FileReader(); r.onload = () => handleFile(String(r.result)); r.onerror = () => alert('Не удалось прочитать файл'); r.readAsText(f, 'utf-8');
+  const r = new FileReader(); r.onload = () => handleFile(String(r.result)); r.onerror = () => say('Не удалось прочитать файл'); r.readAsText(f, 'utf-8');
 });
 window.addEventListener('storage', e => { if (e.key === KEY){ load(); render(); } });
 
@@ -1693,7 +2179,7 @@ window.addEventListener('storage', e => { if (e.key === KEY){ load(); render(); 
 load();
 render();
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js?v=' + APP_VERSION).catch(() => {});   // версия кэша берётся отсюда — sw.js править не нужно
 </script>
 </body>
 </html>
