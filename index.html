@@ -360,7 +360,7 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.35';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.36';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
@@ -404,7 +404,7 @@ const ONBOARD = [
   ]}
 ];
 const ONBOARD_GOAL = 'Человек знает смену, когда и где ему работать, находит все нужные помещения и зоны, понимает, кто за что отвечает и к кому обращаться, видит, где что лежит, умеет пользоваться техникой, соблюдает правила техбеза, понимает, как работают FMR-роботы, знает нюансы комплектации заказов — и уже на практике собрал одну-две паллеты.';
-/* Подготовка: со 2-й смены, отметка «сделано / нет» */
+/* Подготовка: с 1-й смены, отметка «сделано / нет» */
 const TRAINING = [   // id не меняются при перенумерации — отметки сохраняются
   { id: 'tech', name: 'Техника и доступ', items: [
     { id: 'ob3_1',  n: '3.1', t: 'Карты инлокера и техники, логины', f: 'Карты для инлокера и техники, логины выданы' },
@@ -751,7 +751,6 @@ const opsDone = m => opsLeft(m) === 0;
 const unitDone = (m, id) => !!m.onboard[id] || (m.skills[id]?.lvl || 0) === 3;
 const secOfUnit = id => ALL_CHECK.find(s => s.items.some(it => it.id === id || (it.sub && it.sub.some(u => u.id === id))));
 function secDoneDate(m, sec){ let d = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if (itemDate(m, u) > d) d = itemDate(m, u); return d; }
-const trainingVisible = m => curShiftNo(m) >= 2 || onboardDone(m) || TRAINING.some(s => obSectionLeft(m, s) < s.items.length);
 /* Прогресс обучения: доля выполненных пунктов «Старт» + «Подготовка» + «Обучение операциям» */
 const ALL_ITEMS = ALL_CHECK.reduce((a, s) => a + s.items.length, 0);
 function progress(m){ return Math.round((ALL_ITEMS - ALL_CHECK.reduce((a, s) => a + obSectionLeft(m, s), 0)) / ALL_ITEMS * 100); }
@@ -1144,8 +1143,7 @@ function tabSkills(m){
   if (!onboardDone(m) && cur > 1) h += `<div class="note" style="border-left-color:var(--warn)"><b>«Старт» не закрыт</b>Не сделано: ${obLeft(m)}. Отметьте на этой смене — без этого не оформить лист допуска.</div>`;
   for (const sec of ONBOARD) h += checkSection(m, sec, cur > 1, ro);
   h += `<h2>Подготовка <span class="muted small" style="font-weight:400">${trTotal - trLeft(m)}/${trTotal}</span></h2>`;
-  if (!trainingVisible(m)) h += `<div class="card"><p class="muted small" style="margin:0">Откроется со 2-й смены. Сейчас — «Старт».</p></div>`;
-  else for (const sec of TRAINING) h += checkSection(m, sec, false, ro);
+  for (const sec of TRAINING) h += checkSection(m, sec, false, ro);   // открыта с 1-й смены
   const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it)));
   h += `<h2>Обучение операциям <span class="muted small" style="font-weight:400">${opsVis.filter(it => obItemDone(m, it)).length}/${opsVis.length}</span></h2>`;
   for (const sec of OPS) h += checkSection(m, sec, false, ro);
@@ -1715,10 +1713,10 @@ function textSummary(variant){
     // общий прогресс и что впереди
     const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it)));
     const parts = [`«Старт» ${obTotal - obLeft(m)}/${obTotal}`];
-    if (trainingVisible(m)) parts.push(`«Подготовка» ${trTotal - trLeft(m)}/${trTotal}`);
+    parts.push(`«Подготовка» ${trTotal - trLeft(m)}/${trTotal}`);
     parts.push(`«Обучение операциям» ${opsVis.filter(it => obItemDone(m, it)).length}/${opsVis.length}`);
     lines.push(`${pick(SUM.prog)}: ${parts.join(', ')}.`);
-    const ahead = [...ONBOARD, ...(trainingVisible(m) ? TRAINING : []), ...OPS].flatMap(sec => sec.items.filter(it => itemOn(m, sec, it) && !obItemDone(m, it)));
+    const ahead = [...ONBOARD, ...TRAINING, ...OPS].flatMap(sec => sec.items.filter(it => itemOn(m, sec, it) && !obItemDone(m, it)));
     if (ahead.length) lines.push(`${pick(SUM.left)}: ${ahead.slice(0, 3).map(it => it.t).join('; ')}${ahead.length > 3 ? ` (всего ${ahead.length})` : ''}.`);
     // задача на следующую смену — из сегодняшней отметки, иначе последняя незакрытая
     const nt = nextTask(m), nextTxt = (n.nextText || '').trim() || (nt ? [nt.name, nt.text].filter(Boolean).join('. ') : '');
