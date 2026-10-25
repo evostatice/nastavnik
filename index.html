@@ -12,6 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<meta name="description" content="Карманный наставник — учёт обучения новичков-комплектовщиков по сменам для наставников РЦ Екатеринбург Юг. Работает без интернета.">
 <title>Карманный наставник</title>
 <style>
 /* Палитра «Паспорта смены»: тёмная тема, панели с тонкой рамкой, синий акцент */
@@ -61,7 +62,7 @@ nav.bot button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;
 a.btn{color:var(--ink);text-decoration:none}
 a.btn.main{color:var(--markInk)}
 .chatlist{display:grid;gap:6px;margin-top:8px}
-.btn.sm{min-height:38px;padding:0 12px;font-size:14px;border-radius:10px}
+.btn.sm{min-height:42px;padding:0 12px;font-size:14px;border-radius:10px}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .row>.btn{flex:1}
 
@@ -142,13 +143,15 @@ input[type=text],input[type=search],input[type=date],input[type=number],select,t
 textarea{min-height:88px;resize:vertical}
 .pick{display:grid;gap:6px}
 .pick.c2{grid-template-columns:1fr 1fr}
+.pick.c1{grid-template-columns:1fr}
+.pick.c1 button{text-align:left;padding:4px 14px}
 .pick.c5{grid-template-columns:repeat(5,1fr)}
 .pick button{border:1px solid var(--line);background:var(--surf2);border-radius:12px;min-height:var(--tap);font-weight:600;padding:4px}
 .pick button.on{background:var(--info);color:var(--markInk);border-color:var(--info)}
 .pick.c5 button{font-size:20px}
 .pick.c5 button small{display:block;font-size:10.5px;font-weight:500}
 .tagset{display:flex;flex-wrap:wrap;gap:6px}
-.tagset button{border:1px solid var(--line);background:var(--surf2);border-radius:20px;padding:8px 12px;font-size:14px}
+.tagset button{border:1px solid var(--line);background:var(--surf2);border-radius:20px;padding:8px 12px;font-size:14px;min-height:42px}
 .tagset button.on{background:var(--info);color:var(--markInk);border-color:var(--info)}
 .tagset button.tg{border-width:1.5px;text-align:left;line-height:1.25}
 .tg.pos{border-color:var(--ok);color:var(--ok)}
@@ -199,12 +202,13 @@ textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidde
 .obn{display:inline-block;min-width:34px;color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums}
 .obd{font-size:12px;color:var(--mute);margin-left:34px}
 .obcarry{font-size:11px;font-weight:700;color:var(--warn);background:var(--warnBg);border-radius:8px;padding:1px 6px;white-space:nowrap}
+.obopt{font-size:11px;font-weight:600;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:0 6px;white-space:nowrap}
 .obinfo{flex-shrink:0;border:0;background:none;color:var(--mute);font-size:18px;width:36px;height:40px}
 .obfull{font-size:13px;color:var(--mute);padding:0 0 8px 44px}
 .obq{margin:6px 0 0;padding-left:18px;color:var(--ink)}
 .obq li{margin:4px 0}
 .obchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.obchips button{border:1.5px solid var(--line);background:var(--surf2);border-radius:18px;padding:7px 11px;font-size:13.5px;min-height:38px}
+.obchips button{border:1.5px solid var(--line);background:var(--surf2);border-radius:18px;padding:7px 11px;font-size:13.5px;min-height:42px}
 .obchips button.on{background:var(--ok);border-color:var(--ok);color:var(--surf);font-weight:600}
 .obsum{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:0;background:none;padding:2px 0;font-size:15px;text-align:left}
 .chip.tp{color:var(--ok);border-color:var(--ok)}
@@ -227,13 +231,13 @@ textarea.grow{min-height:var(--tap);height:var(--tap);resize:none;overflow:hidde
 .tbd{flex:1;min-width:0}
 .tbd>b{display:block;font-size:15px;padding-top:8px}
 .nchips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
-.nchip{border:1px solid var(--line);background:var(--surf2);border-radius:16px;padding:6px 11px;font-size:13.5px;min-height:36px}
+.nchip{border:1px solid var(--line);background:var(--surf2);border-radius:16px;padding:6px 11px;font-size:13.5px;min-height:42px}
 .nchip.more{background:transparent;color:var(--info);font-weight:600;border-color:transparent}
 .lctl{display:flex;gap:8px;margin:14px 0 8px}
 .lctl input{flex:1;min-width:0}
 .lctl .btn{flex-shrink:0;min-height:var(--tap)}
 .fchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;-webkit-overflow-scrolling:touch}
-.fchips button{flex-shrink:0;border:1px solid var(--line);background:var(--surf);border-radius:18px;padding:6px 12px;font-size:14px;min-height:38px;white-space:nowrap}
+.fchips button{flex-shrink:0;border:1px solid var(--line);background:var(--surf);border-radius:18px;padding:6px 12px;font-size:14px;min-height:42px;white-space:nowrap}
 .fchips button.on{background:var(--infoBg);color:var(--info);border-color:var(--info);font-weight:600}
 .fchips button span{opacity:.65;font-size:12px}
 .mrow{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:10px 10px 10px 14px;margin-bottom:6px;cursor:pointer}
@@ -374,7 +378,7 @@ details.passed .obsec{margin-top:8px}
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.40';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.44';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
@@ -398,15 +402,15 @@ const DEFAULT_CHECKLIST = {
 /* Старт (первый день): отметка «сделано / нет». Открыт с 1-й смены; что не сделано — переносится на следующие смены */
 const ONBOARD = [
   { id: 'meet', name: 'Встреча, оформление и безопасность', items: [
-    { id: 'ob1_1',  n: '1.1',  t: 'Встретил, познакомился', f: 'Встретил сотрудника(ов), познакомился' },
+    { id: 'ob1_1',  n: '1.1',  t: 'Встретил, познакомился, шкафчик', f: 'Встретил сотрудника(ов), познакомился, помог получить шкафчик' },
     { id: 'ob1_2',  n: '1.2',  t: 'Биосмарт, стикеровка вещей', f: 'Показал систему Биосмарт (1-й этаж), проинструктировал о стикеровании личных вещей' },
     { id: 'ob1_3',  n: '1.3',  t: 'Спецодежда, СИЗ, переодевание', f: 'Организовал получение спецодежды, СИЗ и переодевание' },
     { id: 'ob1_12', n: '1.4', t: 'Пропуск и вход: турникет, биосмарт', f: 'Получение пропуска, настройка для входа (турникет + биосмарт, отдел кадров)' },
     { id: 'ob1_4', n: '1.5',  t: 'Медосмотр', f: 'Организовал прохождение медосмотра' },
     { id: 'ob1_5', n: '1.6',  t: 'Знакомство: РСм, МЭиК, РСк', f: 'Познакомил с РСм, МЭиК, РСк' },
     { id: 'ob1_6', n: '1.7',  t: 'ГУТЗ, Брак, СБ: кто за что', f: 'Рассказал и показал отдел ГУТЗ, Брак, СБ. Схему взаимодействия' },
-    { id: 'ob1_7', n: '1.8',  t: 'Инструктаж ТБ: пешком и техника', f: 'Провёл инструктаж по ТБ: пешее перемещение + работа с техникой' },
-    { id: 'ob1_8', n: '1.9',  t: 'Зоны: собрания, брак, стрейч, инлокеры', f: 'Показал зоны: собрания, брак, стрейч, инлокеры' },
+    { id: 'ob1_7', n: '1.8',  t: 'Инструктаж ТБ: СИЗ, дорожки, приоритет ВЭШ', f: 'Провёл инструктаж по ТБ: СИЗ всегда (спецобувь, светоотражающий жилет, каска); ходить только по пешеходным дорожкам, на перекрёстках смотреть по сторонам; у штабелёров (ВЭШ) всегда приоритет; работа с техникой' },
+    { id: 'ob1_8', n: '1.9',  t: 'Зоны: собрания, брак, стрейч, инлокеры, столовая, медпункт', f: 'Показал зоны: собрания, брак, стрейч, инлокеры; столовая, медпункт, зона отдыха' },
     { id: 'ob1_9', n: '1.10',  t: 'Схема склада, отгрузка, приёмка', f: 'Показал схему склада, рассказал про все склады, зоны отгрузки и приёмки' },
     { id: 'ob1_10', n: '1.11', t: 'FMR-роботы и зарядка', f: 'Показал FMR-роботов, зону зарядок' },
     { id: 'ob1_11', n: '1.12', t: 'Обход: работа ОС и ВЭШ', f: 'Прошлись по складу, посмотрели работу ОС, ВЭШ' }
@@ -428,38 +432,55 @@ const ONBOARD = [
 const ONBOARD_GOAL = 'Человек знает смену, когда и где ему работать, находит все нужные помещения и зоны, понимает, кто за что отвечает и к кому обращаться, видит, где что лежит, умеет пользоваться техникой, соблюдает правила техбеза, понимает, как работают FMR-роботы, знает нюансы комплектации заказов — и уже на практике собрал одну-две паллеты.';
 /* Подготовка: с 1-й смены, отметка «сделано / нет» */
 const TRAINING = [   // id не меняются при перенумерации — отметки сохраняются
+  /* x5: 1 — пункты из чек-листа X5 (1.42): обязательны только для тех, кто к выходу версии не прошёл 3-ю смену (см. itemReq) */
   { id: 'tech', name: 'Техника и доступ', items: [
     { id: 'ob3_1',  n: '3.1', t: 'Карты инлокера и техники, логины', f: 'Карты для инлокера и техники, логины выданы' },
     { id: 'ob3_2',  n: '3.2', t: 'Техника записана в журнал', f: 'Техника записана в журнал' },
     { id: 'ob3_3',  n: '3.3', t: 'Инлокер: получение и сдача ТСД', f: 'Инлокер: получение и сдача ТСД/оборудования' },
     { id: 'ob3_21', n: '3.4', t: 'Проверка ТСД перед сменой, повреждения', f: 'Проверка ТСД перед сменой / что делать при обнаружении повреждений' },
-    { id: 'ob3_4',  n: '3.5', t: 'Управление техникой, боковые кнопки', f: 'Управление техникой, боковые кнопки, запрет блокировки платформы' }
+    { id: 'x5_rohla', n: '3.5', t: 'Осмотр рохли перед сменой', f: 'Предсменный осмотр рохли перед работой', x5: 1, sub: [
+      { id: 'x5_rohla_a', t: 'Педаль', f: 'Проверить педаль контакта' },
+      { id: 'x5_rohla_b', t: 'Руль', f: 'Убедиться, что рулевое управление работает' },
+      { id: 'x5_rohla_c', t: 'Подъём вил', f: 'Проверить подъём вил' } ] },
+    { id: 'ob3_4',  n: '3.6', t: 'Управление техникой, боковые кнопки', f: 'Управление техникой, боковые кнопки, запрет блокировки платформы' },
+    { id: 'x5_fail', n: '3.7', t: 'Блокировка техники', f: 'Что делать, если техника заблокировалась или её нужно сдать на ТО', x5: 1, sub: [
+      { id: 'x5_fail_b', t: 'Блокировка рохли', f: 'Рохля заблокировалась — куда идти, к кому из технического состава обращаться' },
+      { id: 'x5_fail_c', t: 'ТО техники', f: 'Оповещение о ТО: куда отвезти рохлю, кому сдать, у кого взять подменную' } ] }
   ]},
   { id: 'fmr', name: 'FMR и безопасное движение', items: [
-    { id: 'ob3_5',  n: '3.6', t: 'FMR: маневрирование, дистанция', f: 'FMR-роботы: правила маневрирования, дистанция' },
-    { id: 'ob3_22', n: '3.7', t: 'Аварийная остановка FMR', f: 'Аварийная остановка FMR: где кнопка, когда жать' },
-    { id: 'ob3_18', n: '3.8', t: 'Буфер: размещение паллет', f: 'Буферная зона: размещение паллет' },
-    { id: 'ob3_6',  n: '3.9', t: 'Опасные зоны FMR', f: 'Опасные зоны FMR (буферы, зарядка, паллетайзер, проезд между складами)' },
-    { id: 'ob3_7',  n: '3.10', t: 'Проезд к воротам, передача управления', f: 'Проезд к свободным воротам отгрузки, передача управления стажёру' }
+    { id: 'ob3_5',  n: '3.8', t: 'FMR: маневрирование, дистанция', f: 'FMR-роботы: правила маневрирования, дистанция' },
+    { id: 'ob3_22', n: '3.9', t: 'Аварийная остановка FMR', f: 'Аварийная остановка FMR: где кнопка, когда жать' },
+    { id: 'ob3_18', n: '3.10', t: 'Буфер: размещение паллет', f: 'Буферная зона: размещение паллет' },
+    { id: 'ob3_6',  n: '3.11', t: 'Опасные зоны FMR', f: 'Опасные зоны FMR (буферы, зарядка, паллетайзер, проезд между складами)' },
+    { id: 'ob3_7',  n: '3.12', t: 'Проезд к воротам, передача управления', f: 'Проезд к свободным воротам отгрузки, передача управления стажёру' }
   ]},
   { id: 'term', name: 'Терминал и задачи', items: [
-    { id: 'ob3_8',  n: '3.11', t: 'Где получать АКБ', f: 'Показал, где получать АКБ' },
-    { id: 'ob3_9',  n: '3.12', t: 'Терминал: команды, логины', f: 'Работа и команды терминала, логины (стажёр + основная)' },
-    { id: 'ob3_10', n: '3.13', t: 'BT-наушники, зарядка в технике', f: 'Подключение BT-наушников + зарядка в технике (какой плюс)' },
-    { id: 'ob3_11', n: '3.14', t: 'Подключение сканера', f: 'Подключение сканера' },
-    { id: 'ob3_12', n: '3.15', t: 'Принтеры, как запросить задачу', f: 'Расположение принтеров, как запрашивать задачу' }
+    { id: 'ob3_8',  n: '3.13', t: 'АКБ: где получать и как менять', f: 'Показал, где получать АКБ; заезд в зарядную комнату, безопасная замена, время замены — записать у аккумуляторщика или бригадира' },
+    { id: 'ob3_9',  n: '3.14', t: 'Терминал: команды, логины', f: 'Работа и команды терминала, логины (стажёр + основная)' },
+    { id: 'ob3_10', n: '3.15', t: 'BT-наушники, зарядка в технике', f: 'Подключение BT-наушников + зарядка в технике (какой плюс)' },
+    { id: 'ob3_11', n: '3.16', t: 'Подключение сканера', f: 'Подключение сканера' },
+    { id: 'ob3_12', n: '3.17', t: 'Принтеры, как запросить задачу', f: 'Расположение принтеров, как запрашивать задачу' }
   ]},
   { id: 'pickt', name: 'Нюансы комплектации', items: [
-    { id: 'ob3_13', n: '3.16', t: 'Техника отбора, подъезд к ячейкам', f: 'Демонстрация техники отбора, подъезд к ячейкам' },
-    { id: 'ob3_14', n: '3.17', t: 'Вода: ячейки 5.1, 5.3', f: 'Вода: отличие ячеек 5.1, 5.3 и остального ассортимента' },
-    { id: 'ob3_15', n: '3.18', t: 'Двухъярусные ряды 10, 11, 16, 22–24', f: 'Двухъярусные ряды (10, 11, 16, 22–24): специфика, исключения в 24-м' },
-    { id: 'ob3_16', n: '3.19', t: 'Крупногабарит: дисплей, соль, сахар', f: 'Крупногабарит: «дисплей», соль, сахар — первоочередной отбор, правила комплектации' },
-    { id: 'ob3_17', n: '3.20', t: 'Нестандарт: «товар есть, система не даёт»', f: 'Нестандарт: «товар есть, система не даёт», отбор «не кванта» в первую очередь' },
-    { id: 'ob3_24', n: '3.21', t: 'Команды: Пополнить, Пропуск ячейки/ряда', f: 'Команды «Пополнить» и «Пропуск ячейки/ряда»' },
-    { id: 'ob3_19', n: '3.22', t: 'Передача паллет по смене', f: 'Передача паллет по смене' },
-    { id: 'ob3_20', n: '3.23', t: 'Примеры качественных паллет', f: 'Примеры качественных паллет: структура, укладка' },
-    { id: 'ob3_23', n: '3.24', t: 'Примеры некачественных паллет: что нельзя', f: 'Примеры некачественных паллет — что нельзя' },
-    { id: 'ob3_25', n: '3.25', t: 'Регламенты: пустые ячейки → штабелер → ГУТЗ', f: 'Регламенты: пустые ячейки → штабелер → ГУТЗ (знает, что делать)' }
+    { id: 'ob3_13', n: '3.18', t: 'Техника отбора, подъезд к ячейкам', f: 'Демонстрация техники отбора, подъезд к ячейкам' },
+    { id: 'ob3_14', n: '3.19', t: 'Вода: ячейки 5.1, 5.3', f: 'Вода: отличие ячеек 5.1, 5.3 и остального ассортимента' },
+    { id: 'ob3_15', n: '3.20', t: 'Двухъярусные ряды 10, 11, 16, 22–24', f: 'Двухъярусные ряды (10, 11, 16, 22–24): специфика, исключения в 24-м' },
+    { id: 'ob3_16', n: '3.21', t: 'Крупногабарит: дисплей, соль, сахар', f: 'Крупногабарит: «дисплей», соль, сахар — первоочередной отбор, правила комплектации' },
+    { id: 'ob3_17', n: '3.22', t: 'Нестандарт: «товар есть, система не даёт»', f: 'Нестандарт: «товар есть, система не даёт», отбор «не кванта» в первую очередь' },
+    { id: 'ob3_24', n: '3.23', t: 'Команды: Пополнить, Пропуск ячейки/ряда', f: 'Команды «Пополнить» и «Пропуск ячейки/ряда»' },
+    { id: 'ob3_19', n: '3.24', t: 'Передача паллет по смене', f: 'Передача паллет по смене' },
+    { id: 'ob3_20', n: '3.25', t: 'Примеры качественных паллет', f: 'Примеры качественных паллет: структура, укладка' },
+    { id: 'ob3_23', n: '3.26', t: 'Примеры некачественных паллет: что нельзя', f: 'Примеры некачественных паллет — что нельзя' },
+    { id: 'x5_stack', n: '3.27', t: 'Укладка паллеты', f: 'Правила укладки груза', x5: 1, sub: [
+      { id: 'x5_stack_a', t: 'Пирамида', f: 'Вниз — тяжёлое и крепкое (вода, консервы), наверх — лёгкое и хрупкое (чипсы, салфетки)' },
+      { id: 'x5_stack_b', t: 'Края поддона', f: 'Коробки не выпирают за края поддона — иначе паллета застрянет при транспортировке' },
+      { id: 'x5_stack_c', t: 'Прокладки', f: 'Картонные прокладки между слоями для устойчивости' } ] },
+    { id: 'x5_wrap', n: '3.28', t: 'Упаковка и ярлык', f: 'Упаковка паллеты и ярлык-задание', x5: 1, sub: [
+      { id: 'x5_wrap_a', t: 'Стрейч', f: 'Плотная обмотка стретч-плёнкой, обязательно вместе с деревянным основанием' },
+      { id: 'x5_wrap_b', t: 'Ярлык', f: 'Правильное место ярлыка-задания для сотрудника отгрузки' },
+      { id: 'x5_wrap_c', t: 'Буфер и ворота', f: 'Обмотка при отправке в буферную зону; чем размещение в буфере отличается от ворот' } ] },
+    { id: 'ob3_25', n: '3.29', t: 'Регламенты: пустые ячейки → штабелер → ГУТЗ', f: 'Регламенты: пустые ячейки → штабелер → ГУТЗ (знает, что делать). «Ошибка пополнения» — к кому обращаться. «Обратитесь в службу ГУТЗ» — что делаем, куда идём, к кому и какие данные называем с ярлыка-задания' },
+    { id: 'x5_fail_a', n: '3.30', t: 'Порванная коробка → зона брака', f: 'Порванную коробку в заказ не брать — отвезти в зону брака', x5: 1 }
   ]}
 ];
 /* Обучение операциям: отметка «сделано / нет», как в «Подготовке» */
@@ -478,7 +499,7 @@ const OPS = [
     { id: 'ob4_7', n: '4.7', t: 'Сдача оборудования, АКБ', f: 'Сдача оборудования и АКБ в конце смены' },
     { id: 'ob4_8', n: '4.8', t: 'Уборка в закреплённом ряду', f: 'Уборка в закреплённом ряду: где смотреть закреплённый ряд, что необходимо убирать и куда отвозить' },
     { id: 'ob4_9', n: '4.9', t: 'Беседа: самочувствие и вопросы', f: 'Самочувствие, понимание. Главное — чтобы новичок не остался с вопросом, который постеснялся задать.',
-      q: ['Физически ок? Ноги, спина — ничего не «болит»?', '«Что было самым непонятным сегодня?»', '«Почему нельзя класть тяжёлое сверху лёгкого?»', '«Что делаешь, если товара нет в ячейке?»', '«Что бы ты хотел, чтобы я показал ещё раз завтра?»'] }
+      q: ['Физически ок? Ноги, спина — ничего не «болит»?', '«Что было самым непонятным сегодня?»', '«Почему нельзя класть тяжёлое сверху лёгкого?»', '«Что делаешь, если товара нет в ячейке?»', '«Что бы ты хотел, чтобы я показал ещё раз завтра?»', '«Когда твой следующий выход?» — договориться о времени'] }
   ]},
   /* min — с какой смены новичка раздел (или пункт) виден; до неё он скрыт */
   { id: 'day2', name: 'День 2 — закрепление и рост объёма', min: 2, goal: 'Сам берёт задачи, план на смену 400 кор. Всё — под наблюдением наставника.', items: [
@@ -491,18 +512,30 @@ const OPS = [
     { id: 'ob5_7', n: '4.16', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' }
   ]},
   { id: 'day3', name: 'День 3 — автономность и финальная проверка', min: 3, goal: 'Сам берёт задачи, план на смену 600 кор.', items: [
-    { id: 'ob6_1', n: '4.17', t: 'Переодевание, медосмотр, встреча', f: 'Переодевание, медосмотр, встреча (в форме, на месте)' },
-    { id: 'ob6_2', n: '4.18', t: 'Получение техники, ТСД, АКБ, стрейч', f: 'Получение техники, ТСД, АКБ, стрейч' },
-    { id: 'ob6_3', n: '4.19', t: 'Собрание', f: 'Собрание' },
-    { id: 'ob6_4', n: '4.20', t: 'Паллет на свою учётку, под контролем', f: 'Паллет на свою учётку, под контролем (сам берёт задачи)' },
-    { id: 'ob6_5', n: '4.21', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
-    { id: 'ob6_6', n: '4.22', t: 'Следующие паллеты на стажёрскую учётку', f: 'Следующие паллеты на стажёрскую учётку (под контролем)' },
-    { id: 'ob6_7', n: '4.23', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
+    /* 1.44: заменил пункты «Переодевание, медосмотр, встреча», «Получение техники…», «Собрание» (ob6_1–3) */
+    { id: 'x5_auto', n: '4.17', t: 'Автономный запуск смены', f: 'Сам(а), без напоминаний наставника: переоделся(ась) в форму, прошёл(ла) медосмотр, пришёл(ла) на собрание, получил(а) технику, ТСД, АКБ и стрейч, авторизовался(ась) и вышел(ла) на аллею отбора', x5: 1 },
+    { id: 'ob6_4', n: '4.18', t: 'Паллет на свою учётку, под контролем', f: 'Паллет на свою учётку, под контролем (сам берёт задачи)' },
+    { id: 'ob6_5', n: '4.19', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
+    { id: 'ob6_6', n: '4.20', t: 'Следующие паллеты на стажёрскую учётку', f: 'Следующие паллеты на стажёрскую учётку (под контролем)' },
+    { id: 'ob6_7', n: '4.21', t: 'Разбор ошибок: вопрос → ответ → коррекция', f: 'Разбор ошибок: вопрос → он отвечает → ты корректируешь' },
+    { id: 'x5_speed', n: '4.22', t: 'Приёмы скорости', f: 'Приёмы, которые ускоряют сборку', x5: 1, sub: [
+      { id: 'x5_speed_a', t: 'Состав заказа', f: 'Заранее смотрит состав заказа — чтобы соблюсти укладку и собрать быстрее' },
+      { id: 'x5_speed_b', t: 'Рохля у ячейки', f: 'Ставит рохлю близко к товару и не загораживает проезд' },
+      { id: 'x5_speed_c', t: 'Скан на ходу', f: 'Сканирует штрихкод на ходу, пока несёт коробку; стоя в ячейке отбора — нельзя' },
+      { id: 'x5_speed_d', t: 'Следующий товар', f: 'Смотрит в ТСД следующий товар, заранее планирует место на паллете' } ] },
+    { id: 'x5_emerg', n: '4.23', t: 'ЧП: знает, что делать', f: 'Знает порядок действий и куда обращаться', x5: 1, sub: [
+      { id: 'x5_emerg_a', t: 'Завис ТСД', f: 'ТСД завис' },
+      { id: 'x5_emerg_b', t: 'Сломалась рохля', f: 'Поломка рохли' },
+      { id: 'x5_emerg_c', t: 'Рассыпалась паллета', f: 'Паллета рассыпалась' } ] },
+    /* exam — закрывается записью зачёта (m.exam), касание открывает окно зачёта */
+    { id: 'x5_exam', n: '4.24', t: 'Квалификационный зачёт', f: 'Один заказ полностью самостоятельно; наставник замеряет время и проверяет качество: ровная паллета, плотная обмотка, ярлык', x5: 1, exam: 1 },
     /* meet — пункт закрывается сам, когда записана беседа этой смены; касание открывает вкладку «Беседы» */
-    { id: 'ob6_8', n: '4.24', t: 'Беседа на 3-й смене — обязательна', f: 'Беседа на 3-й день обязательна — записывается во вкладке «Беседы»', meet: 3 }
+    { id: 'ob6_8', n: '4.25', t: 'Беседа на 3-й смене — обязательна', f: 'Беседа на 3-й день обязательна — записывается во вкладке «Беседы». Спросите обратную связь о трёх сменах', meet: 3 }
   ]}
 ];
 const ADMIT_SHIFT = 3;   // лист допуска — не раньше этой смены
+/* Квалификационный зачёт (3-я смена): проверки качества; сдан — когда все пройдены. Время — для сведения, нормы нет */
+const EXAM_CHECKS = [['flat', 'Ровная паллета'], ['wrap', 'Плотная обмотка плёнкой'], ['label', 'Ярлык наклеен верно']];
 /* Поддержка: после 3-й смены обучения нет — наставник сопровождает до завершения адаптации (беседа 14-й смены) */
 const SUPPORT_FROM = 4;   // с этой смены вкладка «Обучение» становится «Поддержкой»
 const OUTPUT_NORM = 0;    // норма выработки самостоятельной работы, коробов; 0 — не задана (сравниваем с 3-й сменой)
@@ -510,11 +543,15 @@ const PULSE_EVERY = 3;    // спрашивать настроение не ре
 const IMPROVE_MIN = 2;    // замечание повторилось столько раз за последние 5 смен — в «Что подтянуть»
 const MOOD = ['', 'Плохо', 'Так себе', 'Нормально', 'Хорошо', 'Отлично'];
 const itemOn = (m, sec, it) => curShiftNo(m) >= (it.min || sec.min || 0);
+/* Пункт закрывается не касанием, а записью: беседа (meet) или зачёт (exam) */
+const autoItem = it => !!(it.meet || it.exam);
+/* Пункт обязателен: новые пункты X5 (x5) не нужны тем, кто к их выходу уже прошёл 3-ю смену (progV 1) */
+const itemReq = (m, it) => !(it.x5 && m.progV === 1);
 /* Смена, на которую пункт положен по программе: «Старт» — 1-я, «Подготовка» — 2-я, «Обучение операциям» — по min раздела */
 const dueShiftOf = (sec, it) => Math.max(ONBOARD.includes(sec) ? 1 : TRAINING.includes(sec) ? 2 : (sec.min || 1), it.min || 0);
 /* То же по id отмечаемого пункта (в т.ч. подпункта) */
 function unitOn(m, id){
-  for (const sec of ALL_CHECK) for (const it of sec.items) if (it.id === id || (it.sub && it.sub.some(u => u.id === id))) return itemOn(m, sec, it) && !it.meet;
+  for (const sec of ALL_CHECK) for (const it of sec.items) if (it.id === id || (it.sub && it.sub.some(u => u.id === id))) return itemOn(m, sec, it) && !autoItem(it);
   return false;
 }
 /* Цель по выработке (коробов) — карточка с полем «факт» показывается только на этой смене */
@@ -525,7 +562,8 @@ const SHIFT_CRIT = {
   1: { list: [
         'Не торопить. 1–2 паллета — минимум, не максимум.',
         'Показывать до того, как он делает. Не «смотри, я делаю», а рука в руке.',
-        'Укладка: проверка геометрии. Не «положил и поехал».'],
+        'Укладка: проверка геометрии. Не «положил и поехал».',
+        'После первого заказа — переключение на стажёрскую учётку. Напоминать об этом все 3 смены.'],
       foot: ['Критерий перехода к смене 2', '1 паллета собрана без завала, 1 заказ без переборки, уборка сделана.'] },
   2: { list: [
         'Один склад, один формат. Не гонять.',
@@ -634,12 +672,14 @@ const HELP_LABEL = { leave:'Риск ухода', safety:'Нарушение Т�
 const helpTitle = n => n.helpReason ? 'Нужна помощь: ' + HELP_LABEL[n.helpReason].charAt(0).toLowerCase() + HELP_LABEL[n.helpReason].slice(1) : 'Нужна помощь руководителя';   // «ТБ» остаётся заглавными
 const SCORE = ['', 'Плохо', 'Слабо', 'Норм', 'Хорошо', 'Отлично'];
 const SCORE_IC = ['', '😟', '😕', '😐', '🙂', '😃'];
+const STATUS_LABEL = { done: 'Завершил(а) адаптацию', left: 'Уволился(ась)' };   // новички бывают и женщинами
 const LEAVE_REASONS = ['Нагрузка','График','Зарплата','Коллектив','Не прошёл адаптацию','Личные причины','Другое'];
 
 /* ---------- утилиты ---------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const lcFirst = s => s.charAt(0).toLowerCase() + s.slice(1);
+const uid = () =>Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 function isoLocal(d){ const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0,10); }
 const today = () => isoLocal(new Date());
 function shiftDefaultDate(){ const d = new Date(); if (d.getHours() < 8) d.setDate(d.getDate() - 1); return isoLocal(d); }
@@ -678,11 +718,15 @@ function load(){
   catch(e){ S = blankState(); }
   if (!S || typeof S !== 'object' || Array.isArray(S)) S = blankState();
   const b = blankState();
-  S.settings = Object.assign(b.settings, S.settings || {});
-  for (const [g] of GROUPS) if (!Array.isArray(S.settings.checklist[g])) S.settings.checklist[g] = b.settings.checklist[g];
+  S.settings = Object.assign(b.settings, okObj(S.settings));
+  S.settings.checklist = okObj(S.settings.checklist);   // повреждённая копия не должна ронять запуск
+  for (const [g] of GROUPS) if (!Array.isArray(S.settings.checklist[g])) S.settings.checklist[g] = makeChecklist()[g];   // b.settings уже занят S.settings
   for (const g of Object.keys(S.settings.checklist)) if (!GNAME[g]) delete S.settings.checklist[g];
-  S.mentees = Array.isArray(S.mentees) ? S.mentees : [];
+  for (const [g] of GROUPS) S.settings.checklist[g] = S.settings.checklist[g].filter(it => it && typeof it === 'object' && typeof it.id === 'string');
+  S.mentees = (Array.isArray(S.mentees) ? S.mentees : []).filter(m => m && typeof m === 'object' && !Array.isArray(m));
+  const newProg = S.mentees.some(m => m.progV === undefined);
   S.mentees.forEach(normMentee);
+  if (newProg) setTimeout(save, 0);   // версию программы запоминаем сразу — иначе завтра новичок «перейдёт» в другую
   S.sentLog = (Array.isArray(S.sentLog) ? S.sentLog : []).filter(l => l && typeof l === 'object').map(l => ({ ts: +l.ts || 0, count: +l.count || 0, full: !!l.full }));
   for (const k of ['fio', 'tab', 'shift', 'leader', 'division']) S.settings[k] = okStr(S.settings[k]);
   S.lastSentAt = +S.lastSentAt || 0;
@@ -738,6 +782,14 @@ function normMentee(m){
   const out = okObj(m.output); m.output = {};
   for (const k of Object.keys(out)){ const v = parseInt(out[k], 10); if (/^\d{1,3}$/.test(k) && v >= 0 && v <= 9999) m.output[k] = v; }
   m.createdAt = +m.createdAt || Date.now(); m.updatedAt = +m.updatedAt || Date.now();
+  // версия программы: 1 — к выходу пунктов X5 уже отработал(а) 3 смены (они необязательны), 2 — проходит программу целиком
+  if (m.progV !== 1 && m.progV !== 2) m.progV = (m.shiftsBefore + m.notes.filter(n => n.present).length) >= 3 ? 1 : 2;
+  // зачёт 3-й смены: последняя попытка; сдан — когда все три проверки качества пройдены
+  const ex = okObj(m.exam);
+  m.exam = okDate(ex.date) ? { date: ex.date, minutes: Math.max(0, Math.min(600, parseInt(ex.minutes, 10) || 0)),
+    flat: !!ex.flat, wrap: !!ex.wrap, label: !!ex.label, tries: Math.max(1, Math.min(99, parseInt(ex.tries, 10) || 1)), comment: okStr(ex.comment) } : null;
+  if (m.exam) m.exam.passed = m.exam.flat && m.exam.wrap && m.exam.label;
+  if (m.exam && m.exam.passed) m.onboard.x5_exam = m.exam.date; else delete m.onboard.x5_exam;   // отметка пункта — для «Паспорта» и подсчёта
   return m;
 }
 /* Кэш расчётов на одну перерисовку: номер смены, отметки по дате, риски считаются по разу на новичка.
@@ -763,7 +815,7 @@ let DEMO = false;
 const DEMO_BLOCK = new Set(['sendReport', 'sendAll', 'sendText', 'sendCode', 'backup', 'import', 'wipe', 'cleanArch', 'admShare']);
 function demoState(){
   const base = Date.parse(shiftDefaultDate()), day = i => isoLocal(base - i * 864e5);
-  const units = secs => secs.flatMap(s => s.items.filter(it => !it.meet).flatMap(it => it.sub ? it.sub : [it]));
+  const units = secs => secs.flatMap(s => s.items.filter(it => !autoItem(it)).flatMap(it => it.sub ? it.sub : [it]));
   const mark = (secs, date) => Object.fromEntries(units(secs).map(u => [u.id, date]));
   const opsUpTo = k => OPS.filter(s => (s.min || 1) <= k);
   /* plan — по одной записи на смену, от старой к новой: { p: 0 — не вышел, s: оценка, t: метки, ... };
@@ -790,7 +842,7 @@ function demoState(){
       { m: { onboard: Object.assign(mark(ONBOARD, day(2)), mark(TRAINING, day(1)), mark(opsUpTo(2), day(1))), output: { 2: 380 } } }),
     // 8-я смена, поддержка: допуск подтверждён, повторяющиеся замечания, пора спросить настроение
     mk('demo4', 'Ковалёв Дмитрий Андреевич', '50104', [{ s: 4 }, { s: 4 }, { s: 4 }, ...sup(4, k => ({ t: k % 2 ? ['Путает ячейки'] : ['Уверенно работает'], mood: k === 1 ? 4 : 0 }))],
-      { m: { onboard: all(day(5)), meetings: { 3: meet(day(5)) , 7: meet(day(1), { clear: 4, help: 4, load: 3, sched: 4, stay: 4 }) }, admissions: okAdm(day(5)),
+      { m: { onboard: all(day(5)), meetings: { 3: meet(day(5)) , 7: meet(day(1), { clear: 4, help: 4, load: 3, sched: 4, stay: 4 }) }, admissions: okAdm(day(5)), exam: { date: day(5), minutes: 38, flat: 1, wrap: 1, label: 1 },
         output: { 2: 430, 3: 620, 4: 700, 5: 780, 6: 810, 7: 880 } } }),
     // 15-я смена: беседа 14-й смены проведена — пора завершать адаптацию
     mk('demo5', 'Морозова Ирина Олеговна', '50105', [{ s: 4 }, { s: 5 }, { s: 4 }, ...sup(11, k => ({ s: 5, self: 'self', mood: k % 3 === 1 ? 5 : 0 }))],
@@ -829,23 +881,24 @@ function curShiftNo(m){ return memo(m, 'cur', () => shiftOnDate(m, shiftDefaultD
 function shiftOnDate(m, d){ return (+m.shiftsBefore || 0) + m.notes.filter(n => n.present && n.date < d).length + 1; }
 const obItemDone = (m, it) => it.meet ? meetDone(m, it.meet) : it.sub ? it.sub.every(s => m.onboard[s.id]) : !!m.onboard[it.id];
 const itemDate = (m, it) => it.meet ? (meetDone(m, it.meet) ? m.meetings[it.meet].date : '') : (m.onboard[it.id] || '');
-const obSectionLeft = (m, sec) => sec.items.filter(it => !obItemDone(m, it)).length;
+const obSectionLeft = (m, sec) => sec.items.filter(it => itemReq(m, it) && !obItemDone(m, it)).length;   // необязательные не держат раздел
+const reqTotal = (m, secs) => secs.reduce((a, s) => a + s.items.filter(it => itemReq(m, it)).length, 0);
 const obLeft = m => ONBOARD.reduce((a, s) => a + obSectionLeft(m, s), 0);
-const obTotal = ONBOARD.reduce((a, s) => a + s.items.length, 0);
+const obTotal = ONBOARD.reduce((a, s) => a + s.items.length, 0);   // в «Старте» пунктов X5 нет — у всех одинаково
 const onboardDone = m => obLeft(m) === 0;
 const trLeft = m => TRAINING.reduce((a, s) => a + obSectionLeft(m, s), 0);
-const trTotal = TRAINING.reduce((a, s) => a + s.items.length, 0);
+const trTotal = m => reqTotal(m, TRAINING);
 const trainingDone = m => trLeft(m) === 0;
 const opsLeft = m => OPS.reduce((a, s) => a + obSectionLeft(m, s), 0);
-const opsTotal = OPS.reduce((a, s) => a + s.items.length, 0);
+const opsTotal = m => reqTotal(m, OPS);
 const opsDone = m => opsLeft(m) === 0;
 /* Пункт «что отрабатываем дальше» выполнен: пункт чек-листа отмечен (или старый навык — «допущен») */
 const unitDone = (m, id) => !!m.onboard[id] || (m.skills[id]?.lvl || 0) === 3;
 const secOfUnit = id => ALL_CHECK.find(s => s.items.some(it => it.id === id || (it.sub && it.sub.some(u => u.id === id))));
 function secDoneDate(m, sec){ let d = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if (itemDate(m, u) > d) d = itemDate(m, u); return d; }
 /* Прогресс обучения: доля выполненных пунктов «Старт» + «Подготовка» + «Обучение операциям» */
-const ALL_ITEMS = ALL_CHECK.reduce((a, s) => a + s.items.length, 0);
-function progress(m){ return Math.round((ALL_ITEMS - ALL_CHECK.reduce((a, s) => a + obSectionLeft(m, s), 0)) / ALL_ITEMS * 100); }
+const allTotal = m => reqTotal(m, ALL_CHECK);
+function progress(m){ const t = allTotal(m); return Math.round((t - ALL_CHECK.reduce((a, s) => a + obSectionLeft(m, s), 0)) / t * 100); }
 /* Уровни навыков прежних версий — только для отчёта (поле calc.levels) */
 function countLevels(m){
   const c = [0,0,0,0];
@@ -1161,7 +1214,7 @@ function viewList(){
   if (arch.length){
     h += `<details class="arch"><summary>Завершили и уволились (${arch.length})</summary>
       ${arch.map(m => `<div class="card tap" data-act="open" data-id="${m.id}"><div class="chead"><div><div class="nm">${esc(m.fio)}</div>
-      <div class="sub">${m.status === 'done' ? 'Завершил адаптацию' : 'Уволился'} ${fmt(m.statusDate)}${m.statusReason ? ', ' + esc(m.statusReason) : ''}</div></div>
+      <div class="sub">${STATUS_LABEL[m.status]} ${fmt(m.statusDate)}${m.statusReason ? ', ' + esc(m.statusReason) : ''}</div></div>
       <div class="num"><b>${worked(m)}</b><span>смен</span></div></div></div>`).join('')}</details>`;
   }
   h += `<div class="sign">${esc(SIGN)}</div>`;
@@ -1176,7 +1229,7 @@ function viewMentee(m){
       <div class="sub">${esc(GNAME[m.mainGroup])}${m.groups.length > 1 ? ' + ' + m.groups.filter(g => g !== m.mainGroup).map(g => GNAME[g]).join(', ') : ''}</div></div>
       <div class="num"><b>${worked(m)}</b><span>${plural(worked(m),'смена','смены','смен')}<br>отработано</span></div></div>
     ${ladderHtml(m)}
-    ${m.status !== 'active' ? `<div class="chips"><span class="chip ${m.status==='done'?'ok':'bad'}">${m.status==='done'?'Завершил адаптацию':'Уволился'} ${fmt(m.statusDate)}</span></div>` : riskHtml(m) + flagsHtml(m) + taskHtml(m)}
+    ${m.status !== 'active' ? `<div class="chips"><span class="chip ${m.status==='done'?'ok':'bad'}">${STATUS_LABEL[m.status]} ${fmt(m.statusDate)}</span></div>` : riskHtml(m) + flagsHtml(m) + taskHtml(m)}
   </div>
   <div class="tabs" role="tablist">${tabs.map(([k, t]) => `<button role="tab" data-act="tab" data-v="${k}" class="${ui.tab===k?'on':''}">${t}</button>`).join('')}</div>`;
 
@@ -1222,23 +1275,24 @@ function tabShifts(m){
 
 /* Раздел открыт: если пользователь не переключал — открыт, пока не выполнен; выполненный сворачивается сам */
 function secOpen(key, done){ return ui.secOpen && key in ui.secOpen ? ui.secOpen[key] : !done; }
-function secHead(key, title, done, count, extra){
+function secHead(key, title, done, count, extra, noMark){   // noMark — раздел целиком необязателен: свёрнут, но без ✅
   const open = secOpen(key, done);
   return { open, html: `<button class="sechead" data-act="secToggle" data-k="${key}" data-done="${done ? 1 : 0}" aria-expanded="${open}">
-    <b>${done ? '✅ ' : ''}${esc(title)}</b><span class="muted small">${count}${extra || ''} <span class="caret">${open ? '▾' : '▸'}</span></span></button>` };
+    <b>${done && !noMark ? '✅ ' : ''}${esc(title)}</b><span class="muted small">${count}${extra || ''} <span class="caret">${open ? '▾' : '▸'}</span></span></button>` };
 }
 function checkSection(m, sec, carry, ro, onlyLeft){   // onlyLeft — показать только неотмеченные пункты («Долги обучения»)
   const vis = sec.items.filter(it => itemOn(m, sec, it));   // пункты «со 2-й смены» и т.п. до своей смены скрыты
   if (!vis.length) return '';
-  const left = vis.filter(it => !obItemDone(m, it)).length, done = obSectionLeft(m, sec) === 0, key = m.id + ':' + sec.id;
-  const hd = secHead(key, sec.name, done, `${vis.length - left}/${vis.length}`, done ? ' · ' + fmt(secDoneDate(m, sec)).slice(0, 5) : '');
+  const req = vis.filter(it => itemReq(m, it));   // счёт — по обязательным; необязательные видны с пометкой
+  const left = req.filter(it => !obItemDone(m, it)).length, done = obSectionLeft(m, sec) === 0, key = m.id + ':' + sec.id;
+  const hd = secHead(key, sec.name, done, req.length ? `${req.length - left}/${req.length}` : 'необязательно', done && req.length ? ' · ' + fmt(secDoneDate(m, sec)).slice(0, 5) : '', !req.length);
   let h = `<div class="card obsec">` + hd.html;
   if (hd.open){
     if (sec.goal) h += `<p class="muted small" style="margin:0 0 6px"><b>Цель:</b> ${esc(sec.goal)}</p>`;
     for (const it of vis){
-      if (onlyLeft && obItemDone(m, it)) continue;
-      const ok = obItemDone(m, it), carried = carry && !ok;
-      const label = `<span class="obn">${it.n}</span><span class="obtx">${esc(it.t)}${carried ? ' <span class="obcarry">перенесено</span>' : ''}</span>`;
+      if (onlyLeft && (obItemDone(m, it) || !itemReq(m, it))) continue;
+      const ok = obItemDone(m, it), carried = carry && !ok, opt = !itemReq(m, it) && !ok;
+      const label = `<span class="obn">${it.n}</span><span class="obtx">${esc(it.t)}${carried ? ' <span class="obcarry">перенесено</span>' : ''}${opt ? ' <span class="obopt">необязательно</span>' : ''}</span>`;
       if (it.sub){
         h += `<div class="obrow ${ok ? 'ok' : ''}"><span class="obmark" aria-hidden="true">${ok ? '✓' : ''}</span>
           <div class="obbody"><div class="obt">${label}</div>
@@ -1246,16 +1300,16 @@ function checkSection(m, sec, carry, ro, onlyLeft){   // onlyLeft — показ
           <button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button></div>
           <div class="obfull" id="obf_${it.id}" hidden>${esc(it.f)}: ${it.sub.map(su => esc(su.f)).join('; ')}</div>`;
       } else {
-        // пункт-беседа (meet) отмечается сам по записанной беседе, касание ведёт во вкладку «Беседы»
-        const act = it.meet ? `data-act="tab" data-v="meet"` : `data-act="obTap" data-id="${m.id}" data-u="${it.id}" ${ro}`;
-        const sub = ok ? fmt(itemDate(m, it)) : it.meet ? 'Запишите во вкладке «Беседы» →' : '';
+        // пункт-беседа (meet) отмечается сам по записанной беседе, касание ведёт во вкладку «Беседы»; зачёт (exam) — окно зачёта
+        const act = it.meet ? `data-act="tab" data-v="meet"` : it.exam ? `data-act="exam" data-id="${m.id}" ${ro}` : `data-act="obTap" data-id="${m.id}" data-u="${it.id}" ${ro}`;
+        const sub = it.exam ? examLine(m) : ok ? fmt(itemDate(m, it)) : it.meet ? 'Запишите во вкладке «Беседы» →' : '';
         h += `<div class="obrow ${ok ? 'ok' : ''}"><button class="obmark" ${act} aria-pressed="${ok}" aria-label="${esc(it.f)}">${ok ? '✓' : ''}</button>
           <button class="obbody obtap" ${act}><div class="obt">${label}</div>${sub ? `<div class="obd">${sub}</div>` : ''}</button>
           ${it.q ? '' : `<button class="obinfo" data-act="obInfo" data-u="${it.id}" aria-label="Подробнее">ⓘ</button>`}</div>
           <div class="obfull" id="obf_${it.id}" ${it.q ? '' : 'hidden'}>${esc(it.f)}${it.q ? `<ul class="obq">${it.q.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</div>`;   // с вопросами (q) — всегда развёрнуто
       }
     }
-    if (vis.some(it => !it.meet && !obItemDone(m, it)) && !ro) h += `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-act="obAll" data-id="${m.id}" data-s="${sec.id}">Отметить весь раздел</button></div>`;
+    if (vis.some(it => !autoItem(it) && itemReq(m, it) && !obItemDone(m, it)) && !ro) h += `<div class="row" style="margin-top:8px"><button class="btn sm ghost" data-act="obAll" data-id="${m.id}" data-s="${sec.id}">Отметить весь раздел</button></div>`;
   }
   return h + `</div>`;
 }
@@ -1274,9 +1328,9 @@ function tabSkills(m){
     <p class="muted small" style="margin:-4px 2px 10px"><b>Цель:</b> ${esc(ONBOARD_GOAL)}</p>`;
   if (!onboardDone(m) && cur > 1) h += `<div class="note" style="border-left-color:var(--warn)"><b>«Старт» не закрыт</b>Не сделано: ${obLeft(m)}. Отметьте на этой смене — без этого не оформить лист допуска.</div>`;
   for (const sec of ONBOARD) h += checkSection(m, sec, cur > 1, ro);
-  h += `<h2>Подготовка <span class="muted small" style="font-weight:400">${trTotal - trLeft(m)}/${trTotal}</span></h2>`;
+  h += `<h2>Подготовка <span class="muted small" style="font-weight:400">${trTotal(m) - trLeft(m)}/${trTotal(m)}</span></h2>`;
   for (const sec of TRAINING) h += checkSection(m, sec, false, ro);   // открыта с 1-й смены
-  const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it)));
+  const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it) && itemReq(m, it)));
   h += `<h2>Обучение операциям <span class="muted small" style="font-weight:400">${opsVis.filter(it => obItemDone(m, it)).length}/${opsVis.length}</span></h2>`;
   for (const sec of OPS) h += checkSection(m, sec, false, ro);
   const crit = SHIFT_CRIT[cur];
@@ -1326,8 +1380,8 @@ function tabSupport(m){
   if (imp.length) h += `<div class="card"><b>Что подтянуть</b><ul class="impl">${imp.map(([t, k]) => `<li><span class="chip tn">⚠ ${esc(t)}</span> <span class="muted small">${k} ${plural(k, 'раз', 'раза', 'раз')} за 5 смен</span></li>`).join('')}</ul>
     <p class="small muted" style="margin:6px 0 0">Впишите главное в «📌 Что отрабатываем на следующей смене».</p></div>`;
   if (passed.length){
-    const n = passed.reduce((a, s) => a + s.items.length, 0);
-    h += `<details class="card passed"><summary>✅ Пройдено по программе: ${n} из ${ALL_ITEMS} пунктов</summary>${passed.map(sec => checkSection(m, sec, false, ro)).join('')}</details>`;
+    const t = allTotal(m), n = t - debt.reduce((a, s) => a + obSectionLeft(m, s), 0);
+    h += `<details class="card passed"><summary>✅ Пройдено по программе: ${n} из ${t} пунктов</summary>${passed.map(sec => checkSection(m, sec, false, ro)).join('')}</details>`;
   }
   return h;
 }
@@ -1356,6 +1410,20 @@ function supportOutInput(m){
     <div data-outst="${cur}">${outStatus(cur, m.output[cur])}</div>`;
 }
 
+/* Строка под пунктом «Квалификационный зачёт» */
+function examLine(m){
+  const ex = m.exam;
+  if (!ex) return m.status === 'active' ? 'Нажмите, чтобы провести зачёт →' : '';
+  const t = ex.minutes ? ` · ${ex.minutes} мин` : '', n = ex.tries > 1 ? ` · попытка ${ex.tries}` : '';
+  if (ex.passed) return `Сдан ${fmt(ex.date)}${t}${n}`;
+  return `Пересдача: ${EXAM_CHECKS.filter(([k]) => !ex[k]).map(([, l]) => lcFirst(l)).join(', ')} — ${fmt(ex.date)}${t}${n}`;
+}
+function examResHtml(chk){
+  const miss = EXAM_CHECKS.filter(([k]) => !chk[k]);
+  return miss.length ? `<div class="chips"><span class="chip warn">Пока не сдан: ${esc(miss.map(([, l]) => lcFirst(l)).join(', '))}</span></div>`
+    : `<div class="chips"><span class="chip ok">✅ Зачёт сдан</span></div>`;
+}
+
 function admissionBlock(m, g){
   const a = m.admissions[g];
   if (a && a.status === 'confirmed') return `<div class="adm"><span class="chip ok">Допуск подтверждён руководителем ${fmt(a.confirmedDate)}</span></div>`;
@@ -1378,6 +1446,7 @@ function admissionText(m, g){
     let last = ''; for (const it of sec.items) for (const u of (it.sub || [it])) if ((m.onboard[u.id] || '') > last) last = m.onboard[u.id];
     lines.push(`• ${sec.name} — выполнено ${fmt(last)}`);
   }
+  if (m.exam && m.exam.passed) lines.push(`• Квалификационный зачёт — сдан ${fmt(m.exam.date)}${m.exam.minutes ? `, заказ собран за ${m.exam.minutes} мин` : ''}${m.exam.tries > 1 ? ` (попытка ${m.exam.tries})` : ''}`);
   lines.push('', `Наставник: ${S.settings.fio || '—'}${S.settings.shift ? ', смена ' + S.settings.shift : ''}`, `Дата: ${fmt(a.date || today())}`);
   if (a.comment) lines.push(`Комментарий: ${a.comment}`);
   lines.push('', 'Наставник считает сотрудника готовым к самостоятельной работе. Решение о допуске принимает руководитель смены.');
@@ -1430,10 +1499,10 @@ function tabData(m){
   let h = `<div class="card"><form id="mform" onsubmit="return false">${menteeForm(m)}
     <button class="btn main wide" data-act="menteeSave" data-id="${m.id}">Сохранить изменения</button></form></div>`;
   if (m.status === 'active'){
-    h += `<div class="row"><button class="btn" data-act="status" data-id="${m.id}" data-v="done">✅ Завершил адаптацию</button>
-      <button class="btn" data-act="status" data-id="${m.id}" data-v="left">🚪 Уволился</button></div>`;
+    h += `<div class="row"><button class="btn" data-act="status" data-id="${m.id}" data-v="done">✅ ${STATUS_LABEL.done}</button>
+      <button class="btn" data-act="status" data-id="${m.id}" data-v="left">🚪 ${STATUS_LABEL.left}</button></div>`;
   } else {
-    h += `<div class="card"><dl class="kv"><dt>Статус</dt><dd>${m.status === 'done' ? 'Завершил адаптацию' : 'Уволился'}</dd>
+    h += `<div class="card"><dl class="kv"><dt>Статус</dt><dd>${STATUS_LABEL[m.status]}</dd>
       <dt>Дата</dt><dd>${fmt(m.statusDate)}</dd>${m.statusReason ? `<dt>Причина</dt><dd>${esc(m.statusReason)}</dd>` : ''}
       ${m.statusComment ? `<dt>Комментарий</dt><dd>${esc(m.statusComment)}</dd>` : ''}</dl></div>
       <div class="row"><button class="btn" data-act="reactivate" data-id="${m.id}">Вернуть в работу</button></div>`;
@@ -1733,7 +1802,7 @@ function appendComment(text){
 }
 /* «Пункты группе»: таблица «пункт × новичок», касание ставит или снимает отметку сразу */
 function gridUnits(sec){
-  return sec.items.filter(it => !it.meet).flatMap(it => it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t, it })) : [{ id: it.id, t: it.n + ' ' + it.t, it }]);
+  return sec.items.filter(it => !autoItem(it)).flatMap(it => it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t, it })) : [{ id: it.id, t: it.n + ' ' + it.t, it }]);
 }
 function gridName(m){ const p = m.fio.trim().split(/\s+/); return esc((p[0] || '?').slice(0, 7)) + (p[1] ? '<br>' + esc(p[1][0]) + '.' : ''); }   // уже экранировано
 function gridHtml(){
@@ -1819,7 +1888,7 @@ function reportPayload(list, full){
     operations: OPS,
     outputGoals: OUTPUT_GOAL,   // «Паспорт смены» 3.26+ показывает выработку с целью смены
     mentees: list.map(m => Object.assign(JSON.parse(JSON.stringify(m)), {
-      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal, operationsLeft: opsLeft(m), operationsTotal: opsTotal, curShift: curShiftNo(m),
+      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal(m), operationsLeft: opsLeft(m), operationsTotal: opsTotal(m), curShift: curShiftNo(m),
         // поддержка после 3-й смены (новое поле — «Паспорт» старых версий его не читает)
         support: supportCalc(m) }
     }))
@@ -1927,7 +1996,7 @@ function textSummary(variant){
       for (const sec of ALL_CHECK){
         const c = { cur: 0, late: 0 };
         for (const it of sec.items){
-          if (it.meet) continue;
+          if (autoItem(it)) continue;
           const k = dueShiftOf(sec, it) < no ? 'late' : 'cur';
           if (it.sub){ const su = it.sub.filter(u => m.onboard[u.id] === d); if (su.length){ done[k][0].push(`${it.t} (${su.map(u => u.t).join(', ')})`); c[k]++; } }
           else if (m.onboard[it.id] === d){ done[k][0].push(it.t); c[k]++; }
@@ -1940,12 +2009,12 @@ function textSummary(variant){
       if (done.late[0].length) lines.push(`${pick(SUM.late)}: ${listOf(done.late)}.`);
     }
     // общий прогресс и что впереди
-    const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it)));
+    const opsVis = OPS.flatMap(sec => sec.items.filter(it => itemOn(m, sec, it) && itemReq(m, it)));
     const parts = [`«Старт» ${obTotal - obLeft(m)}/${obTotal}`];
-    parts.push(`«Подготовка» ${trTotal - trLeft(m)}/${trTotal}`);
+    parts.push(`«Подготовка» ${trTotal(m) - trLeft(m)}/${trTotal(m)}`);
     parts.push(`«Обучение операциям» ${opsVis.filter(it => obItemDone(m, it)).length}/${opsVis.length}`);
     lines.push(`${pick(SUM.prog)}: ${parts.join(', ')}.`);
-    const ahead = [...ONBOARD, ...TRAINING, ...OPS].flatMap(sec => sec.items.filter(it => itemOn(m, sec, it) && !obItemDone(m, it)));
+    const ahead = [...ONBOARD, ...TRAINING, ...OPS].flatMap(sec => sec.items.filter(it => itemOn(m, sec, it) && itemReq(m, it) && !obItemDone(m, it)));
     if (ahead.length) lines.push(`${pick(SUM.left)}: ${ahead.slice(0, 3).map(it => it.t).join('; ')}${ahead.length > 3 ? ` (всего ${ahead.length})` : ''}.`);
     // задача на следующую смену — из сегодняшней отметки, иначе последняя незакрытая
     const nt = nextTask(m), nextTxt = (n.nextText || '').trim() || (nt ? [nt.name, nt.text].filter(Boolean).join('. ') : '');
@@ -1959,6 +2028,8 @@ function textSummary(variant){
     if (n.help) lines.push(`🚨 ${helpTitle(n)}${n.helpText ? ': ' + n.helpText : ''}${n.helpResolved ? ' — вопрос уже решён' : ''}`);
     for (const h of openHelp(m)) if (h.id !== n.id) lines.push(`🚨 ${helpTitle(h)} (с ${fmt(h.date).slice(0, 5)})${h.helpText ? ': ' + h.helpText : ''}`);
     const rr = riskReasons(m); if (rr.length) lines.push(`🔻 Риск ухода: ${rr.join(', ')}.`);
+    if (m.exam && m.exam.date === d) lines.push(m.exam.passed ? `🎓 Квалификационный зачёт сдан${m.exam.minutes ? `: заказ за ${m.exam.minutes} мин` : ''}.`
+      : `🎓 Зачёт не сдан (${EXAM_CHECKS.filter(([k]) => !m.exam[k]).map(([, l]) => lc(l)).join(', ')}) — нужна пересдача.`);
     const imp = improveList(m); if (no >= SUPPORT_FROM && imp.length) lines.push(`Подтянуть: ${imp.map(([t]) => lc(t)).join(', ')}.`);
     if (finishDue(m)) lines.push('🏁 Беседа 14-й смены проведена — можно завершать адаптацию.');
     for (const [g] of WORK_GROUPS) if (m.admissions[g] && m.admissions[g].status === 'requested') lines.push(`✅ Оформлен лист допуска: ${GNAME[g]} (от ${fmt(m.admissions[g].date)}) — нужно ваше подтверждение.`);
@@ -2006,7 +2077,8 @@ function markSent(startedAt, count){
 
 function mergeMentees(list){
   let added = 0, updated = 0;
-  for (const raw of list){
+  for (const raw of (Array.isArray(list) ? list : [])){
+    if (!raw || typeof raw !== 'object' || !okStr(raw.fio).trim()) continue;   // мусорная запись не превращается в «Без имени»
     const inc = normMentee(Object.assign({}, raw)); delete inc.calc;
     const ex = S.mentees.find(x => x.id === inc.id) || (inc.tab && S.mentees.find(x => x.tab === inc.tab));
     if (!ex){ S.mentees.push(inc); added++; }
@@ -2016,15 +2088,15 @@ function mergeMentees(list){
 }
 function importAssignment(d){
   let added = 0, skipped = 0;
-  for (const r of (d.mentees || [])){
-    const fio = String(r.fio || '').trim(); if (!fio){ skipped++; continue; }
-    const tab = String(r.tab || '').trim();
+  for (const r of (Array.isArray(d.mentees) ? d.mentees : [])){
+    const fio = r && typeof r === 'object' ? okStr(r.fio).trim() : ''; if (!fio){ skipped++; continue; }
+    const tab = okStr(r.tab).trim();
     if (tab && S.mentees.some(x => x.tab === tab)){ skipped++; continue; }
     const main = GNAME[r.mainGroup] && r.mainGroup !== 'common' ? r.mainGroup : 'pick';
-    S.mentees.push(normMentee({ id: uid(), fio, tab, hireDate: r.hireDate || '', mainGroup: main, groups: [main], shiftsBefore: +r.shiftsWorked || +r.shiftsBefore || 0 }));
+    S.mentees.push(normMentee({ id: uid(), fio, tab, hireDate: r.hireDate, mainGroup: main, groups: [main], shiftsBefore: +r.shiftsWorked || +r.shiftsBefore || 0 }));
     added++;
   }
-  if (d.leader && !S.settings.leader) S.settings.leader = d.leader;
+  if (d.leader && !S.settings.leader) S.settings.leader = okStr(d.leader);
   return { added, skipped };
 }
 async function handleFile(text){
@@ -2034,7 +2106,11 @@ async function handleFile(text){
   if (d.format === 'pasport-mentor-backup'){
     if (!d.state || typeof d.state !== 'object' || !Array.isArray(d.state.mentees)){ say('Файл копии повреждён — данные на телефоне не изменены.'); return; }
     if (!await ask(`Заменить все данные на телефоне копией от ${fmtTs(Date.parse(d.createdAt))}?\nНовичков в копии: ${(d.state?.mentees || []).length}`)) return;
-    localStorage.setItem(KEY, JSON.stringify(d.state)); load(); save(); go('list'); toast('Копия восстановлена'); return;
+    // восстановление: если не записалось (нет места) — прежние данные остаются как были
+    const prev = localStorage.getItem(KEY);
+    try { localStorage.setItem(KEY, JSON.stringify(d.state)); load(); save(); }
+    catch(e){ try { if (prev !== null) localStorage.setItem(KEY, prev); } catch(e2) {} load(); say('Не удалось восстановить копию — данные на телефоне не изменены.'); return; }
+    go('list'); toast('Копия восстановлена'); return;
   }
   if (d.format === 'pasport-mentor-report'){
     const r = mergeMentees(d.mentees || []); save(); go('list');
@@ -2072,7 +2148,7 @@ const ACT = {
   obAll: async d => {
     const m = findM(d.id), sec = ALL_CHECK.find(s => s.id === d.s);
     if (!await ask(`Отметить выполненным весь раздел «${sec.name}»?`)) return;
-    for (const it of sec.items) if (itemOn(m, sec, it) && !it.meet) for (const u of (it.sub || [it])) if (!m.onboard[u.id]) m.onboard[u.id] = shiftDefaultDate();
+    for (const it of sec.items) if (itemOn(m, sec, it) && !autoItem(it)) for (const u of (it.sub || [it])) if (!m.onboard[u.id]) m.onboard[u.id] = shiftDefaultDate();
     if (ui.secOpen) delete ui.secOpen[m.id + ':' + sec.id];
     touch(m); render(); toast(obSectionLeft(m, sec) ? `Раздел «${sec.name}»: отмечено` : `Раздел «${sec.name}» закрыт ✅`);
   },
@@ -2096,7 +2172,7 @@ const ACT = {
         </div></div>`).join('')}
       ${(() => {
         const secs = ALL_CHECK.map(sec => ({ sec, units: sec.items.flatMap(it => (it.sub ? it.sub.map(su => ({ id: su.id, t: it.n + ' ' + su.t })) : [{ id: it.id, t: it.n + ' ' + it.t }])
-          .filter(u => !it.meet && act.some(m => itemOn(m, sec, it) && !m.onboard[u.id]))) })).filter(x => x.units.length);
+          .filter(u => !autoItem(it) && act.some(m => itemOn(m, sec, it) && !m.onboard[u.id]))) })).filter(x => x.units.length);
         if (!secs.length) return '';
         return `<h3 style="margin-top:20px;font-size:16px">Обучение — всем вышедшим</h3>
           <p class="small muted" style="margin:2px 0 10px">Отметьте, что показали вместе. У кого пункт уже отмечен — не изменится.</p>
@@ -2188,12 +2264,12 @@ const ACT = {
   },
   menteeDelete: async d => {
     const m = findM(d.id);
-    if (!await ask(`Удалить ${m.fio} и все записи о нём с этого телефона?`)) return;
+    if (!await ask(`Удалить из приложения: ${m.fio}?\nВсе записи об этом новичке сотрутся с телефона.`)) return;
     S.mentees = S.mentees.filter(x => x.id !== m.id); save(); go('list'); toast('Удалено');
   },
   status: d => {
     const m = findM(d.id), left = d.v === 'left';
-    openSheet(`<h3>${left ? 'Уволился' : 'Завершил адаптацию'}</h3><p class="lead">${esc(m.fio)}</p>
+    openSheet(`<h3>${STATUS_LABEL[d.v]}</h3><p class="lead">${esc(m.fio)}</p>
       <label class="f"><span>Дата</span><input type="date" id="sDate" value="${today()}" max="${today()}"></label>
       ${left ? `<label class="f"><span>Основная причина</span><select id="sReason">${LEAVE_REASONS.map(r => `<option>${r}</option>`).join('')}</select></label>` : ''}
       <label class="f"><span>Комментарий</span><textarea id="sComment"></textarea></label>
@@ -2308,6 +2384,44 @@ const ACT = {
   mAns: (d, b) => {
     const v = +d.v; sheet.answers[d.q] = sheet.answers[d.q] === v ? 0 : v;
     b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === sheet.answers[d.q]));
+  },
+  exam: d => {
+    const m = findM(d.id); if (!m || m.status !== 'active') return;
+    const ex = m.exam || {}, chk = Object.fromEntries(EXAM_CHECKS.map(([k]) => [k, !!ex[k]]));
+    openSheet(`<h3>Квалификационный зачёт</h3><p class="lead">${esc(m.fio)}</p>
+      <p class="small muted" style="margin-top:0">Новичок собирает один полный заказ полностью сам(а). Засеките время и проверьте качество.${ex.date && !ex.passed ? ' Прошлая попытка — ' + fmt(ex.date) + '.' : ''}</p>
+      <label class="f"><span>Дата</span><input type="date" id="eDate" value="${ex.passed ? ex.date : shiftDefaultDate()}" max="${today()}"></label>
+      <label class="f"><span>Время сборки заказа, минут</span><input type="number" id="eMin" min="0" max="600" inputmode="numeric" placeholder="Например, 35" value="${ex.minutes || ''}"></label>
+      <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Качество — отметьте, что в порядке</span>
+        <div class="pick c1">${EXAM_CHECKS.map(([k, l]) => `<button data-act="eChk" data-v="${k}" class="${chk[k] ? 'on' : ''}" aria-pressed="${chk[k]}">${chk[k] ? '✓ ' : ''}${esc(l)}</button>`).join('')}</div></div>
+      <div id="eRes">${examResHtml(chk)}</div>
+      <label class="f"><span>Комментарий (необязательно)</span><input type="text" id="eComment" maxlength="${COMMENT_MAX}" value="${esc(ex.comment || '')}" placeholder="Что получилось, что подтянуть"></label>
+      <div class="actions">${m.exam ? `<button class="btn danger" data-act="examDel">Удалить результат</button>` : ''}<button class="btn main" data-act="examSave">Сохранить</button></div>`,
+      { kind: 'exam', mid: m.id, chk });
+  },
+  eChk: (d, b) => {
+    const c = sheet.chk; c[d.v] = !c[d.v];
+    b.classList.toggle('on', c[d.v]); b.setAttribute('aria-pressed', c[d.v]);
+    b.textContent = (c[d.v] ? '✓ ' : '') + EXAM_CHECKS.find(([k]) => k === d.v)[1];
+    $('#eRes').innerHTML = examResHtml(c);
+  },
+  examSave: () => {
+    const m = findM(sheet.mid), dt = $('#eDate').value, prev = m.exam;
+    if (!dt || dt > today()){ toast('Укажите дату не позже сегодняшней'); return; }
+    if (m.hireDate && dt < m.hireDate){ toast('Дата раньше даты приёма'); return; }
+    // новая дата после несданной попытки — это пересдача
+    const tries = prev ? (prev.date !== dt && !prev.passed ? prev.tries + 1 : prev.tries) : 1;
+    m.exam = Object.assign({ date: dt, minutes: parseInt($('#eMin').value, 10) || 0, tries, comment: $('#eComment').value.trim() }, sheet.chk);
+    normMentee(m);   // passed и отметка пункта — в одном месте
+    if (!allDone(m)) obCancelAdmissions(m);
+    touch(m); closeSheet(); render();
+    toast(m.exam.passed ? 'Зачёт сдан ✅' : 'Записано: нужна пересдача');
+  },
+  examDel: async () => {
+    if (!await ask('Удалить результат зачёта?')) return;
+    const m = findM(sheet.mid); m.exam = null; normMentee(m);
+    if (!allDone(m)) obCancelAdmissions(m);
+    touch(m); closeSheet(); render();
   },
   admit: d => {
     const m = findM(d.id), g = d.g;
