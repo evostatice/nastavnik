@@ -58,6 +58,9 @@ nav.bot button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;
 .btn.ghost{background:transparent}
 .btn.danger{color:var(--bad);border-color:var(--bad);background:transparent}
 .btn.wide{width:100%}
+a.btn{color:var(--ink);text-decoration:none}
+a.btn.main{color:var(--markInk)}
+.chatlist{display:grid;gap:6px;margin-top:8px}
 .btn.sm{min-height:38px;padding:0 12px;font-size:14px;border-radius:10px}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .row>.btn{flex:1}
@@ -65,6 +68,7 @@ nav.bot button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;
 .note{background:var(--surf);border:1px solid var(--line);border-left:5px solid var(--mark);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;font-size:15px}
 .note b{display:block;margin-bottom:4px}
 .note .row{margin-top:10px}
+.note.demo{border-left-color:var(--warn);background:var(--warnBg)}
 .muted{color:var(--mute)}
 .small{font-size:13px}
 h2{font-size:17px;margin:22px 2px 10px}
@@ -327,6 +331,16 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
 .crit ul{margin:0 0 10px;padding-left:20px}
 .crit li{margin:4px 0}
 .crit p{margin:0;padding-top:10px;border-top:1px dashed var(--warn)}
+/* Поддержка (с 4-й смены) */
+.orow{display:grid;grid-template-columns:40px 1fr 48px;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.orow b{text-align:right;font-weight:600}
+.orow .bar>span{background:var(--info)}
+.orow .bar.lo>span{background:var(--warn)}
+.dots{display:flex;flex-wrap:wrap;gap:4px;font-size:18px;margin-top:6px}
+.impl{list-style:none;margin:8px 0 0;padding:0}
+.impl li{margin:4px 0}
+details.passed>summary{cursor:pointer;font-weight:600;min-height:var(--tap);display:flex;align-items:center}
+details.passed .obsec{margin-top:8px}
 .sq{margin-bottom:14px}
 .sq>div:first-child{font-size:15px;margin-bottom:6px}
 .pick.c5n button{font-size:17px}
@@ -360,11 +374,19 @@ details.arch summary{cursor:pointer;padding:10px 2px;color:var(--mute);font-weig
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.36';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.40';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
 const leaderOf = () => SHIFTS[S.settings.shift] || S.settings.leader || '';
+/* Чаты руководителей в xRooms (профиль → «Написать»), по номеру смены */
+const SHIFT_CHAT = {
+  '1': 'https://xlnk-rooms.x5.ru/open/profile/cf916e0f-17e4-5903-82d7-cf5a3953c057',   // Конищев А.
+  '2': 'https://xlnk-rooms.x5.ru/open/profile/d2f08a27-baaf-5e28-bd83-b84f2abf217d',   // Сафонова Н.
+  '3': 'https://xlnk-rooms.x5.ru/open/profile/a10d5283-7714-57d2-ac96-9ff918dd62df',   // Бакиров У.
+  '4': 'https://xlnk-rooms.x5.ru/open/profile/3250cd3f-a975-576c-ae78-f638862561be'    // Новоселов В.
+};
+const leaderChat = () => SHIFT_CHAT[S.settings.shift] || '';
 const SIGN ='Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
 
 const GROUPS = [['pick','Комплектация']];   // v1.4: отгрузка, ВЭШ, приёмка убраны; v1.6: «Общее» заменено чек-листом первого дня
@@ -481,6 +503,12 @@ const OPS = [
   ]}
 ];
 const ADMIT_SHIFT = 3;   // лист допуска — не раньше этой смены
+/* Поддержка: после 3-й смены обучения нет — наставник сопровождает до завершения адаптации (беседа 14-й смены) */
+const SUPPORT_FROM = 4;   // с этой смены вкладка «Обучение» становится «Поддержкой»
+const OUTPUT_NORM = 0;    // норма выработки самостоятельной работы, коробов; 0 — не задана (сравниваем с 3-й сменой)
+const PULSE_EVERY = 3;    // спрашивать настроение не реже раза в столько смен поддержки
+const IMPROVE_MIN = 2;    // замечание повторилось столько раз за последние 5 смен — в «Что подтянуть»
+const MOOD = ['', 'Плохо', 'Так себе', 'Нормально', 'Хорошо', 'Отлично'];
 const itemOn = (m, sec, it) => curShiftNo(m) >= (it.min || sec.min || 0);
 /* Смена, на которую пункт положен по программе: «Старт» — 1-я, «Подготовка» — 2-я, «Обучение операциям» — по min раздела */
 const dueShiftOf = (sec, it) => Math.max(ONBOARD.includes(sec) ? 1 : TRAINING.includes(sec) ? 2 : (sec.min || 1), it.min || 0);
@@ -672,6 +700,9 @@ function normNote(n){
   for (const k of ['comment', 'helpText', 'nextText', 'nextSkill', 'helpReason']) n[k] = okStr(n[k]);
   if (!HELP_LABEL[n.helpReason]) n.helpReason = '';
   n.help = !!n.help; n.helpResolved = !!n.helpResolved; n.ts = +n.ts || 0;
+  // поддержка (с 4-й смены): работал сам / с помощью, настроение новичка 1–5
+  n.self = ['self', 'help'].includes(n.self) ? n.self : '';
+  n.mood = Math.max(0, Math.min(5, parseInt(n.mood, 10) || 0));
   return n;
 }
 function normMentee(m){
@@ -720,10 +751,71 @@ function memo(m, key, fn){
 }
 function save(){
   GEN++;
+  if (DEMO) return true;   // демо живёт только в памяти: записи пользователя не трогаем
   try { localStorage.setItem(KEY, JSON.stringify(S)); return true; }
   catch(e){ toast('Не удалось сохранить: память браузера недоступна'); return false; }
 }
 function touch(m){ m.updatedAt = Date.now(); save(); }
+
+/* ---------- демо-режим: примеры новичков на всех этапах ----------
+   Только в памяти: save() ничего не пишет, отправка и копии запрещены, выход или перезапуск возвращает настоящие записи */
+let DEMO = false;
+const DEMO_BLOCK = new Set(['sendReport', 'sendAll', 'sendText', 'sendCode', 'backup', 'import', 'wipe', 'cleanArch', 'admShare']);
+function demoState(){
+  const base = Date.parse(shiftDefaultDate()), day = i => isoLocal(base - i * 864e5);
+  const units = secs => secs.flatMap(s => s.items.filter(it => !it.meet).flatMap(it => it.sub ? it.sub : [it]));
+  const mark = (secs, date) => Object.fromEntries(units(secs).map(u => [u.id, date]));
+  const opsUpTo = k => OPS.filter(s => (s.min || 1) <= k);
+  /* plan — по одной записи на смену, от старой к новой: { p: 0 — не вышел, s: оценка, t: метки, ... };
+     последняя запись — сегодняшняя смена, если today, иначе вчерашняя */
+  const mk = (id, fio, tab, plan, o = {}) => {
+    const shift = o.today ? 0 : 1;
+    const notes = plan.map((x, i) => ({ id: id + 'n' + i, date: day(plan.length - 1 - i + shift), present: x.p !== 0, score: x.s || 0, tags: x.t || [],
+      comment: x.c || '', nextText: x.nx || '', help: !!x.h, helpReason: x.h || '', helpText: x.ht || '', self: x.self || '', mood: x.mood || 0, ts: Date.now() }));
+    return normMentee(Object.assign({ id, fio, tab, hireDate: day(plan.length + shift + 1), notes, onboard: {}, meetings: {}, output: {}, status: 'active',
+      createdAt: Date.now() - 864e5 * 30, updatedAt: Date.now() }, o.m || {}));
+  };
+  const all = d => Object.assign(mark(ONBOARD, d), mark(TRAINING, d), mark(OPS, d));
+  const meet = (d, a) => ({ done: true, date: d, comment: 'Всё в порядке, вопросов нет.', answers: a || { clear: 4, help: 5, load: 4, sched: 4, stay: 5 } });
+  const okAdm = d => ({ pick: { status: 'confirmed', date: d, confirmedDate: d, comment: '' } });
+  const sup = (n, extra) => Array.from({ length: n }, (_, i) => Object.assign({ s: 4, self: i % 3 ? 'self' : 'help' }, extra ? extra(i + 1) : {}));
+  const mentees = [
+    // День 1: смена ещё не отмечена, «Старт» начат
+    mk('demo1', 'Новикова Мария Сергеевна', '50101', [], { today: true, m: { hireDate: day(0), onboard: Object.fromEntries(ONBOARD[0].items.slice(0, 5).map(it => [it.id, day(0)])) } }),
+    // День 2: смена отмечена сегодня, выработка не вписана
+    mk('demo2', 'Петров Алексей Игоревич', '50102', [{ s: 4, t: ['Старается', 'Быстро учится'] }, { s: 4, t: ['Хорошо освоил ТСД'] }],
+      { today: true, m: { onboard: Object.assign(mark(ONBOARD, day(1)), mark(TRAINING.slice(0, 2), day(1)), mark(opsUpTo(1), day(1))) } }),
+    // День 3: беседа 3-й смены, открытая просьба о помощи
+    mk('demo3', 'Сидорова Елена Викторовна', '50103', [{ s: 4, t: ['Старается'] }, { s: 3, t: ['Медленный темп'], h: 'other', ht: 'Нет пропуска на 2-й склад', nx: 'Двухъярусные ряды' }],
+      { m: { onboard: Object.assign(mark(ONBOARD, day(2)), mark(TRAINING, day(1)), mark(opsUpTo(2), day(1))), output: { 2: 380 } } }),
+    // 8-я смена, поддержка: допуск подтверждён, повторяющиеся замечания, пора спросить настроение
+    mk('demo4', 'Ковалёв Дмитрий Андреевич', '50104', [{ s: 4 }, { s: 4 }, { s: 4 }, ...sup(4, k => ({ t: k % 2 ? ['Путает ячейки'] : ['Уверенно работает'], mood: k === 1 ? 4 : 0 }))],
+      { m: { onboard: all(day(5)), meetings: { 3: meet(day(5)) , 7: meet(day(1), { clear: 4, help: 4, load: 3, sched: 4, stay: 4 }) }, admissions: okAdm(day(5)),
+        output: { 2: 430, 3: 620, 4: 700, 5: 780, 6: 810, 7: 880 } } }),
+    // 15-я смена: беседа 14-й смены проведена — пора завершать адаптацию
+    mk('demo5', 'Морозова Ирина Олеговна', '50105', [{ s: 4 }, { s: 5 }, { s: 4 }, ...sup(11, k => ({ s: 5, self: 'self', mood: k % 3 === 1 ? 5 : 0 }))],
+      { m: { onboard: all(day(12)), meetings: { 3: meet(day(12)), 7: meet(day(8)), 14: meet(day(1)) }, admissions: okAdm(day(12)),
+        output: { 2: 450, 3: 650, 4: 720, 6: 860, 8: 940, 10: 1010, 12: 1080, 14: 1120 } } }),
+    // Риск ухода: два невыхода подряд, плохое настроение
+    mk('demo6', 'Лебедев Сергей Павлович', '50106', [{ s: 3 }, { s: 3, t: ['Медленный темп'] }, { s: 2, t: ['Жалуется на усталость или здоровье'] }, { s: 2, self: 'help', mood: 2 },
+      { p: 0, t: ['Отсутствовал без предупреждения'] }, { p: 0 }],
+      { m: { onboard: all(day(3)), meetings: { 3: meet(day(3), { clear: 3, help: 4, load: 2, sched: 2, stay: 2 }) }, output: { 2: 350, 3: 480 } } })
+  ];
+  // архив: завершила и уволился
+  const done = mk('demo7', 'Орлова Наталья Ивановна', '50107', sup(16, () => ({ self: 'self' })), { m: { onboard: all(day(40)), output: { 2: 470, 3: 680 } } });
+  done.status = 'done'; done.statusDate = day(20);
+  const left = mk('demo8', 'Зайцев Павел Николаевич', '50108', [{ s: 3 }, { s: 2 }, { s: 2 }, { p: 0 }], { m: { output: { 2: 300 } } });
+  left.status = 'left'; left.statusDate = day(10); left.statusReason = 'Нагрузка';
+  mentees.push(done, left);
+  const st = blankState();
+  st.settings = Object.assign(st.settings, S.settings, { fio: S.settings.fio || 'Демо Наставник', shift: S.settings.shift || '1' });
+  st.mentees = mentees; st.lastSentAt = Date.now() - 3 * 864e5;
+  return st;
+}
+function demoBanner(){
+  return DEMO ? `<div class="note demo"><b>🧪 Демо-режим</b>Примеры новичков на всех этапах. Можно нажимать всё — ничего не сохраняется и не отправляется.
+    <div class="row"><button class="btn sm" data-act="demoExit">Выйти из демо</button></div></div>` : '';
+}
 const findM = id => S.mentees.find(m => m.id === id);
 
 /* ---------- расчёты ---------- */
@@ -795,6 +887,8 @@ function calcRisk(m){
   else if (ns.slice(0, 5).filter(n => !n.present).length >= 2) r.push('частые невыходы');
   const scored = ns.filter(n => n.present && n.score);
   if (scored.length >= 2 && scored[0].score <= 2 && scored[1].score <= 2) r.push('две слабые смены подряд');
+  const moods = ns.filter(n => n.present && n.mood);
+  if (moods.length >= 2 && moods[0].mood <= 2 && moods[1].mood <= 2) r.push('плохое настроение два раза подряд');
   if (ns.slice(0, 3).some(n => (n.tags || []).some(t => LOAD_TAGS.includes(t)))) r.push('жалобы на нагрузку или самочувствие');
   if (ns.slice(0, 3).some(n => (n.tags || []).includes('Конфликтует с коллегами'))) r.push('конфликт с коллегами');
   if (ns.slice(0, 5).some(n => (n.tags || []).includes('Отсутствовал без предупреждения'))) r.push('не вышел без предупреждения');
@@ -815,6 +909,33 @@ function nextTask(m){
   const it = ln.nextSkill ? findSkill(ln.nextSkill) : null;
   if (it && unitDone(m, it.id) && !ln.nextText) return null;
   return { name: it ? it.name : '', text: ln.nextText || '' };
+}
+/* ---------- поддержка после обучения ---------- */
+const inSupport = m => curShiftNo(m) >= SUPPORT_FROM;
+/* Отметки «Вышел» смен поддержки, новые сверху */
+const supportNotes = m => memo(m, 'sup', () => sortedNotes(m).filter(n => n.present && shiftOnDate(m, n.date) >= SUPPORT_FROM));
+/* Пора спросить настроение: столько смен поддержки подряд без него, что следующая — уже PULSE_EVERY-я */
+function pulseDue(m){
+  if (m.status !== 'active' || !inSupport(m)) return false;
+  const sn = supportNotes(m), i = sn.findIndex(n => n.mood);
+  return (i < 0 ? sn.length : i) >= PULSE_EVERY - 1;
+}
+/* Что подтянуть: замечания, повторившиеся за последние 5 смен, — частые сверху */
+function improveList(m){
+  return memo(m, 'impr', () => {
+    const c = {};
+    for (const n of sortedNotes(m).filter(n => n.present).slice(0, 5))
+      for (const t of n.tags || []) if (tagSign(t) < 0 && !(TAG_MAP[t] && TAG_MAP[t].absent)) c[t] = (c[t] || 0) + 1;
+    return Object.entries(c).filter(([, k]) => k >= IMPROVE_MIN).sort((a, b) => b[1] - a[1]);
+  });
+}
+const finishDue = m => m.status === 'active' && meetDone(m, 14);
+/* Итоги поддержки для отчёта руководителю */
+function supportCalc(m){
+  const sn = supportNotes(m), md = sn.find(n => n.mood);
+  return { from: SUPPORT_FROM, active: inSupport(m), selfShifts: sn.filter(n => n.self === 'self').length, helpShifts: sn.filter(n => n.self === 'help').length,
+    lastMood: md ? md.mood : 0, lastMoodDate: md ? md.date : '', pulseDue: pulseDue(m), improve: improveList(m).map(([t, k]) => ({ tag: t, count: k })),
+    finishDue: finishDue(m), outputNorm: OUTPUT_NORM || null };
 }
 function taskHtml(m){
   const t = nextTask(m); if (!t || m.status !== 'active') return '';
@@ -853,7 +974,7 @@ function render(){
   const n = unsent().length;
   $('#app').innerHTML = `
     <header class="top"><div class="topin">${head}</div></header>
-    <main>${body}</main>
+    <main>${demoBanner()}${body}</main>
     <nav class="bot">
       <button data-act="go" data-v="list" class="${ui.view==='list'||ui.view==='mentee'?'on':''}"><span class="ic">👥</span>Новички</button>
       <button data-act="go" data-v="stats" class="${ui.view==='stats'?'on':''}"><span class="ic">📊</span>Итоги</button>
@@ -880,7 +1001,8 @@ function outputChip(k, v){
 /* Итог под полем «Факт выработка»; обновляется на месте, без перерисовки экрана */
 function outStatus(k, v){
   if (v === undefined) return '';
-  const g = OUTPUT_GOAL[k];
+  const g = OUTPUT_GOAL[k] || (OUTPUT_NORM && +k >= SUPPORT_FROM ? [OUTPUT_NORM] : null);   // смены поддержки — к норме, если задана
+  if (!g) return '';
   return `<div class="chips">${v >= g[0] ? '<span class="chip ok">✓ Цель выполнена</span>' : `<span class="chip warn">До цели не хватило ${g[0] - v} кор.</span>`}</div>`;
 }
 function flagsHtml(m){
@@ -921,7 +1043,7 @@ function menteeCard(m){
 }
 
 /* ---------- главный список: «Сегодня», фильтры, поиск, компактные строки ---------- */
-const FILTERS = [['all', 'Все'], ['att', 'Внимание'], ['d1', 'День 1'], ['d2', 'День 2'], ['d3', 'День 3'], ['fix', '4+ смена']];
+const FILTERS = [['all', 'Все'], ['att', 'Внимание'], ['d1', 'День 1'], ['d2', 'День 2'], ['d3', 'День 3'], ['fix', 'Поддержка']];
 const noMark = m => { const ln = lastNote(m); return !ln || ln.date < shiftDefaultDate(); };
 /* Смены с целью по выработке, за которые число не вписано (текущая — только если смена уже отмечена) */
 function outMissing(m){
@@ -929,7 +1051,7 @@ function outMissing(m){
   return Object.keys(OUTPUT_GOAL).map(Number).filter(k => m.output[k] === undefined && (cur > k || (cur === k && markedToday)));
 }
 const admitReady = m => groupsOf(m).some(g => canAdmit(m, g));
-const needsAttention = m => !!(openHelp(m).length || riskReasons(m).length || meetingDue(m) || noMark(m) || outMissing(m).length || admitReady(m));
+const needsAttention = m => !!(openHelp(m).length || riskReasons(m).length || meetingDue(m) || noMark(m) || outMissing(m).length || admitReady(m) || finishDue(m));
 /* Дела на сегодня — строки блока «Сегодня»; их же можно выбрать фильтром списка */
 const TASKS = [
   { k: 'help',   ic: '🚨', title: () => 'Нужна помощь руководителя', test: m => openHelp(m).length > 0, act: 'openT', tab: 'shifts', urgent: 1 },
@@ -937,7 +1059,9 @@ const TASKS = [
   { k: 'nomark', ic: '📝', title: () => `Нет отметки за ${fmt(shiftDefaultDate()).slice(0, 5)}`, test: noMark, act: 'noteNew', tab: '' },
   { k: 'meet',   ic: '💬', title: () => 'Пора провести беседу', test: m => !!meetingDue(m), act: 'openT', tab: 'meet' },
   { k: 'out',    ic: '📦', title: () => 'Не вписана выработка', test: m => outMissing(m).length > 0, act: 'openT', tab: 'shifts' },
-  { k: 'admit',  ic: '✅', title: () => 'Можно оформить лист допуска', test: admitReady, act: 'openT', tab: 'skills' }
+  { k: 'admit',  ic: '✅', title: () => 'Можно оформить лист допуска', test: admitReady, act: 'openT', tab: 'skills' },
+  { k: 'pulse',  ic: '🙂', title: () => 'Спросить настроение', test: pulseDue, act: 'noteNew', tab: '' },
+  { k: 'finish', ic: '🏁', title: () => 'Пора завершить адаптацию', test: finishDue, act: 'openT', tab: 'skills' }
 ];
 const TASK_MAP = Object.fromEntries(TASKS.map(t => [t.k, t]));
 function matchFilter(m, f){
@@ -964,7 +1088,8 @@ function compactRow(m){
   const cur = curShiftNo(m), p = progress(m), ln = lastNote(m), rr = riskReasons(m);
   const ic = [openHelp(m).length && ['🚨', 'Нужна помощь руководителя'], rr.length && ['🔻', 'Риск ухода: ' + rr.join(', ')],
     meetingDue(m) && ['💬', 'Пора провести беседу'], noMark(m) && ['📝', 'Нет отметки за смену'],
-    outMissing(m).length && ['📦', 'Не вписана выработка'], admitReady(m) && ['✅', 'Можно оформить лист допуска']].filter(Boolean);
+    outMissing(m).length && ['📦', 'Не вписана выработка'], admitReady(m) && ['✅', 'Можно оформить лист допуска'],
+    pulseDue(m) && ['🙂', 'Спросить настроение'], finishDue(m) && ['🏁', 'Пора завершить адаптацию']].filter(Boolean);
   // ✓ — отметить смену; если уже отмечена сегодня — открыть эту отметку
   const btn = noMark(m) ? `<button class="mbtn" data-act="noteNew" data-id="${m.id}" aria-label="Отметить смену">✓</button>`
     : `<button class="mbtn done" data-act="noteEdit" data-id="${m.id}" data-n="${ln.id}" aria-label="Смена отмечена, изменить">✓</button>`;
@@ -1012,18 +1137,23 @@ function viewList(){
       <div class="row"><button class="btn sm" data-act="go" data-v="settings">Заполнить</button></div></div>`;
   }
   const act = activeSorted();
+  // фильтр по делу сбрасывается, когда дел не осталось: иначе список пуст, а «✕» не всегда видно
+  if (TASK_MAP[ui.filter] && !act.some(TASK_MAP[ui.filter].test)){ ui.filter = 'all'; if (act.length) toast('Готово ✅ Таких дел больше нет'); }
+  else if (act.length < 3 && !TASK_MAP[ui.filter]) ui.filter = 'all';   // без строки фильтров его не снять
   if (!act.length){
     h += `<div class="empty"><div class="big">🦺</div><p>Пока нет новичков. Добавьте того, кого вам закрепили, или загрузите задание от руководителя смены.</p>
       <div class="row"><button class="btn main" data-act="menteeNew">Добавить новичка</button></div>
-      <div class="row" style="margin-top:10px"><button class="btn" data-act="import">Загрузить файл</button></div></div>`;
+      <div class="row" style="margin-top:10px"><button class="btn" data-act="import">Загрузить файл</button></div>
+      ${DEMO ? '' : `<div class="row" style="margin-top:10px"><button class="btn ghost" data-act="demoStart">🧪 Посмотреть на примерах</button></div>`}</div>`;
   } else {
     h += todayHtml(act);
     if (act.length >= 2) h += `<div class="row" style="margin-bottom:4px"><button class="btn dark" data-act="batch">✔️ Смена всем</button><button class="btn" data-act="grid">☑ Пункты всем</button></div>`;
     const compact = S.settings.listMode !== 'full';
+    const taskChip = TASK_MAP[ui.filter] ? `<button class="on" data-act="filter" data-v="all">${TASK_MAP[ui.filter].ic} ${esc(TASK_MAP[ui.filter].title())} ✕</button>` : '';
     if (act.length >= 3) h += `<div class="lctl"><input type="search" id="q" placeholder="🔍 ФИО или таб. номер" value="${esc(ui.q)}" autocomplete="off">
         <button class="btn sm" data-act="listMode">${compact ? '☰ Подробно' : '▤ Кратко'}</button></div>
-      <div class="fchips" id="fchips">${TASK_MAP[ui.filter] ? `<button class="on" data-act="filter" data-v="all">${TASK_MAP[ui.filter].ic} ${esc(TASK_MAP[ui.filter].title())} ✕</button>` : ''}${FILTERS.map(([k, l]) => `<button data-act="filter" data-v="${k}" class="${ui.filter === k ? 'on' : ''}">${l} <span>${act.filter(m => matchFilter(m, k)).length}</span></button>`).join('')}</div>`;
-    else h += `<div style="height:10px"></div>`;
+      <div class="fchips" id="fchips">${taskChip}${FILTERS.map(([k, l]) => `<button data-act="filter" data-v="${k}" class="${ui.filter === k ? 'on' : ''}">${l} <span>${act.filter(m => matchFilter(m, k)).length}</span></button>`).join('')}</div>`;
+    else h += taskChip ? `<div class="fchips" id="fchips">${taskChip}</div>` : `<div style="height:10px"></div>`;
     h += `<div id="mlist">${listHtml(act)}</div>`;
     h += `<div class="row" style="margin-top:10px"><button class="btn" data-act="menteeNew">＋ Добавить новичка</button></div>`;
   }
@@ -1039,7 +1169,7 @@ function viewList(){
 }
 
 function viewMentee(m){
-  const tabs = [['shifts','Смены'],['skills','Обучение'],['meet','Беседы'],['data','Данные']];
+  const tabs = [['shifts','Смены'],['skills', inSupport(m) ? 'Поддержка' : 'Обучение'],['meet','Беседы'],['data','Данные']];
   let h = `<div class="card">
     <div class="chead"><div><div class="nm">${esc(m.fio)}</div>
       <div class="sub">${m.tab ? 'Таб. ' + esc(m.tab) + ', ' : ''}принят ${fmt(m.hireDate)}</div>
@@ -1078,7 +1208,7 @@ function tabShifts(m){
       <div class="bd">
         <div>${n.present ? `<b>${SCORE_IC[n.score] || ''} ${SCORE[n.score] || 'Без оценки'}</b>` : '<b>Не вышел на смену</b>'}</div>
         ${n.present ? (() => { const no = shiftOnDate(m, n.date), v = m.output[no];
-          return `<div class="small muted">${no}-я смена${v !== undefined ? ` · 📦 ${v} кор.` : ''}</div>`; })() : ''}
+          return `<div class="small muted">${no}-я смена${v !== undefined ? ` · 📦 ${v} кор.` : ''}${n.self ? (n.self === 'self' ? ' · 💪 сам(а)' : ' · 🤝 с помощью') : ''}${n.mood ? ` · настроение ${SCORE_IC[n.mood]}` : ''}</div>`; })() : ''}
         ${n.tags && n.tags.length ? `<div class="chips">${n.tags.map(t => `<span class="chip ${tagChipCls(t)}">${tagSign(t) > 0 ? '✓ ' : tagSign(t) < 0 ? '⚠ ' : ''}${esc(t)}</span>`).join('')}</div>` : ''}
         ${n.comment ? `<p>${esc(n.comment)}</p>` : ''}
         ${n.nextSkill || n.nextText ? `<p class="small muted">📌 ${esc([findSkill(n.nextSkill)?.name, n.nextText].filter(Boolean).join('. '))}</p>` : ''}
@@ -1097,7 +1227,7 @@ function secHead(key, title, done, count, extra){
   return { open, html: `<button class="sechead" data-act="secToggle" data-k="${key}" data-done="${done ? 1 : 0}" aria-expanded="${open}">
     <b>${done ? '✅ ' : ''}${esc(title)}</b><span class="muted small">${count}${extra || ''} <span class="caret">${open ? '▾' : '▸'}</span></span></button>` };
 }
-function checkSection(m, sec, carry, ro){
+function checkSection(m, sec, carry, ro, onlyLeft){   // onlyLeft — показать только неотмеченные пункты («Долги обучения»)
   const vis = sec.items.filter(it => itemOn(m, sec, it));   // пункты «со 2-й смены» и т.п. до своей смены скрыты
   if (!vis.length) return '';
   const left = vis.filter(it => !obItemDone(m, it)).length, done = obSectionLeft(m, sec) === 0, key = m.id + ':' + sec.id;
@@ -1106,6 +1236,7 @@ function checkSection(m, sec, carry, ro){
   if (hd.open){
     if (sec.goal) h += `<p class="muted small" style="margin:0 0 6px"><b>Цель:</b> ${esc(sec.goal)}</p>`;
     for (const it of vis){
+      if (onlyLeft && obItemDone(m, it)) continue;
       const ok = obItemDone(m, it), carried = carry && !ok;
       const label = `<span class="obn">${it.n}</span><span class="obtx">${esc(it.t)}${carried ? ' <span class="obcarry">перенесено</span>' : ''}</span>`;
       if (it.sub){
@@ -1129,6 +1260,7 @@ function checkSection(m, sec, carry, ro){
   return h + `</div>`;
 }
 function tabSkills(m){
+  if (inSupport(m)) return tabSupport(m);
   const ro = m.status !== 'active' ? 'disabled' : '';
   const cur = curShiftNo(m);
   let h = '';
@@ -1162,6 +1294,67 @@ function tabSkills(m){
   for (const g of groupsOf(m)){ const a = admissionBlock(m, g); if (a) h += `<div class="card">${a}</div>`; }
   return h;
 }
+/* Вкладка «Поддержка» (с 4-й смены): пройденное обучение свёрнуто в одну строку, сверху — то, что нужно сейчас */
+function tabSupport(m){
+  const ro = m.status !== 'active' ? 'disabled' : '', cur = curShiftNo(m), active = m.status === 'active';
+  let h = '';
+  if (finishDue(m)) h += `<div class="note" style="border-left-color:var(--ok)"><b>🏁 Пора завершить адаптацию</b>Беседа 14-й смены записана. Если новичок уверенно работает без наставника — переведите в «Завершили».
+    <div class="row"><button class="btn sm main" data-act="status" data-id="${m.id}" data-v="done">✅ Завершить адаптацию</button></div></div>`;
+  else if (active) h += `<div class="note"><b>Поддержка: ${cur}-я смена</b>Обучение по программе закончено. Теперь главное — самостоятельная работа, рост выработки и чтобы новичок остался. Адаптация завершается после беседы 14-й смены.</div>`;
+  // долги обучения: только непройденные разделы, пройденные — в свёрнутом блоке внизу
+  const debt = ALL_CHECK.filter(sec => obSectionLeft(m, sec) > 0), passed = ALL_CHECK.filter(sec => !obSectionLeft(m, sec));
+  if (debt.length){
+    h += `<h2 style="margin-top:4px">Долги обучения</h2><p class="muted small" style="margin:-4px 2px 10px">Не отмечено по программе — без этого не оформить лист допуска.</p>`;
+    for (const sec of debt) h += checkSection(m, sec, false, ro, true);
+  }
+  for (const g of groupsOf(m)){ const a = admissionBlock(m, g); if (a) h += `<div class="card">${a}</div>`; }
+  h += `<div class="card"><div id="supOut">${supportOutHtml(m)}</div>${supportOutInput(m)}</div>`;
+  // самостоятельность: отмечается в «Отметить смену»
+  const sn = supportNotes(m), self = sn.filter(n => n.self === 'self').length, help = sn.filter(n => n.self === 'help').length;
+  h += `<div class="card"><b>Самостоятельность</b>${self + help
+    ? `<p style="margin:6px 0 0">Работал(а) сам(а) — <b>${self} из ${self + help}</b> ${plural(self + help, 'смены', 'смен', 'смен')} поддержки</p>
+       <div class="dots" aria-hidden="true">${[...sn].reverse().slice(-14).map(n => `<span title="${fmt(n.date)}">${n.self === 'self' ? '💪' : n.self === 'help' ? '🤝' : '·'}</span>`).join('')}</div>`
+    : `<p class="muted small" style="margin:6px 0 0">Отмечается в «Отметить смену»: 💪 сам или 🤝 с помощью.</p>`}</div>`;
+  // настроение новичка (пульс)
+  const moods = sn.filter(n => n.mood).slice(0, 6);
+  h += `<div class="card"><b>Настроение новичка</b>${pulseDue(m) ? '<div class="chips"><span class="chip warn">🙂 Пора спросить — на этой смене</span></div>' : ''}
+    ${moods.length ? `<div class="dots">${[...moods].reverse().map(n => `<span title="${fmt(n.date)}: ${MOOD[n.mood]}">${SCORE_IC[n.mood]}</span>`).join('')}</div>
+      <p class="small muted" style="margin:4px 0 0">Последний раз: ${MOOD[moods[0].mood].toLowerCase()}, ${fmt(moods[0].date)}</p>`
+    : `<p class="muted small" style="margin:6px 0 0">Спросите «Как тебе здесь?» раз в ${PULSE_EVERY} смены и отметьте ответ в «Отметить смену».</p>`}</div>`;
+  // что подтянуть: повторяющиеся замечания
+  const imp = improveList(m);
+  if (imp.length) h += `<div class="card"><b>Что подтянуть</b><ul class="impl">${imp.map(([t, k]) => `<li><span class="chip tn">⚠ ${esc(t)}</span> <span class="muted small">${k} ${plural(k, 'раз', 'раза', 'раз')} за 5 смен</span></li>`).join('')}</ul>
+    <p class="small muted" style="margin:6px 0 0">Впишите главное в «📌 Что отрабатываем на следующей смене».</p></div>`;
+  if (passed.length){
+    const n = passed.reduce((a, s) => a + s.items.length, 0);
+    h += `<details class="card passed"><summary>✅ Пройдено по программе: ${n} из ${ALL_ITEMS} пунктов</summary>${passed.map(sec => checkSection(m, sec, false, ro)).join('')}</details>`;
+  }
+  return h;
+}
+/* Выработка по сменам — полосками; обновляется на месте при вводе числа */
+function supportOutHtml(m){
+  const cur = curShiftNo(m), keys = Object.keys(m.output).map(Number);
+  const last = Math.max(cur, ...keys), from = Math.max(2, last - 11);
+  const ref = OUTPUT_NORM || (OUTPUT_GOAL[3] ? OUTPUT_GOAL[3][0] : 0);
+  const top = Math.max(ref, ...keys.map(k => m.output[k])) || 1;
+  let h = `<b>Выработка по сменам</b>${OUTPUT_NORM ? `<span class="muted small"> · норма ${OUTPUT_NORM} кор.</span>` : ''}<div style="margin-top:8px">`;
+  for (let k = from; k <= last; k++){
+    const v = m.output[k], g = OUTPUT_GOAL[k] || (OUTPUT_NORM && k >= SUPPORT_FROM ? [OUTPUT_NORM] : null);
+    h += `<div class="orow"><span class="muted">${k}-я</span><div class="bar ${g && v !== undefined && v < g[0] ? 'lo' : ''}"><span style="width:${v === undefined ? 0 : Math.round(v / top * 100)}%"></span></div><b>${v === undefined ? '—' : v}</b></div>`;
+  }
+  h += `</div>`;
+  const v3 = m.output[3], lastK = keys.filter(k => k >= SUPPORT_FROM).sort((a, b) => b - a)[0];
+  if (lastK !== undefined && v3) h += `<p class="small muted" style="margin:6px 0 0">${lastK}-я смена к 3-й: ${m.output[lastK] >= v3 ? '+' : ''}${Math.round((m.output[lastK] - v3) / v3 * 100)}%${OUTPUT_NORM && m.output[lastK] < OUTPUT_NORM ? ` · до нормы ${OUTPUT_NORM - m.output[lastK]} кор.` : ''}</p>`;
+  return h;
+}
+/* Поле выработки текущей смены — отдельно от полосок: полоски перерисовываются, поле остаётся (не теряется касание) */
+function supportOutInput(m){
+  if (m.status !== 'active') return '';
+  const cur = curShiftNo(m);
+  return `<label class="f" style="margin:10px 0 0"><span>Выработка за ${cur}-ю смену, коробов</span>
+    <input type="number" min="0" max="9999" inputmode="numeric" placeholder="Впишите число" data-out="${cur}" data-id="${m.id}" value="${m.output[cur] === undefined ? '' : m.output[cur]}"></label>
+    <div data-outst="${cur}">${outStatus(cur, m.output[cur])}</div>`;
+}
 
 function admissionBlock(m, g){
   const a = m.admissions[g];
@@ -1191,6 +1384,7 @@ function admissionText(m, g){
   return lines.join('\n');
 }
 async function shareText(t, okMsg){
+  if (DEMO){ toast('В демо-режиме ничего не отправляется'); return; }
   if (navigator.share){ try { await navigator.share({ text: t }); return; } catch(e){ if (e && e.name === 'AbortError') return; } }
   try { await navigator.clipboard.writeText(t); toast(okMsg || 'Текст скопирован — вставьте его в чат'); }
   catch(e){ const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Текст скопирован'); }
@@ -1353,6 +1547,17 @@ function viewStats(){
   return h;
 }
 
+/* Быстрые ссылки на чаты руководителей: своя смена — крупно, остальные — в списке */
+const chatLink = (s, cls) => `<a class="btn ${cls}" href="${esc(SHIFT_CHAT[s])}" target="_blank" rel="noopener">💬 ${esc(SHIFTS[s])} · смена ${esc(s)}</a>`;
+function chatCard(){
+  const my = S.settings.shift, others = Object.keys(SHIFT_CHAT).filter(s => s !== my && SHIFTS[s]);
+  return `<div class="card"><b>Чат руководителя смены</b>
+    <div style="margin-top:10px">${leaderChat() ? chatLink(my, 'main wide')
+      : `<p class="small muted" style="margin:0">Укажите свою смену в «Настройках» — здесь появится чат вашего руководителя.</p>`}</div>
+    ${others.length ? `<details style="margin-top:10px"><summary class="muted small">${leaderChat() ? 'Другие руководители' : 'Руководители смен'}</summary>
+      <div class="chatlist">${others.map(s => chatLink(s, 'wide')).join('')}</div></details>` : ''}
+    <p class="small muted" style="margin:10px 0 0">Откроется профиль в xRooms — нажмите «Написать». Файл отчёта так не приложить: его отправляет кнопка «Отправить отчёт за смену».</p></div>`;
+}
 function viewSend(){
   const u = unsent();
   let h = `<div class="card big-send">
@@ -1360,8 +1565,10 @@ function viewSend(){
     <div class="muted">${u.length ? plural(u.length,'новичок с изменениями','новичка с изменениями','новичков с изменениями') : 'Все изменения уже отправлены'}</div>
     ${u.length ? `<div class="chips" style="justify-content:center">${u.map(m => `<span class="chip">${esc(shortFio(m.fio))}</span>`).join('')}</div>` : ''}
     <div style="margin-top:18px"><button class="btn main wide" data-act="sendReport" ${u.length ? '' : 'disabled style="opacity:.5"'}>📤 Отправить отчёт за смену</button></div>
+    ${u.length ? `<p class="small muted" style="margin:8px 0 0">В меню «Поделиться» выберите <b>xRooms → ${leaderOf() ? esc(leaderOf()) : 'руководителя смены'}</b><br>После пары отправок чат появится вверху меню — в одно касание.</p>` : ''}
     <div class="row" style="margin-top:10px"><button class="btn" data-act="sendText">Сводка текстом</button><button class="btn" data-act="sendCode" ${u.length ? '' : 'disabled style="opacity:.5"'}>Отчёт кодом</button></div>
   </div>
+  ${chatCard()}
   <div class="note"><b>Как это работает</b>Откроется меню «Поделиться» — выберите xRooms и чат руководителя смены${leaderOf() ? ' (' + esc(leaderOf()) + ')' : ''}. Уйдёт небольшой файл, который руководитель загрузит в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.<br><br>
   <b>Если файл не доходит</b> до рабочего компьютера руководителя — нажмите «Отчёт кодом»: тот же отчёт уйдёт текстом, его можно отправить в чат xRooms. «Сводка текстом» — только для чтения, в «Паспорт смены» её не загрузить.</div>
   <div class="card"><dl class="kv"><dt>Последняя отправка</dt><dd>${fmtTs(S.lastSentAt)}</dd></dl>
@@ -1393,6 +1600,10 @@ function viewSettings(){
       <div class="row" style="margin-top:10px"><button class="btn" data-act="cleanArch">Удалить старых из архива</button></div>`
     : `<p class="muted" style="margin:10px 0 0">Удалять пока нечего: в архиве нет отправленных записей старше 3 месяцев.</p>`}</div>
 
+  <h2>Демо-режим</h2>
+  <div class="card"><p class="small muted" style="margin-top:0">Примеры новичков на всех этапах: день 1–3, поддержка, риск ухода, завершение адаптации. Ваши записи не меняются, в демо ничего не сохраняется и не отправляется.</p>
+    <div class="row">${DEMO ? `<button class="btn" data-act="demoExit">Выйти из демо</button>` : `<button class="btn" data-act="demoStart">🧪 Внести демо-данные</button>`}</div></div>
+
   <h2>О приложении</h2>
   <div class="card small"><dl class="kv"><dt>Версия</dt><dd>${APP_VERSION}</dd><dt>Новичков</dt><dd>${S.mentees.length}</dd>
     <dt>Где данные</dt><dd>Только в памяти этого телефона. На сайт ничего не отправляется.</dd>
@@ -1418,7 +1629,7 @@ function closeSheet(){
 
 function noteSheet(m, n){
   const isNew = !n;
-  n = n ? JSON.parse(JSON.stringify(n)) : { id: uid(), date: shiftDefaultDate(), present: true, score: 0, tags: [], comment: '', help: false, helpText: '', helpResolved: false, nextSkill: '', nextText: '' };
+  n = n ? JSON.parse(JSON.stringify(n)) : { id: uid(), date: shiftDefaultDate(), present: true, score: 0, tags: [], comment: '', help: false, helpText: '', helpResolved: false, nextSkill: '', nextText: '', self: '', mood: 0 };
   // «что отрабатываем» теперь только текстом: пункт из старого списка переносим в текст
   if (n.nextSkill){ const it = findSkill(n.nextSkill); n.nextText = [it ? it.name : '', n.nextText].filter(Boolean).join('. '); n.nextSkill = ''; }
   openSheet(`<h3>${isNew ? 'Отметка за смену' : 'Изменить отметку'}</h3><p class="lead">${esc(m.fio)}</p>
@@ -1429,6 +1640,12 @@ function noteSheet(m, n){
       <div class="f"><span class="muted small" style="display:block;margin-bottom:6px" id="nShiftCap"></span>
         <div class="pick c5">${[1,2,3,4,5].map(i => `<button data-act="nScore" data-v="${i}" class="${n.score===i?'on':''}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div></div>
       <label class="f"><span id="nOutCap">Выработка, коробов</span><input type="number" id="nOut" min="0" max="9999" inputmode="numeric" placeholder="Впишите число, если знаете"></label>
+      <div id="nSupport" hidden>
+        <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Как работал(а)</span>
+          <div class="pick c2"><button data-act="nSelf" data-v="self" class="${n.self==='self'?'on':''}">💪 Сам(а)</button><button data-act="nSelf" data-v="help" class="${n.self==='help'?'on':''}">🤝 С помощью</button></div></div>
+        <div class="f"><span class="muted small" style="display:block;margin-bottom:6px" id="nMoodCap">Настроение новичка — спросите «Как тебе здесь?»</span>
+          <div class="pick c5">${[1,2,3,4,5].map(i => `<button data-act="nMood" data-v="${i}" class="${n.mood===i?'on':''}" aria-label="${MOOD[i]}">${SCORE_IC[i]}<small>${MOOD[i]}</small></button>`).join('')}</div></div>
+      </div>
     </div>
     <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Что заметили <span id="nTagCap"></span></span><div id="nTags"></div></div>
     <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Комментарий</span>
@@ -1467,7 +1684,9 @@ function refreshNoteTags(){
   const no = noteShiftNo(m, n, date);
   sheet.shiftNo = no;
   const cap = $('#nShiftCap'); if (cap) cap.textContent = `Как прошла ${no}-я смена`;
-  const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов${OUTPUT_GOAL[no] ? ` (цель ${goalText(OUTPUT_GOAL[no])})` : ''}`;
+  const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов${OUTPUT_GOAL[no] ? ` (цель ${goalText(OUTPUT_GOAL[no])})` : OUTPUT_NORM && no >= SUPPORT_FROM ? ` (норма ${OUTPUT_NORM})` : ''}`;
+  const sup = $('#nSupport'); if (sup) sup.hidden = no < SUPPORT_FROM;   // «сам / с помощью» и настроение — только на сменах поддержки
+  const mc = $('#nMoodCap'); if (mc) mc.textContent = pulseDue(m) && !n.mood ? '🙂 Пора спросить настроение: «Как тебе здесь?»' : 'Настроение новичка (необязательно) — «Как тебе здесь?»';
   const box = $('#nTags'); if (!box) return;
   $('#nTagCap').textContent = `${n.tags.length}/${MAX_TAGS}`;
   if (!n.present){
@@ -1600,7 +1819,9 @@ function reportPayload(list, full){
     operations: OPS,
     outputGoals: OUTPUT_GOAL,   // «Паспорт смены» 3.26+ показывает выработку с целью смены
     mentees: list.map(m => Object.assign(JSON.parse(JSON.stringify(m)), {
-      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal, operationsLeft: opsLeft(m), operationsTotal: opsTotal, curShift: curShiftNo(m) }
+      calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal, operationsLeft: opsLeft(m), operationsTotal: opsTotal, curShift: curShiftNo(m),
+        // поддержка после 3-й смены (новое поле — «Паспорт» старых версий его не читает)
+        support: supportCalc(m) }
     }))
   };
 }
@@ -1632,7 +1853,14 @@ async function sendReport(full){
   if (res === 'cancel') return;
   if (res === 'downloaded' && !await ask('Файл сохранён в «Загрузки». Отправьте его руководителю смены.\n\nОтметить изменения как отправленные?')) return;
   S.lastSentAt = startedAt; S.sentLog.push({ ts: startedAt, count: list.length, full: !!full });
-  S.sentLog = S.sentLog.slice(-30); save(); render(); toast('Отчёт отправлен');
+  S.sentLog = S.sentLog.slice(-30); save(); render();
+  // файл в чат сам не прикрепить — сразу предлагаем открыть чат: проверить, что дошёл, или дописать пару слов
+  if (!leaderChat()){ toast('Отчёт отправлен'); return; }
+  openSheet(`<h3>${res === 'shared' ? '✅ Отчёт отправлен' : '📥 Файл в «Загрузках»'}</h3>
+    <p class="lead">${list.length} ${plural(list.length, 'новичок', 'новичка', 'новичков')}. ${res === 'shared'
+      ? 'Откройте чат — проверьте, что файл дошёл, или допишите пару слов.' : 'Откройте чат, нажмите «Написать» и прикрепите файл из «Загрузок».'}</p>
+    <div class="row"><a class="btn main wide" data-act="chatAfter" href="${esc(leaderChat())}" target="_blank" rel="noopener">💬 Открыть чат: ${esc(leaderOf())}</a></div>
+    <div class="actions"><button class="btn" data-act="closeSheet">Готово</button></div>`, { kind: 'sent' });
 }
 
 /* ---------- «Сводка текстом»: подробно и живым языком ----------
@@ -1692,6 +1920,7 @@ function textSummary(variant){
       if (n.comment) lines.push(`${pick(SUM.comment)}: ${n.comment}`);
       const v = m.output[no], g = OUTPUT_GOAL[no];
       if (v !== undefined) lines.push(`${pick(SUM.out)}: ${v} кор.${g ? (v >= g[0] ? ` — ${pick(SUM.outOk)} (${goalText(g)})` : ` — ${pick(SUM.outLow)} ${g[0] - v} кор. (цель ${goalText(g)})`) : ''}`);
+      if (n.self || n.mood) lines.push([n.self ? (n.self === 'self' ? 'Работал(а) сам(а)' : 'Работал(а) с помощью наставника') : '', n.mood ? `настроение: ${lc(MOOD[n.mood])}` : ''].filter(Boolean).join(', ') + '.');
       // отмеченное в эту смену: пункты этой смены — «закрыли за смену»,
       // пункты, положенные на прошлые смены (дозаполнили задним числом или перенесли), — отдельно
       const done = { cur: [[], []], late: [[], []] };   // [список, по разделам]
@@ -1730,6 +1959,8 @@ function textSummary(variant){
     if (n.help) lines.push(`🚨 ${helpTitle(n)}${n.helpText ? ': ' + n.helpText : ''}${n.helpResolved ? ' — вопрос уже решён' : ''}`);
     for (const h of openHelp(m)) if (h.id !== n.id) lines.push(`🚨 ${helpTitle(h)} (с ${fmt(h.date).slice(0, 5)})${h.helpText ? ': ' + h.helpText : ''}`);
     const rr = riskReasons(m); if (rr.length) lines.push(`🔻 Риск ухода: ${rr.join(', ')}.`);
+    const imp = improveList(m); if (no >= SUPPORT_FROM && imp.length) lines.push(`Подтянуть: ${imp.map(([t]) => lc(t)).join(', ')}.`);
+    if (finishDue(m)) lines.push('🏁 Беседа 14-й смены проведена — можно завершать адаптацию.');
     for (const [g] of WORK_GROUPS) if (m.admissions[g] && m.admissions[g].status === 'requested') lines.push(`✅ Оформлен лист допуска: ${GNAME[g]} (от ${fmt(m.admissions[g].date)}) — нужно ваше подтверждение.`);
     out.push(lines.join('\n'));
   }
@@ -1764,7 +1995,9 @@ async function sendCode(){
     ${code.length > 4000 ? `<div class="note" style="border-left-color:var(--warn)">Код длинный: Telegram и WhatsApp разобьют его на несколько сообщений, и он не загрузится. Отправьте его по почте или кнопкой «Отправить отчёт за смену» (файлом).</div>` : ''}
     <textarea readonly style="min-height:120px;font-family:monospace;font-size:12px" onclick="this.select()">${esc(code)}</textarea>
     <p class="small muted">Руководитель смены вставит этот текст в «Паспорте смены»: Данные → Отчёты наставников → «Загрузить из текста».</p>
-    <div class="actions"><button class="btn" data-act="codeCopy">Скопировать</button><button class="btn main" data-act="codeShare">Поделиться</button></div>`,
+    <div class="actions"><button class="btn" data-act="codeCopy">Скопировать</button><button class="btn main" data-act="codeShare">Поделиться</button></div>
+    ${leaderChat() ? `<div class="row"><a class="btn wide" data-act="codeChat" href="${esc(leaderChat())}" target="_blank" rel="noopener">📋 Скопировать и открыть чат: ${esc(leaderOf())}</a></div>
+      <p class="small muted">Код скопируется, откроется xRooms — нажмите «Написать» и вставьте код в сообщение.</p>` : ''}`,
     { kind: 'code', code, startedAt, count: list.length });
 }
 function markSent(startedAt, count){
@@ -2004,6 +2237,8 @@ const ACT = {
   },
   helpMore: (d, b) => { $('#' + d.p + 'HelpText').hidden = false; b.hidden = true; $('#' + d.p + 'HelpText').focus(); },
   nScore: (d, b) => { const v = +d.v; sheet.note.score = sheet.note.score === v ? 0 : v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === sheet.note.score)); },
+  nSelf: (d, b) => { sheet.note.self = sheet.note.self === d.v ? '' : d.v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.v === sheet.note.self)); },
+  nMood: (d, b) => { const v = +d.v; sheet.note.mood = sheet.note.mood === v ? 0 : v; b.parentNode.querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.v === sheet.note.mood)); },
   nTag: d => {
     const t = sheet.note.tags, i = t.indexOf(d.v);
     if (i >= 0) t.splice(i, 1);
@@ -2027,6 +2262,7 @@ const ACT = {
     if (!n.help) n.helpResolved = false;
     n.nextSkill = ''; n.nextText = $('#nNextText').value.trim();
     if (!n.present) n.score = 0;   // метки невыхода («Отсутствовал без предупреждения») остаются
+    if (!n.present || no < SUPPORT_FROM){ n.self = ''; n.mood = 0; }   // поля поддержки — только у вышедших на 4-й смене и позже
     n.ts = Date.now();
     const same = m.notes.find(x => x.date === n.date && x.id !== n.id);
     if (same){
@@ -2102,6 +2338,11 @@ const ACT = {
   },
   meetUndo: async () => { if (!await ask('Отметить беседу как не проведённую?')) return; const m = findM(sheet.mid); delete m.meetings[sheet.k]; if (!allDone(m)) obCancelAdmissions(m); touch(m); closeSheet(); render(); },
 
+  demoStart: async () => {
+    if (!await ask('Показать приложение на примерах?\n\nВаши записи останутся как есть и вернутся при выходе из демо. Демо не сохраняется: после перезапуска приложения его не будет.')) return;
+    S = demoState(); DEMO = true; ui.filter = 'all'; ui.q = ''; go('list'); toast('Демо-режим включён');
+  },
+  demoExit: () => { DEMO = false; load(); ui.filter = 'all'; ui.q = ''; go('list'); toast('Демо выключено — ваши записи на месте'); },
   sendReport: () => sendReport(false),
   sendAll: () => sendReport(true),
   sendText,
@@ -2115,6 +2356,14 @@ const ACT = {
       catch(e){ if (e && e.name === 'AbortError') return; }
     }
     ACT.codeCopy();
+  },
+  // ссылка открывает чат сама; лист закрываем после клика — иначе удалённая ссылка не откроется
+  chatAfter: () => setTimeout(closeSheet, 0),
+  codeChat: () => {
+    const c = sheet, ta = $('#pane textarea');
+    ta.select(); document.execCommand('copy');   // синхронно, пока есть касание пользователя
+    if (navigator.clipboard) navigator.clipboard.writeText(c.code).catch(() => {});
+    setTimeout(() => { markSent(c.startedAt, c.count); closeSheet(); render(); toast('Код скопирован — вставьте его в чат'); }, 0);
   },
   codeCopy: async () => {
     const c = sheet;
@@ -2145,6 +2394,7 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
   const fn = ACT[b.dataset.act]; if (!fn) return;
   if (b.tagName === 'BUTTON') e.preventDefault();
+  if (DEMO && DEMO_BLOCK.has(b.dataset.act)){ say('В демо-режиме отправка, копии и удаление отключены. Выйдите из демо — кнопка вверху экрана или в «Настройках».'); return; }
   fn(b.dataset, b, e);
 });
 document.addEventListener('change', e => {
@@ -2155,6 +2405,7 @@ document.addEventListener('change', e => {
     if (isNaN(v) || v < 0) delete m.output[out]; else m.output[out] = Math.min(v, 9999);
     // без render(): иначе касание кнопки сразу после ввода «теряется» из-за перерисовки
     touch(m); document.querySelectorAll(`[data-outst="${out}"]`).forEach(el => el.innerHTML = outStatus(out, m.output[out]));
+    const so = $('#supOut'); if (so) so.innerHTML = supportOutHtml(m);
     toast('Выработка сохранена'); return;
   }
   const k = e.target.dataset && e.target.dataset.set; if (!k) return;
@@ -2171,7 +2422,7 @@ $('#fileIn').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
   const r = new FileReader(); r.onload = () => handleFile(String(r.result)); r.onerror = () => say('Не удалось прочитать файл'); r.readAsText(f, 'utf-8');
 });
-window.addEventListener('storage', e => { if (e.key === KEY){ load(); render(); } });
+window.addEventListener('storage', e => { if (e.key === KEY && !DEMO){ load(); render(); } });
 
 /* ---------- запуск ---------- */
 load();
