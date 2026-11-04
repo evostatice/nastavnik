@@ -378,7 +378,7 @@ details.passed .obsec{margin-top:8px}
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.50';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.51';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
@@ -823,7 +823,7 @@ function touch(m){ m.updatedAt = Date.now(); save(); }
 /* ---------- демо-режим: примеры новичков на всех этапах ----------
    Только в памяти: save() ничего не пишет, отправка и копии запрещены, выход или перезапуск возвращает настоящие записи */
 let DEMO = false;
-const DEMO_BLOCK = new Set(['sendReport', 'sendAll', 'sendText', 'sendCode', 'backup', 'import', 'wipe', 'cleanArch', 'admShare']);
+const DEMO_BLOCK = new Set(['sendReport', 'sendAll', 'sendText', 'backup', 'import', 'wipe', 'cleanArch', 'admShare']);
 function demoState(){
   const base = Date.parse(shiftDefaultDate()), day = i => isoLocal(base - i * 864e5);
   const units = secs => secs.flatMap(s => s.items.filter(it => !autoItem(it)).flatMap(it => it.sub ? it.sub : [it]));
@@ -1647,12 +1647,12 @@ function viewSend(){
     <div class="muted">${u.length ? plural(u.length,'новичок с изменениями','новичка с изменениями','новичков с изменениями') : 'Все изменения уже отправлены'}</div>
     ${u.length ? `<div class="chips" style="justify-content:center">${u.map(m => `<span class="chip">${esc(shortFio(m.fio))}</span>`).join('')}</div>` : ''}
     <div style="margin-top:18px"><button class="btn main wide" data-act="sendReport" ${u.length ? '' : 'disabled style="opacity:.5"'}>📤 Отправить отчёт за смену</button></div>
-    ${u.length ? `<p class="small muted" style="margin:8px 0 0">В меню «Поделиться» выберите <b>xRooms → ${leaderOf() ? esc(leaderOf()) : 'руководителя смены'}</b><br>После пары отправок чат появится вверху меню — в одно касание.</p>` : ''}
-    <div class="row" style="margin-top:10px"><button class="btn" data-act="sendText">Сводка текстом</button><button class="btn" data-act="sendCode" ${u.length ? '' : 'disabled style="opacity:.5"'}>Отчёт кодом</button></div>
+    ${u.length ? `<p class="small muted" style="margin:8px 0 0">Файл сохранится в «Загрузки». Откройте его → «Поделиться» → <b>xRooms → ${leaderOf() ? esc(leaderOf()) : 'руководителя смены'}</b></p>` : ''}
+    <div class="row" style="margin-top:10px"><button class="btn wide" data-act="sendText">Сводка текстом</button></div>
   </div>
   ${chatCard()}
-  <div class="note"><b>Как это работает</b>Откроется меню «Поделиться» — выберите xRooms и чат руководителя смены${leaderOf() ? ' (' + esc(leaderOf()) + ')' : ''}. Уйдёт небольшой файл, который руководитель загрузит в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.<br><br>
-  <b>Если файл не доходит</b> до рабочего компьютера руководителя — нажмите «Отчёт кодом»: тот же отчёт уйдёт текстом, его можно отправить в чат xRooms. «Сводка текстом» — только для чтения, в «Паспорт смены» её не загрузить.</div>
+  <div class="note"><b>Как это работает</b>Небольшой файл сохранится в «Загрузки». Откройте его (уведомление или «Загрузки») → «Поделиться» → xRooms → чат руководителя смены${leaderOf() ? ' (' + esc(leaderOf()) + ')' : ''}. Руководитель загрузит файл в «Паспорт смены». Отправлять лучше после каждой смены: это ещё и резервная копия ваших записей.<br><br>
+  «Сводка текстом» — только для чтения, в «Паспорт смены» её не загрузить.</div>
   <div class="card"><dl class="kv"><dt>Последняя отправка</dt><dd>${fmtTs(S.lastSentAt)}</dd></dl>
     ${S.sentLog.length ? `<details style="margin-top:8px"><summary class="muted small">История отправок</summary>
       ${S.sentLog.slice().reverse().map(l => `<div class="list-item small"><span>${fmtTs(l.ts)}</span><span class="muted" style="flex:0">${l.count}&nbsp;чел.</span></div>`).join('')}</details>` : ''}
@@ -2068,32 +2068,6 @@ function sendText(){
     <div class="actions"><button class="btn" data-act="sumAgain">🔄 Другой вариант</button><button class="btn main" data-act="sumShare">Поделиться</button></div>`, { kind: 'sum', variant: 0 });
 }
 
-/* Отчёт кодом: тот же отчёт, сжатый и записанный текстом — для почты или если файлы не доходят до рабочего ПК */
-async function reportCode(list){
-  let bytes = new TextEncoder().encode(JSON.stringify(reportPayload(list, false))), prefix = 'НАСТАВНИК1:';
-  if (typeof CompressionStream !== 'undefined'){
-    try { const r = new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))); bytes = new Uint8Array(await r.arrayBuffer()); prefix = 'НАСТАВНИК1Z:'; } catch(e) {}
-  }
-  let bin = ''; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
-  return prefix + btoa(bin);
-}
-async function sendCode(){
-  if (!S.settings.fio){ toast('Сначала укажите своё ФИО в настройках'); go('settings'); return; }
-  const list = unsent();
-  if (!list.length){ toast('Нет изменений для отправки'); return; }
-  const startedAt = Date.now(), code = await reportCode(list);
-  openSheet(`<h3>Отчёт кодом</h3><p class="lead">${list.length} ${plural(list.length,'новичок','новичка','новичков')}, ${code.length} знаков</p>
-    ${code.length > 4000 ? `<div class="note" style="border-left-color:var(--warn)">Код длинный: Telegram и WhatsApp разобьют его на несколько сообщений, и он не загрузится. Отправьте его по почте или кнопкой «Отправить отчёт за смену» (файлом; если в xRooms придёт только подпись — сохраните файл в «Загрузки» и прикрепите вручную).</div>` : ''}
-    <textarea readonly style="min-height:120px;font-family:monospace;font-size:12px" onclick="this.select()">${esc(code)}</textarea>
-    <p class="small muted">Руководитель смены вставит этот текст в «Паспорте смены»: Данные → Отчёты наставников → «Загрузить из текста».</p>
-    <div class="actions"><button class="btn" data-act="codeCopy">Скопировать</button><button class="btn main" data-act="codeShare">Поделиться</button></div>
-    ${leaderChat() ? `<div class="row"><a class="btn wide" data-act="codeChat" href="${esc(leaderChat())}" target="_blank" rel="noopener">📋 Скопировать и открыть чат: ${esc(leaderOf())}</a></div>
-      <p class="small muted">Код скопируется, откроется xRooms — нажмите «Написать» и вставьте код в сообщение.</p>` : ''}`,
-    { kind: 'code', code, startedAt, count: list.length });
-}
-function markSent(startedAt, count){
-  S.lastSentAt = startedAt; S.sentLog.push({ ts: startedAt, count }); S.sentLog = S.sentLog.slice(-30); save();
-}
 
 function mergeMentees(list){
   let added = 0, updated = 0;
@@ -2482,30 +2456,9 @@ const ACT = {
   sendText,
   sumAgain: () => { sheet.variant++; $('#sumText').value = textSummary(sheet.variant); },
   sumShare: () => shareText($('#sumText').value.trim(), 'Сводка скопирована — вставьте её в чат xRooms'),
-  sendCode,
-  codeShare: async () => {
-    const c = sheet;
-    if (navigator.share){
-      try { await navigator.share({ text: c.code }); markSent(c.startedAt, c.count); closeSheet(); render(); toast('Отчёт отправлен'); return; }
-      catch(e){ if (e && e.name === 'AbortError') return; }
-    }
-    ACT.codeCopy();
-  },
   // ссылка открывает чат сама; лист закрываем после клика — иначе удалённая ссылка не откроется
   chatAfter: () => setTimeout(closeSheet, 0),
   saveFile: () => { if (lastFile){ download(lastFile.name, lastFile.text, 'application/json'); toast('Файл в «Загрузках»'); } },
-  codeChat: () => {
-    const c = sheet, ta = $('#pane textarea');
-    ta.select(); document.execCommand('copy');   // синхронно, пока есть касание пользователя
-    if (navigator.clipboard) navigator.clipboard.writeText(c.code).catch(() => {});
-    setTimeout(() => { markSent(c.startedAt, c.count); closeSheet(); render(); toast('Код скопирован — вставьте его в чат'); }, 0);
-  },
-  codeCopy: async () => {
-    const c = sheet;
-    try { await navigator.clipboard.writeText(c.code); }
-    catch(e){ const ta = $('#pane textarea'); ta.select(); document.execCommand('copy'); }
-    markSent(c.startedAt, c.count); closeSheet(); render(); toast('Код скопирован — вставьте его в письмо или чат руководителю');
-  },
 
   backup: async () => {
     const res = await shareFile(`наставник_копия_${safeName(shortFio(S.settings.fio))}_${fileStamp()}.json`,
