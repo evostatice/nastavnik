@@ -378,11 +378,13 @@ details.passed .obsec{margin-top:8px}
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.51';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.52';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
 const leaderOf = () => SHIFTS[S.settings.shift] || S.settings.leader || '';
+// хвост подписи в текстах для чата: вместо номера смены — руководитель смены
+const leaderTail = () => leaderOf() ? ', руководитель смены ' + leaderOf() : '';
 /* Чаты руководителей в xRooms (профиль → «Написать»), по номеру смены */
 const SHIFT_CHAT = {
   '1': 'https://xlnk-rooms.x5.ru/open/profile/cf916e0f-17e4-5903-82d7-cf5a3953c057',   // Конищев А.
@@ -1460,7 +1462,7 @@ function admissionText(m, g){
     lines.push(`• ${sec.name} — выполнено ${fmt(last)}`);
   }
   if (m.exam && m.exam.passed) lines.push(`• Квалификационный зачёт — сдан ${fmt(m.exam.date)}${m.exam.minutes ? `, заказ собран за ${m.exam.minutes} мин` : ''}${m.exam.tries > 1 ? ` (попытка ${m.exam.tries})` : ''}`);
-  lines.push('', `Наставник: ${S.settings.fio || '—'}${S.settings.shift ? ', смена ' + S.settings.shift : ''}`, `Дата: ${fmt(a.date || today())}`);
+  lines.push('', `Наставник: ${S.settings.fio || '—'}${leaderTail()}`, `Дата: ${fmt(a.date || today())}`);
   if (a.comment) lines.push(`Комментарий: ${a.comment}`);
   lines.push('', 'Наставник считает сотрудника готовым к самостоятельной работе. Решение о допуске принимает руководитель смены.');
   return lines.join('\n');
@@ -1990,7 +1992,7 @@ function textSummary(variant){
   const marked = act.filter(m => m.notes.some(n => n.date === d)), unmarked = act.filter(m => !m.notes.some(n => n.date === d));
   const out = [];
   const hello = pick(SUM.hello); if (hello) out.push(hello);
-  out.push(`${pick(SUM.head)} за ${fmt(d)}${st.fio ? ' — ' + shortFio(st.fio) : ''}${st.shift ? ', смена ' + st.shift : ''}.`);
+  out.push(`${pick(SUM.head)} за ${fmt(d)}${st.fio ? ' — ' + shortFio(st.fio) : ''}${leaderTail()}.`);
   out.push(`Новичков в обучении: ${act.length}${unmarked.length && marked.length ? `, отмечено за смену: ${marked.length}` : ''}.`);
 
   for (const m of marked){
@@ -2058,7 +2060,7 @@ function textSummary(variant){
   if (unmarked.length) out.push(`\n${pick(SUM.noMark)}: ${unmarked.map(m => `${shortFio(m.fio)} (${curShiftNo(m)}-я смена)`).join(', ')}.`);
   if (!act.length) out.push('\nАктивных новичков нет.');
   const bye = pick(SUM.bye);
-  out.push(`\n${bye ? bye + '\n' : ''}— ${st.fio ? shortFio(st.fio) : 'наставник'}${st.shift ? ', смена ' + st.shift : ''}`);
+  out.push(`\n${bye ? bye + '\n' : ''}— ${st.fio ? shortFio(st.fio) : 'наставник'}${leaderTail()}`);
   return out.join('\n');
 }
 /* Окно сводки: текст можно поправить, «Другой вариант» — те же факты другими словами */
