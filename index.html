@@ -378,7 +378,7 @@ details.passed .obsec{margin-top:8px}
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.47';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.48';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
@@ -1913,12 +1913,13 @@ function download(name, text, type){
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 let lastFile = null;   // последний отправленный файл — чтобы его можно было сохранить в «Загрузки», если чат (xRooms) вложение не принял
-async function shareFile(name, obj, title, msg){
+async function shareFile(name, obj, title, msg, skipShare){
   const text = JSON.stringify(obj);
   lastFile = { name, text };
   let file = null;
   try { file = new File([text], name, { type: 'application/json' }); } catch(e) {}
-  if (file && navigator.canShare && navigator.canShare({ files: [file] })){
+  // skipShare — чат xRooms файл из системного шеринга не принимает (приходит только подпись), поэтому сразу сохраняем в «Загрузки»
+  if (!skipShare && file && navigator.canShare && navigator.canShare({ files: [file] })){
     // text — чтобы сообщение не было пустым, если приложение возьмёт из шеринга только подпись
     try { await navigator.share(msg ? { files: [file], title, text: msg } : { files: [file], title }); return 'shared'; }
     catch(e){ if (e && e.name === 'AbortError') return 'cancel'; }
@@ -1935,7 +1936,7 @@ async function sendReport(full){
   const startedAt = Date.now();
   const name = `наставник_${safeName(shortFio(S.settings.fio))}_${fileStamp()}.json`;
   const res = await shareFile(name, reportPayload(list, full), 'Отчёт наставника',
-    `Отчёт наставника ${shortFio(S.settings.fio)}: ${list.length} ${plural(list.length, 'новичок', 'новичка', 'новичков')}, ${fmt(shiftDefaultDate())}`);
+    `Отчёт наставника ${shortFio(S.settings.fio)}: ${list.length} ${plural(list.length, 'новичок', 'новичка', 'новичков')}, ${fmt(shiftDefaultDate())}`, !!leaderChat());
   if (res === 'cancel') return;
   if (res === 'downloaded' && !await ask('Файл сохранён в «Загрузки». Отправьте его руководителю смены.\n\nОтметить изменения как отправленные?')) return;
   S.lastSentAt = startedAt; S.sentLog.push({ ts: startedAt, count: list.length, full: !!full });
