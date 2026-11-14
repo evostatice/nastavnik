@@ -378,7 +378,7 @@ details.passed .obsec{margin-top:8px}
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.52';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.55';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
@@ -540,7 +540,7 @@ const ADMIT_SHIFT = 3;   // лист допуска — не раньше это
 const EXAM_CHECKS = [['flat', 'Ровная паллета'], ['wrap', 'Плотная обмотка плёнкой'], ['label', 'Ярлык наклеен верно']];
 /* Поддержка: после 3-й смены обучения нет — наставник сопровождает до завершения адаптации (беседа 14-й смены) */
 const SUPPORT_FROM = 4;   // с этой смены вкладка «Обучение» становится «Поддержкой»
-const OUTPUT_NORM = 1200; // норматив выработки, коробов (минимум); 0 — не задан
+const OUTPUT_NORM = 1500; // норматив выработки, коробов (минимум); 0 — не задан
 const NORM_SHIFT = 14;    // к этой смене новичок выходит на норматив; до неё — плавный ориентир от цели 3-й смены (у каждого свой темп)
 const PULSE_EVERY = 3;    // спрашивать настроение не реже раза в столько смен поддержки
 const IMPROVE_MIN = 2;    // замечание повторилось столько раз за последние 5 смен — в «Что подтянуть»
@@ -559,12 +559,14 @@ function unitOn(m, id){
 }
 /* Цель по выработке (коробов) — карточка с полем «факт» показывается только на этой смене */
 const OUTPUT_GOAL = { 2: [400, 500], 3: [600] };   // [от, до] или [от]
+const goalWord = g => g.kind === 'norm' ? 'норматив' : g.kind === 'ref' ? 'ориентир' : 'цель';
 const goalText = g => g[1] ? `${g[0]}–${g[1]}` : `${g[0]}`;
 /* Ориентир выработки со смены поддержки: с 14-й — норматив, до неё — плавно от цели 3-й смены (округляем до 50).
-   kind 'ref' — мягкий ориентир (у каждого свой темп), 'norm' — норматив-минимум. Для 2–3-й смен — прежние цели. */
-function outGoal(k){
+   kind 'own' — цель наставника на смену (m.goals), 'ref' — мягкий ориентир (у каждого свой темп), 'norm' — норматив-минимум. Для 2–3-й смен — прежние цели. */
+function outGoal(k, m){
   k = +k;
   if (OUTPUT_GOAL[k]) return OUTPUT_GOAL[k];
+  if (m && m.goals && m.goals[k]) return Object.assign([m.goals[k]], { kind: 'own' });   // цель, вписанная наставником
   if (!OUTPUT_NORM || k < SUPPORT_FROM) return null;
   if (k >= NORM_SHIFT) return Object.assign([OUTPUT_NORM], { kind: 'norm' });
   const base = OUTPUT_GOAL[3] ? OUTPUT_GOAL[3][0] : 0;
@@ -794,6 +796,9 @@ function normMentee(m){
   // выработка: { номер смены: коробов } — только целые числа
   const out = okObj(m.output); m.output = {};
   for (const k of Object.keys(out)){ const v = parseInt(out[k], 10); if (/^\d{1,3}$/.test(k) && v >= 0 && v <= 9999) m.output[k] = v; }
+  // свои цели наставника: { номер смены (с SUPPORT_FROM): коробов }
+  const gl = okObj(m.goals); m.goals = {};
+  for (const k of Object.keys(gl)){ const v = parseInt(gl[k], 10); if (/^\d{1,3}$/.test(k) && +k >= SUPPORT_FROM && v > 0 && v <= 9999) m.goals[k] = v; }
   m.createdAt = +m.createdAt || Date.now(); m.updatedAt = +m.updatedAt || Date.now();
   // версия программы: 1 — к выходу пунктов X5 уже отработал(а) 3 смены (они необязательны), 2 — проходит программу целиком
   if (m.progV !== 1 && m.progV !== 2) m.progV = (m.shiftsBefore + m.notes.filter(n => n.present).length) >= 3 ? 1 : 2;
@@ -860,7 +865,7 @@ function demoState(){
     // 15-я смена: беседа 14-й смены проведена — пора завершать адаптацию
     mk('demo5', 'Морозова Ирина Олеговна', '50105', [{ s: 4 }, { s: 5 }, { s: 4 }, ...sup(11, k => ({ s: 5, self: 'self', mood: k % 3 === 1 ? 5 : 0 }))],
       { m: { onboard: all(day(12)), meetings: { 3: meet(day(12)), 7: meet(day(8)), 14: meet(day(1)) }, admissions: okAdm(day(12)),
-        output: { 2: 450, 3: 650, 4: 720, 6: 860, 8: 940, 10: 1010, 12: 1080, 14: 1120 } } }),
+        output: { 2: 450, 3: 650, 4: 720, 6: 860, 8: 940, 10: 1010, 12: 1080, 14: 1120 }, goals: { 15: 1300 } } }),
     // Риск ухода: два невыхода подряд, плохое настроение
     mk('demo6', 'Лебедев Сергей Павлович', '50106', [{ s: 3 }, { s: 3, t: ['Медленный темп'] }, { s: 2, t: ['Жалуется на усталость или здоровье'] }, { s: 2, self: 'help', mood: 2 },
       { p: 0, t: ['Отсутствовал без предупреждения'] }, { p: 0 }],
@@ -1065,9 +1070,9 @@ function outputChip(k, v){
   return `<span class="chip ${ok ? 'ok' : 'warn'}">📈 ${k}-я смена: ${v} кор.${ok ? '' : ` (цель ${goalText(g)})`}</span>`;
 }
 /* Итог под полем «Факт выработка»; обновляется на месте, без перерисовки экрана */
-function outStatus(k, v){
+function outStatus(k, v, m){
   if (v === undefined) return '';
-  const g = outGoal(k);
+  const g = outGoal(k, m);
   if (!g) return '';
   const ref = g.kind === 'ref', what = ref ? 'ориентира' : g.kind === 'norm' ? 'норматива' : 'цели';
   // ориентир до 14-й смены — без «тревожного» цвета: у каждого свой темп
@@ -1358,7 +1363,7 @@ function tabSkills(m){
       <dl class="kv" style="margin:8px 0 12px"><dt>Цель</dt><dd>${goalText(og)} коробов</dd>
         ${cur > 1 ? `<dt>Прошлая смена</dt><dd>${m.output[cur - 1] !== undefined ? m.output[cur - 1] + ' кор.' : 'не вписано'}</dd>` : ''}</dl>
       <label class="f" style="margin:0"><span>Факт выработка, коробов</span><input type="number" min="0" max="9999" inputmode="numeric" placeholder="Впишите число" data-out="${cur}" data-id="${m.id}" value="${fact === undefined ? '' : fact}"></label>
-      <div data-outst="${cur}">${outStatus(cur, fact)}</div></div>`;
+      <div data-outst="${cur}">${outStatus(cur, fact, m)}</div></div>`;
   }
   for (const g of groupsOf(m)){ const a = admissionBlock(m, g); if (a) h += `<div class="card">${a}</div>`; }
   return h;
@@ -1408,7 +1413,7 @@ function supportOutHtml(m){
   const top = Math.max(ref, ...keys.map(k => m.output[k])) || 1;
   let h = `<b>Выработка по сменам</b>${OUTPUT_NORM ? `<span class="muted small"> · норматив ${OUTPUT_NORM} кор. к ${NORM_SHIFT}-й смене</span>` : ''}<div style="margin-top:8px">`;
   for (let k = from; k <= last; k++){
-    const v = m.output[k], g = outGoal(k);
+    const v = m.output[k], g = outGoal(k, m);
     h += `<div class="orow"><span class="muted">${k}-я</span><div class="bar ${g && g.kind !== 'ref' && v !== undefined && v < g[0] ? 'lo' : ''}"><span style="width:${v === undefined ? 0 : Math.round(v / top * 100)}%"></span></div><b>${v === undefined ? '—' : v}</b></div>`;
   }
   h += `</div>`;
@@ -1416,13 +1421,24 @@ function supportOutHtml(m){
   if (lastK !== undefined && v3) h += `<p class="small muted" style="margin:6px 0 0">${lastK}-я смена к 3-й: ${m.output[lastK] >= v3 ? '+' : ''}${Math.round((m.output[lastK] - v3) / v3 * 100)}%${OUTPUT_NORM && lastK >= NORM_SHIFT && m.output[lastK] < OUTPUT_NORM ? ` · до норматива ${OUTPUT_NORM - m.output[lastK]} кор.` : ''}</p>`;
   return h;
 }
+/* Цель текущей смены: своя (m.goals) или расчётный ориентир/норматив; перерисовывается на месте при вводе своей цели */
+function supportGoalHtml(m){
+  const cur = curShiftNo(m), g = outGoal(cur, m);
+  if (!g) return '';
+  const gl = g.kind === 'own' ? 'Моя цель' : g.kind === 'norm' ? 'Норматив' : 'Ориентир';
+  return `<dl class="kv" style="margin:10px 0 0"><dt>${gl} на ${cur}-ю смену</dt><dd>${goalText(g)} коробов</dd>
+    <dt>Прошлая смена</dt><dd>${m.output[cur - 1] !== undefined ? m.output[cur - 1] + ' кор.' : 'не вписано'}</dd></dl>`;
+}
 /* Поле выработки текущей смены — отдельно от полосок: полоски перерисовываются, поле остаётся (не теряется касание) */
 function supportOutInput(m){
   if (m.status !== 'active') return '';
-  const cur = curShiftNo(m);
-  return `<label class="f" style="margin:10px 0 0"><span>Выработка за ${cur}-ю смену, коробов</span>
+  const cur = curShiftNo(m), def = outGoal(cur, Object.assign({}, m, { goals: {} }));   // расчётное значение — подсказка в поле своей цели
+  return `<div data-goalbox>${supportGoalHtml(m)}</div>
+    <label class="f" style="margin:10px 0 0"><span>Своя цель на ${cur}-ю смену, коробов <span class="muted small">(необязательно)</span></span>
+    <input type="number" min="1" max="9999" inputmode="numeric" placeholder="${def ? `по умолчанию ${def[0]}` : 'Впишите число'}" data-goal="${cur}" data-id="${m.id}" value="${m.goals[cur] === undefined ? '' : m.goals[cur]}"></label>
+    <label class="f" style="margin:10px 0 0"><span>Выработка за ${cur}-ю смену, коробов</span>
     <input type="number" min="0" max="9999" inputmode="numeric" placeholder="Впишите число" data-out="${cur}" data-id="${m.id}" value="${m.output[cur] === undefined ? '' : m.output[cur]}"></label>
-    <div data-outst="${cur}">${outStatus(cur, m.output[cur])}</div>`;
+    <div data-outst="${cur}">${outStatus(cur, m.output[cur], m)}</div>`;
 }
 
 /* Строка под пунктом «Квалификационный зачёт» */
@@ -1768,7 +1784,7 @@ function refreshNoteTags(){
   const no = noteShiftNo(m, n, date);
   sheet.shiftNo = no;
   const cap = $('#nShiftCap'); if (cap) cap.textContent = `Как прошла ${no}-я смена`;
-  const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов${outGoal(no) ? ` (${OUTPUT_GOAL[no] ? 'цель' : outGoal(no).kind === 'norm' ? 'норматив' : 'ориентир'} ${goalText(outGoal(no))})` : ''}`;
+  const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов${outGoal(no, m) ? ` (${goalWord(outGoal(no, m))} ${goalText(outGoal(no, m))})` : ''}`;
   const sup = $('#nSupport'); if (sup) sup.hidden = no < SUPPORT_FROM;   // «сам / с помощью» и настроение — только на сменах поддержки
   const mc = $('#nMoodCap'); if (mc) mc.textContent = pulseDue(m) && !n.mood ? '🙂 Пора спросить настроение: «Как тебе здесь?»' : 'Настроение новичка (необязательно) — «Как тебе здесь?»';
   const box = $('#nTags'); if (!box) return;
@@ -1842,9 +1858,9 @@ function batchLabels(){
   const dt = $('#bDate').value || shiftDefaultDate();
   for (const id of sheet.ids){
     const m = findM(id); if (!m) continue;
-    const no = shiftOnDate(m, dt), g = OUTPUT_GOAL[no], inp = $('#bo_' + id);
+    const no = shiftOnDate(m, dt), g = outGoal(no, m), inp = $('#bo_' + id);
     $('#bl_' + id).textContent = no <= 3 ? `День ${no}` : `${no}-я смена`;
-    inp.placeholder = g ? `цель ${g[0]}` : 'кор.';
+    inp.placeholder = g ? `${goalWord(g)} ${g[0]}` : 'кор.';
     inp.value = m.output[no] !== undefined ? m.output[no] : '';
   }
 }
@@ -1902,6 +1918,7 @@ function reportPayload(list, full){
     training: TRAINING,
     operations: OPS,
     outputGoals: OUTPUT_GOAL,   // «Паспорт смены» 3.26+ показывает выработку с целью смены
+    outputNorm: OUTPUT_NORM || null, normShift: NORM_SHIFT,   // норматив выработки и смена, с которой он действует (1.54)
     mentees: list.map(m => Object.assign(JSON.parse(JSON.stringify(m)), {
       calc: { shiftsWorked: worked(m), stage: stageOf(worked(m)), progress: progress(m), levels: countLevels(m), meetingDue: meetingDue(m), openHelp: openHelp(m).length, risk: riskReasons(m), nextTask: nextTask(m), onboardLeft: obLeft(m), onboardTotal: obTotal, trainingLeft: trLeft(m), trainingTotal: trTotal(m), operationsLeft: opsLeft(m), operationsTotal: opsTotal(m), curShift: curShiftNo(m),
         // поддержка после 3-й смены (новое поле — «Паспорт» старых версий его не читает)
@@ -2488,13 +2505,24 @@ document.addEventListener('click', e => {
   fn(b.dataset, b, e);
 });
 document.addEventListener('change', e => {
+  const goal = e.target.dataset && e.target.dataset.goal;
+  if (goal){   // своя цель наставника на смену; пусто — снова расчётный ориентир/норматив
+    const m = findM(e.target.dataset.id); if (!m) return;
+    const v = parseInt(e.target.value, 10);
+    if (isNaN(v) || v <= 0) delete m.goals[goal]; else m.goals[goal] = Math.min(v, 9999);
+    touch(m);
+    document.querySelectorAll('[data-goalbox]').forEach(el => el.innerHTML = supportGoalHtml(m));
+    document.querySelectorAll(`[data-outst="${goal}"]`).forEach(el => el.innerHTML = outStatus(goal, m.output[goal], m));
+    const so = $('#supOut'); if (so) so.innerHTML = supportOutHtml(m);
+    toast(m.goals[goal] ? 'Цель сохранена' : 'Цель сброшена'); return;
+  }
   const out = e.target.dataset && e.target.dataset.out;
   if (out){
     const m = findM(e.target.dataset.id); if (!m) return;
     const v = parseInt(e.target.value, 10);
     if (isNaN(v) || v < 0) delete m.output[out]; else m.output[out] = Math.min(v, 9999);
     // без render(): иначе касание кнопки сразу после ввода «теряется» из-за перерисовки
-    touch(m); document.querySelectorAll(`[data-outst="${out}"]`).forEach(el => el.innerHTML = outStatus(out, m.output[out]));
+    touch(m); document.querySelectorAll(`[data-outst="${out}"]`).forEach(el => el.innerHTML = outStatus(out, m.output[out], m));
     const so = $('#supOut'); if (so) so.innerHTML = supportOutHtml(m);
     toast('Выработка сохранена'); return;
   }
