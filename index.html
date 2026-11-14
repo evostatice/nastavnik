@@ -379,7 +379,7 @@ details.passed .obsec{margin-top:8px}
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.56';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.57';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
@@ -1753,6 +1753,7 @@ function noteSheet(m, n){
         <div class="pick c5">${[1,2,3,4,5].map(i => `<button data-act="nScore" data-v="${i}" class="${n.score===i?'on':''}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div></div>
       <div id="nGoal"></div>
       <label class="f"><span id="nOutCap">Выработка, коробов</span><input type="number" id="nOut" min="0" max="9999" inputmode="numeric" placeholder="Впишите число, если знаете"></label>
+      <label class="f" id="nGoalWrap" hidden><span id="nGoalCap">Своя цель, коробов</span><input type="number" id="nGoalIn" min="1" max="9999" inputmode="numeric"></label>
       <div id="nSupport" hidden>
         <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Как работал(а)</span>
           <div class="pick c2"><button data-act="nSelf" data-v="self" class="${n.self==='self'?'on':''}">💪 Сам(а)</button><button data-act="nSelf" data-v="help" class="${n.self==='help'?'on':''}">🤝 С помощью</button></div></div>
@@ -1798,7 +1799,18 @@ function refreshNoteTags(){
   sheet.shiftNo = no;
   const cap = $('#nShiftCap'); if (cap) cap.textContent = `Как прошла ${no}-я смена`;
   const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов`;
-  const ng = $('#nGoal'); if (ng) ng.innerHTML = supportGoalHtml(m, no);   // цель смены — отдельной строкой, как в «Поддержке»
+  const ng = $('#nGoal'); if (ng) ng.innerHTML = supportGoalHtml(m, no).replace('margin:10px 0 0', 'margin:10px 0');   // цель смены — отдельной строкой, как в «Поддержке»
+  // своя цель — с 4-й смены и пока идёт адаптация; сохраняется сразу (обработчик data-goal), как в «Поддержке»
+  const gw = $('#nGoalWrap');
+  if (gw){
+    const on = m.status === 'active' && no >= SUPPORT_FROM; gw.hidden = !on;
+    if (on){
+      const gi = $('#nGoalIn'), def = outGoal(no, Object.assign({}, m, { goals: {} }));
+      gi.dataset.goal = no; gi.dataset.id = m.id; gi.placeholder = def ? `по умолчанию ${def[0]}` : 'Впишите число';
+      if (document.activeElement !== gi) gi.value = m.goals[no] === undefined ? '' : m.goals[no];
+      $('#nGoalCap').textContent = `Своя цель на ${no}-ю смену, коробов`;
+    }
+  }
   const sup = $('#nSupport'); if (sup) sup.hidden = no < SUPPORT_FROM;   // «сам / с помощью» и настроение — только на сменах поддержки
   const mc = $('#nMoodCap'); if (mc) mc.textContent = pulseDue(m) && !n.mood ? '🙂 Пора спросить настроение: «Как тебе здесь?»' : 'Настроение новичка (необязательно) — «Как тебе здесь?»';
   const box = $('#nTags'); if (!box) return;
@@ -2529,6 +2541,7 @@ document.addEventListener('change', e => {
     document.querySelectorAll('[data-goalbox]').forEach(el => el.innerHTML = supportGoalHtml(m));
     document.querySelectorAll(`[data-outst="${goal}"]`).forEach(el => el.innerHTML = outStatus(goal, m.output[goal], m));
     const so = $('#supOut'); if (so) so.innerHTML = supportOutHtml(m);
+    if (sheet && sheet.kind === 'note') refreshNoteTags();   // форма отметки смены открыта — обновляем строку цели
     toast(m.goals[goal] ? 'Цель сохранена' : 'Цель сброшена'); return;
   }
   const out = e.target.dataset && e.target.dataset.out;
