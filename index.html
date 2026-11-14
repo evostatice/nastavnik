@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1117">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -378,11 +379,11 @@ details.passed .obsec{margin-top:8px}
    Все данные хранятся только в памяти браузера на телефоне наставника.
    Передача руководителю смены — файлом через «Поделиться».
    ===================================================================== */
-const APP_VERSION = '1.55';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
+const APP_VERSION = '1.56';   // единственное место, где меняется версия (кэш sw.js берёт её из адреса)
 const KEY = 'nastavnik_v1';
 /* Смены и их руководители: руководитель в отчёте берётся по выбранной смене */
 const SHIFTS = { '1': 'Конищев А.', '2': 'Сафонова Н.', '3': 'Бакиров У.', '4': 'Новоселов В.' };
-const leaderOf = () => SHIFTS[S.settings.shift] || S.settings.leader || '';
+const leaderOf = () => (Object.hasOwn(SHIFTS, S.settings.shift) ? SHIFTS[S.settings.shift] : '') || S.settings.leader || '';
 // хвост подписи в текстах для чата: вместо номера смены — руководитель смены
 const leaderTail = () => leaderOf() ? ', руководитель смены ' + leaderOf() : '';
 /* Чаты руководителей в xRooms (профиль → «Написать»), по номеру смены */
@@ -392,7 +393,7 @@ const SHIFT_CHAT = {
   '3': 'https://xlnk-rooms.x5.ru/open/profile/a10d5283-7714-57d2-ac96-9ff918dd62df',   // Бакиров У.
   '4': 'https://xlnk-rooms.x5.ru/open/profile/3250cd3f-a975-576c-ae78-f638862561be'    // Новоселов В.
 };
-const leaderChat = () => SHIFT_CHAT[S.settings.shift] || '';
+const leaderChat = () => Object.hasOwn(SHIFT_CHAT, S.settings.shift) ? SHIFT_CHAT[S.settings.shift] : '';
 const SIGN ='Идея и реализация - Evgeny.Panasevich, РЦ Екатеринбург-ЮГ + Copilot x5';
 
 const GROUPS = [['pick','Комплектация']];   // v1.4: отгрузка, ВЭШ, приёмка убраны; v1.6: «Общее» заменено чек-листом первого дня
@@ -559,16 +560,18 @@ function unitOn(m, id){
 }
 /* Цель по выработке (коробов) — карточка с полем «факт» показывается только на этой смене */
 const OUTPUT_GOAL = { 2: [400, 500], 3: [600] };   // [от, до] или [от]
+const goalLabel = g => g.kind === 'own' ? 'Моя цель' : g.kind === 'norm' ? 'Норматив' : g.kind === 'ref' ? 'Ориентир' : 'Цель';
 const goalWord = g => g.kind === 'norm' ? 'норматив' : g.kind === 'ref' ? 'ориентир' : 'цель';
 const goalText = g => g[1] ? `${g[0]}–${g[1]}` : `${g[0]}`;
 /* Ориентир выработки со смены поддержки: с 14-й — норматив, до неё — плавно от цели 3-й смены (округляем до 50).
-   kind 'own' — цель наставника на смену (m.goals), 'ref' — мягкий ориентир (у каждого свой темп), 'norm' — норматив-минимум. Для 2–3-й смен — прежние цели. */
+   kind 'own' — цель наставника на смену (m.goals; до нормативной смены), 'ref' — мягкий ориентир (у каждого свой темп), 'norm' — норматив-минимум. Для 2–3-й смен — прежние цели. */
 function outGoal(k, m){
   k = +k;
   if (OUTPUT_GOAL[k]) return OUTPUT_GOAL[k];
-  if (m && m.goals && m.goals[k]) return Object.assign([m.goals[k]], { kind: 'own' });   // цель, вписанная наставником
+  const normOn = OUTPUT_NORM && k >= NORM_SHIFT;   // с нормативной смены норматив главнее своей цели: он минимум для всех
+  if (m && m.goals && m.goals[k] && !normOn) return Object.assign([m.goals[k]], { kind: 'own' });   // цель, вписанная наставником
   if (!OUTPUT_NORM || k < SUPPORT_FROM) return null;
-  if (k >= NORM_SHIFT) return Object.assign([OUTPUT_NORM], { kind: 'norm' });
+  if (normOn) return Object.assign([OUTPUT_NORM], { kind: 'norm' });
   const base = OUTPUT_GOAL[3] ? OUTPUT_GOAL[3][0] : 0;
   const v = Math.round((base + (OUTPUT_NORM - base) * (k - 3) / (NORM_SHIFT - 3)) / 50) * 50;
   return Object.assign([Math.min(v, OUTPUT_NORM)], { kind: 'ref' });
@@ -723,6 +726,7 @@ function makeChecklist(){
   for (const [g] of GROUPS) c[g] = DEFAULT_CHECKLIST[g].map((name, i) => ({ id: `${g}_${i+1}`, name }));
   return c;
 }
+const MAX_MENTEES = 300, MAX_NOTES = 500, MAX_FILE = 5 * 1024 * 1024;   // защита от огромных файлов при импорте
 function blankState(){
   return { v: 1, settings: { fio:'', tab:'', shift:'', leader:'', division:'РЦ Екатеринбург Юг', checklist: makeChecklist(), installHidden:false },
            mentees: [], lastSentAt: 0, sentLog: [] };
@@ -738,21 +742,25 @@ function load(){
   for (const [g] of GROUPS) if (!Array.isArray(S.settings.checklist[g])) S.settings.checklist[g] = makeChecklist()[g];   // b.settings уже занят S.settings
   for (const g of Object.keys(S.settings.checklist)) if (!GNAME[g]) delete S.settings.checklist[g];
   for (const [g] of GROUPS) S.settings.checklist[g] = S.settings.checklist[g].filter(it => it && typeof it === 'object' && typeof it.id === 'string');
-  S.mentees = (Array.isArray(S.mentees) ? S.mentees : []).filter(m => m && typeof m === 'object' && !Array.isArray(m));
+  S.mentees = (Array.isArray(S.mentees) ? S.mentees : []).filter(m => m && typeof m === 'object' && !Array.isArray(m)).slice(0, MAX_MENTEES);
   const newProg = S.mentees.some(m => m.progV === undefined);
   S.mentees.forEach(normMentee);
   if (newProg) setTimeout(save, 0);   // версию программы запоминаем сразу — иначе завтра новичок «перейдёт» в другую
   S.sentLog = (Array.isArray(S.sentLog) ? S.sentLog : []).filter(l => l && typeof l === 'object').map(l => ({ ts: +l.ts || 0, count: +l.count || 0, full: !!l.full }));
   for (const k of ['fio', 'tab', 'shift', 'leader', 'division']) S.settings[k] = okStr(S.settings[k]);
+  if (!Object.hasOwn(SHIFTS, S.settings.shift)) S.settings.shift = '';   // смена из файла — только из списка, иначе SHIFT_CHAT[...] даст не ссылку
   S.lastSentAt = +S.lastSentAt || 0;
 }
 /* Проверка данных из памяти и из файлов: всё, что попадает в разметку, приводится к ожидаемому виду */
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 const okDate = v => typeof v === 'string' && ISO_RE.test(v) ? v : '';
 const okId = v => typeof v === 'string' && /^[\w-]{1,40}$/.test(v) ? v : uid();
-const okStr = v => typeof v === 'string' ? v : (typeof v === 'number' ? String(v) : '');
-const okObj = v => v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+const okStr = v => typeof v === 'string' ? v.slice(0, 2000) : (typeof v === 'number' ? String(v) : '');   // длинный текст из файла не раздувает память
+/* Ключи-ловушки из чужого JSON (__proto__ и др.) убираем: Object.assign иначе подменит прототип объекта */
+const noProto = o => { for (const k of ['__proto__', 'constructor', 'prototype']) if (Object.hasOwn(o, k)) delete o[k]; return o; };
+const okObj = v => v && typeof v === 'object' && !Array.isArray(v) ? noProto(v) : {};
 function normNote(n){
+  noProto(n);
   n.id = okId(n.id); n.date = okDate(n.date); n.present = n.present !== false;
   n.score = Math.max(0, Math.min(5, parseInt(n.score, 10) || 0));
   n.tags = Array.isArray(n.tags) ? n.tags.filter(t => typeof t === 'string') : [];
@@ -765,6 +773,7 @@ function normNote(n){
   return n;
 }
 function normMentee(m){
+  noProto(m);
   m.id = okId(m.id); m.fio = okStr(m.fio); m.tab = okStr(m.tab); m.hireDate = okDate(m.hireDate);
   const before = JSON.stringify([m.mainGroup, m.groups, m.admissions]);
   m.mainGroup = WORK_GROUPS.some(g => g[0] === m.mainGroup) ? m.mainGroup : WORK_GROUPS[0][0];
@@ -778,7 +787,8 @@ function normMentee(m){
   m.statusDate = okDate(m.statusDate); m.statusReason = okStr(m.statusReason); m.statusComment = okStr(m.statusComment);
   m.skills = okObj(m.skills);
   // отметки без корректной даты отбрасываются: из-за них не открывался список
-  m.notes = (Array.isArray(m.notes) ? m.notes : []).filter(n => n && typeof n === 'object').map(normNote).filter(n => n.date);
+  m.notes = (Array.isArray(m.notes) ? m.notes : []).filter(n => n && typeof n === 'object').slice(0, 5 * MAX_NOTES).map(normNote).filter(n => n.date);
+  if (m.notes.length > MAX_NOTES) m.notes = m.notes.sort((a, b) => a.date < b.date ? -1 : 1).slice(-MAX_NOTES);   // оставляем свежие
   m.meetings = okObj(m.meetings);
   for (const k of Object.keys(m.meetings)){
     const mt = m.meetings[k];
@@ -792,13 +802,13 @@ function normMentee(m){
     if (!a || typeof a !== 'object' || !['requested', 'confirmed'].includes(a.status)){ delete m.admissions[g]; continue; }
     a.date = okDate(a.date); a.confirmedDate = okDate(a.confirmedDate); a.comment = okStr(a.comment); }
   m.onboard = okObj(m.onboard);
-  for (const k of Object.keys(m.onboard)) if (!okDate(m.onboard[k])) delete m.onboard[k];
+  for (const k of Object.keys(m.onboard)) if (!okDate(m.onboard[k]) || !/^[\w.-]{1,40}$/.test(k)) delete m.onboard[k];   // ключ — id пункта, в отчёт «Паспорту» чужие не пускаем
   // выработка: { номер смены: коробов } — только целые числа
   const out = okObj(m.output); m.output = {};
-  for (const k of Object.keys(out)){ const v = parseInt(out[k], 10); if (/^\d{1,3}$/.test(k) && v >= 0 && v <= 9999) m.output[k] = v; }
+  for (const k of Object.keys(out)){ const v = parseInt(out[k], 10); if (/^\d{1,3}$/.test(k) && v >= 0 && v <= 9999) m.output[+k] = v; }
   // свои цели наставника: { номер смены (с SUPPORT_FROM): коробов }
   const gl = okObj(m.goals); m.goals = {};
-  for (const k of Object.keys(gl)){ const v = parseInt(gl[k], 10); if (/^\d{1,3}$/.test(k) && +k >= SUPPORT_FROM && v > 0 && v <= 9999) m.goals[k] = v; }
+  for (const k of Object.keys(gl)){ const v = parseInt(gl[k], 10); if (/^\d{1,3}$/.test(k) && +k >= SUPPORT_FROM && v > 0 && v <= 9999) m.goals[+k] = v; }
   m.createdAt = +m.createdAt || Date.now(); m.updatedAt = +m.updatedAt || Date.now();
   // версия программы: 1 — к выходу пунктов X5 уже отработал(а) 3 смены (они необязательны), 2 — проходит программу целиком
   if (m.progV !== 1 && m.progV !== 2) m.progV = (m.shiftsBefore + m.notes.filter(n => n.present).length) >= 3 ? 1 : 2;
@@ -1421,20 +1431,22 @@ function supportOutHtml(m){
   if (lastK !== undefined && v3) h += `<p class="small muted" style="margin:6px 0 0">${lastK}-я смена к 3-й: ${m.output[lastK] >= v3 ? '+' : ''}${Math.round((m.output[lastK] - v3) / v3 * 100)}%${OUTPUT_NORM && lastK >= NORM_SHIFT && m.output[lastK] < OUTPUT_NORM ? ` · до норматива ${OUTPUT_NORM - m.output[lastK]} кор.` : ''}</p>`;
   return h;
 }
-/* Цель текущей смены: своя (m.goals) или расчётный ориентир/норматив; перерисовывается на месте при вводе своей цели */
-function supportGoalHtml(m){
-  const cur = curShiftNo(m), g = outGoal(cur, m);
+/* Строка цели смены `no` (по умолчанию текущей): своя, ориентир или норматив; с нормативной смены своя цель — отдельной строкой */
+function supportGoalHtml(m, no){
+  no = no || curShiftNo(m);
+  const g = outGoal(no, m);
   if (!g) return '';
-  const gl = g.kind === 'own' ? 'Моя цель' : g.kind === 'norm' ? 'Норматив' : 'Ориентир';
-  return `<dl class="kv" style="margin:10px 0 0"><dt>${gl} на ${cur}-ю смену</dt><dd>${goalText(g)} коробов</dd>
-    <dt>Прошлая смена</dt><dd>${m.output[cur - 1] !== undefined ? m.output[cur - 1] + ' кор.' : 'не вписано'}</dd></dl>`;
+  const own = g.kind === 'norm' && m.goals[no];
+  return `<dl class="kv" style="margin:10px 0 0"><dt>${goalLabel(g)} на ${no}-ю смену</dt><dd>${goalText(g)} коробов</dd>
+    ${own ? `<dt>Моя цель</dt><dd>${own} коробов</dd>` : ''}
+    <dt>Прошлая смена</dt><dd>${m.output[no - 1] !== undefined ? m.output[no - 1] + ' кор.' : 'не вписано'}</dd></dl>`;
 }
 /* Поле выработки текущей смены — отдельно от полосок: полоски перерисовываются, поле остаётся (не теряется касание) */
 function supportOutInput(m){
   if (m.status !== 'active') return '';
   const cur = curShiftNo(m), def = outGoal(cur, Object.assign({}, m, { goals: {} }));   // расчётное значение — подсказка в поле своей цели
   return `<div data-goalbox>${supportGoalHtml(m)}</div>
-    <label class="f" style="margin:10px 0 0"><span>Своя цель на ${cur}-ю смену, коробов <span class="muted small">(необязательно)</span></span>
+    <label class="f" style="margin:10px 0 0"><span>Своя цель на ${cur}-ю смену, коробов</span>
     <input type="number" min="1" max="9999" inputmode="numeric" placeholder="${def ? `по умолчанию ${def[0]}` : 'Впишите число'}" data-goal="${cur}" data-id="${m.id}" value="${m.goals[cur] === undefined ? '' : m.goals[cur]}"></label>
     <label class="f" style="margin:10px 0 0"><span>Выработка за ${cur}-ю смену, коробов</span>
     <input type="number" min="0" max="9999" inputmode="numeric" placeholder="Впишите число" data-out="${cur}" data-id="${m.id}" value="${m.output[cur] === undefined ? '' : m.output[cur]}"></label>
@@ -1739,6 +1751,7 @@ function noteSheet(m, n){
     <div id="nWork" ${n.present ? '' : 'hidden'}>
       <div class="f"><span class="muted small" style="display:block;margin-bottom:6px" id="nShiftCap"></span>
         <div class="pick c5">${[1,2,3,4,5].map(i => `<button data-act="nScore" data-v="${i}" class="${n.score===i?'on':''}" aria-label="${SCORE[i]}">${SCORE_IC[i]}<small>${SCORE[i]}</small></button>`).join('')}</div></div>
+      <div id="nGoal"></div>
       <label class="f"><span id="nOutCap">Выработка, коробов</span><input type="number" id="nOut" min="0" max="9999" inputmode="numeric" placeholder="Впишите число, если знаете"></label>
       <div id="nSupport" hidden>
         <div class="f"><span class="muted small" style="display:block;margin-bottom:6px">Как работал(а)</span>
@@ -1784,7 +1797,8 @@ function refreshNoteTags(){
   const no = noteShiftNo(m, n, date);
   sheet.shiftNo = no;
   const cap = $('#nShiftCap'); if (cap) cap.textContent = `Как прошла ${no}-я смена`;
-  const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов${outGoal(no, m) ? ` (${goalWord(outGoal(no, m))} ${goalText(outGoal(no, m))})` : ''}`;
+  const oc = $('#nOutCap'); if (oc) oc.textContent = `Выработка за ${no}-ю смену, коробов`;
+  const ng = $('#nGoal'); if (ng) ng.innerHTML = supportGoalHtml(m, no);   // цель смены — отдельной строкой, как в «Поддержке»
   const sup = $('#nSupport'); if (sup) sup.hidden = no < SUPPORT_FROM;   // «сам / с помощью» и настроение — только на сменах поддержки
   const mc = $('#nMoodCap'); if (mc) mc.textContent = pulseDue(m) && !n.mood ? '🙂 Пора спросить настроение: «Как тебе здесь?»' : 'Настроение новичка (необязательно) — «Как тебе здесь?»';
   const box = $('#nTags'); if (!box) return;
@@ -2026,8 +2040,9 @@ function textSummary(variant){
       if (R() < 0.5) notes.reverse();   // порядок плюсов и замечаний тоже меняется
       lines.push(...notes);
       if (n.comment) lines.push(`${pick(SUM.comment)}: ${n.comment}`);
-      const v = m.output[no], g = OUTPUT_GOAL[no];
-      if (v !== undefined) lines.push(`${pick(SUM.out)}: ${v} кор.${g ? (v >= g[0] ? ` — ${pick(SUM.outOk)} (${goalText(g)})` : ` — ${pick(SUM.outLow)} ${g[0] - v} кор. (цель ${goalText(g)})`) : ''}`);
+      const v = m.output[no], g = outGoal(no, m);
+      // мягкий ориентир (4–13-я смены) — без оценки «не хватило»
+      if (v !== undefined) lines.push(`${pick(SUM.out)}: ${v} кор.${g ? (g.kind === 'ref' ? ` (ориентир ${goalText(g)})` : v >= g[0] ? ` — ${pick(g.kind === 'norm' ? ['норматив закрыт', 'норматив выполнен'] : SUM.outOk.filter(x => x !== 'норматив закрыт'))} (${goalText(g)})` : ` — ${pick(SUM.outLow)} ${g[0] - v} кор. (${goalWord(g)} ${goalText(g)})`) : ''}`);
       if (n.self || n.mood) lines.push([n.self ? (n.self === 'self' ? 'Работал(а) сам(а)' : 'Работал(а) с помощью наставника') : '', n.mood ? `настроение: ${lc(MOOD[n.mood])}` : ''].filter(Boolean).join(', ') + '.');
       // отмеченное в эту смену: пункты этой смены — «закрыли за смену»,
       // пункты, положенные на прошлые смены (дозаполнили задним числом или перенесли), — отдельно
@@ -2090,9 +2105,9 @@ function sendText(){
 
 function mergeMentees(list){
   let added = 0, updated = 0;
-  for (const raw of (Array.isArray(list) ? list : [])){
+  for (const raw of (Array.isArray(list) ? list.slice(0, MAX_MENTEES) : [])){
     if (!raw || typeof raw !== 'object' || !okStr(raw.fio).trim()) continue;   // мусорная запись не превращается в «Без имени»
-    const inc = normMentee(Object.assign({}, raw)); delete inc.calc;
+    const inc = normMentee(Object.assign({}, noProto(raw))); delete inc.calc;
     const ex = S.mentees.find(x => x.id === inc.id) || (inc.tab && S.mentees.find(x => x.tab === inc.tab));
     if (!ex){ S.mentees.push(inc); added++; }
     else if (inc.updatedAt > ex.updatedAt){ Object.assign(ex, inc, { id: ex.id }); updated++; }
@@ -2101,7 +2116,7 @@ function mergeMentees(list){
 }
 function importAssignment(d){
   let added = 0, skipped = 0;
-  for (const r of (Array.isArray(d.mentees) ? d.mentees : [])){
+  for (const r of (Array.isArray(d.mentees) ? d.mentees.slice(0, MAX_MENTEES) : [])){
     const fio = r && typeof r === 'object' ? okStr(r.fio).trim() : ''; if (!fio){ skipped++; continue; }
     const tab = okStr(r.tab).trim();
     if (tab && S.mentees.some(x => x.tab === tab)){ skipped++; continue; }
@@ -2509,7 +2524,7 @@ document.addEventListener('change', e => {
   if (goal){   // своя цель наставника на смену; пусто — снова расчётный ориентир/норматив
     const m = findM(e.target.dataset.id); if (!m) return;
     const v = parseInt(e.target.value, 10);
-    if (isNaN(v) || v <= 0) delete m.goals[goal]; else m.goals[goal] = Math.min(v, 9999);
+    if (isNaN(v) || v <= 0) delete m.goals[goal]; else { m.goals[goal] = Math.min(v, 9999); e.target.value = m.goals[goal]; }
     touch(m);
     document.querySelectorAll('[data-goalbox]').forEach(el => el.innerHTML = supportGoalHtml(m));
     document.querySelectorAll(`[data-outst="${goal}"]`).forEach(el => el.innerHTML = outStatus(goal, m.output[goal], m));
@@ -2520,7 +2535,7 @@ document.addEventListener('change', e => {
   if (out){
     const m = findM(e.target.dataset.id); if (!m) return;
     const v = parseInt(e.target.value, 10);
-    if (isNaN(v) || v < 0) delete m.output[out]; else m.output[out] = Math.min(v, 9999);
+    if (isNaN(v) || v < 0) delete m.output[out]; else { m.output[out] = Math.min(v, 9999); e.target.value = m.output[out]; }
     // без render(): иначе касание кнопки сразу после ввода «теряется» из-за перерисовки
     touch(m); document.querySelectorAll(`[data-outst="${out}"]`).forEach(el => el.innerHTML = outStatus(out, m.output[out], m));
     const so = $('#supOut'); if (so) so.innerHTML = supportOutHtml(m);
@@ -2538,6 +2553,7 @@ document.addEventListener('input', e => {
 document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (ask.close) ask.close(); else if (sheet) closeSheet(); });
 $('#fileIn').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0]; if (!f) return;
+  if (f.size > MAX_FILE){ say('Файл слишком большой (больше 5 МБ) — это не файл наставника.'); return; }
   const r = new FileReader(); r.onload = () => handleFile(String(r.result)); r.onerror = () => say('Не удалось прочитать файл'); r.readAsText(f, 'utf-8');
 });
 window.addEventListener('storage', e => { if (e.key === KEY && !DEMO){ load(); render(); } });
